@@ -1,0 +1,30 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.vscode/
+.claude/
+*.lnk
+*.log
+
+# Build artifacts and temp files
+*.bak
+palette_temp*.png
+/fusion_to_blender_addon_blender/
+Sequence*.gif
+# Release zips live on GitHub Releases (built by CI on tag), not in git
+/*.zip
+
+# Orchestrator operational files — not version-controlled
+# (already-tracked docs files stay tracked; only new ones are ignored)
+/CLAUDE.md
+/docs/
+
+# Autonomous-loop orchestrator state (local only, not part of the product)
+/features.json
+/profile.json
+/usage.json
+/insights.json
+/usage_budget.json
+/scripts/

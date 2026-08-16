@@ -1,0 +1,43 @@
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+    tags: ["v*"]
+  pull_request:
+
+permissions:
+  contents: write
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install pytest numpy
+      - run: pytest
+
+  # On a version tag, build all three distribution zips and attach them to the
+  # GitHub Release (created as a draft for manual review before publishing).
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: python build.py
+      - run: python build_fusion.py
+      - run: python build_installer.py
+      - uses: softprops/action-gh-release@v2
+        with:
+          draft: true
+          files: |
+            fusion_to_blender_addon_blender.zip
+            fusion_to_blender_addon_fusion.zip
+            fusion_to_blender_bridge_installer.zip

@@ -1,0 +1,54 @@
+Fusion to Blender Bridge
+Copyright (c) 2026 inspace9018
+
+===============================================================================
+1. SOURCE CODE  —  GPL-3.0-or-later
+===============================================================================
+
+All source code in this repository is licensed under the GNU General Public
+License, version 3 or (at your option) any later version. See the LICENSE file
+for the full text.
+
+You may use this add-on for any purpose, including commercial work.
+If you distribute a modified version, it must also be GPL-3.0-or-later and you
+must make the source available to whoever receives it.
+
+Note on the previous license: releases up to v1.4.0 carried a CC BY-NC 4.0 file.
+That license could not validly apply to a Blender add-on that imports `bpy`
+(such add-ons are GPL derivatives when distributed, and GPL forbids the extra
+"NonCommercial" restriction). The change to GPL-3.0-or-later is a correction,
+and it only grants users more rights than before.
+
+===============================================================================
+2. MARKETING ASSETS AND DOCUMENTATION  —  All rights reserved
+===============================================================================
+
+The following are NOT covered by the GPL and remain All rights reserved,
+Copyright (c) 2026 inspace9018:
+
+  - Product and project names, logos, and brand marks
+  - Marketing images and renders (cover art, feature grids, hero images)
+  - Demo videos and animated GIFs
+  - Store listing copy and product descriptions
+  - Screenshots produced for promotional use
+
+These are separate creative works, not derivatives of Blender, so the GPL does
+not extend to them. You may not reuse them to publish or promote a derivative
+or a competing distribution.
+
+The GPL grants rights to the code. It does not grant a trademark license.
+
+===============================================================================
+3. BUNDLED THIRD-PARTY CODE
+===============================================================================
+
+  blender_addon/libs/websockets/  —  websockets
+      Copyright (c) Aymeric Augustin and contributors
+      BSD 3-Clause License. See the license file bundled in that directory.
+
+===============================================================================
+4. CONTACT
+===============================================================================
+
+For commercial licensing questions, or to request permission to use the
+marketing assets, contact the copyright holder.

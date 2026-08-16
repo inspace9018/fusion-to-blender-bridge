@@ -1,0 +1,6 @@
+# Keep installer scripts' line endings correct regardless of core.autocrlf.
+# Windows batch must be CRLF; the macOS shell launcher must stay LF.
+*.bat       text eol=crlf
+*.command   text eol=lf
+*.sh        text eol=lf
+installer/README.txt text eol=crlf
