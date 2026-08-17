@@ -95,12 +95,27 @@ class FTBPreferences(bpy.types.AddonPreferences):
         layout.prop(self, "ftb_auto_connect")
 
 
+# Fusion runs on this machine, so the bridge only ever talks to this machine.
+#
+# It used to accept any host:port, which let you drive Blender from Fusion on a
+# second PC. Nobody was using that, and it cost more than it was worth: reaching
+# another machine is an internet connection as far as Blender is concerned, which
+# drags in the "Allow Online Access" preference, a network permission on the
+# extensions platform, and a firewall hole on the user's LAN. Pinning it to the
+# loopback address removes all three at once -- Blender's own extension rules say
+# in as many words that depending on external servers is not allowed, but
+# "localhost is fine".
+BRIDGE_PORT = 9080
+BRIDGE_HOST = "127.0.0.1"
+BRIDGE_SERVER = f"{BRIDGE_HOST}:{BRIDGE_PORT}"
+
+
 def _register_properties():
     # ── Connection ──────────────────────────────────────────────────────────
     bpy.types.Scene.ftb_server = bpy.props.StringProperty(
         name="Server",
-        description="Fusion 360 server address (host:port)",
-        default="localhost:9080",
+        description="Fusion 360 bridge address on this machine",
+        default=BRIDGE_SERVER,
     )
 
     # ── Coordinate system: Fusion mesh raw coords → Blender Z-up conversion ─

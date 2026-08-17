@@ -170,12 +170,14 @@ Step 5    Fusion에서 모델 수정 → 다시 Sync
 
 ## 네트워크
 
-| 환경 | 서버 주소 |
-|------|----------|
-| 같은 PC | `localhost:9080` |
-| 같은 네트워크 | Fusion PC의 IP (예: `192.168.1.100:9080`) |
+**이 컴퓨터 안에서만 통신합니다.** Fusion과 Blender가 같은 PC에서 돌아가며,
+브리지는 `127.0.0.1:9080`(자기 자신)에만 접속합니다. 인터넷으로 나가지 않고,
+바깥에서 들어올 수도 없습니다. 설정할 주소도 없습니다.
 
-> 방화벽에서 TCP 9080 포트를 허용해야 합니다.
+> 보안 프로그램이 이 컴퓨터 안의 통신까지 막는 경우, 포트 9080을 허용해 주세요.
+
+<sub>1.0.0부터 다른 PC의 Fusion에 붙는 기능은 없앴습니다. 쓰는 분이 없었고,
+그 기능 하나 때문에 인터넷 권한과 방화벽 구멍이 필요했습니다.</sub>
 
 ## 문제 해결
 
@@ -188,9 +190,9 @@ Step 5    Fusion에서 모델 수정 → 다시 Sync
 <details>
 <summary><b>연결이 안 돼요</b></summary>
 
-1. Fusion 360에서 Add-in이 **Run** 상태인지 확인
-2. 방화벽에서 9080 포트 허용 여부 확인
-3. 같은 네트워크의 다른 PC라면 IP 주소가 맞는지 확인
+1. Fusion 360에서 Add-in이 **Run** 상태인지 확인 — 대부분 이것입니다
+2. Fusion과 Blender가 **같은 PC**에서 돌고 있는지 확인
+3. 보안 프로그램이 포트 9080을 막고 있지 않은지 확인
 </details>
 
 <details>
@@ -361,12 +363,14 @@ Step 5    Edit model in Fusion → Sync again
 
 ## Network
 
-| Scenario | Server Address |
-|----------|---------------|
-| Same PC | `localhost:9080` |
-| Same network | Fusion PC's IP (e.g. `192.168.1.100:9080`) |
+**Everything stays on this machine.** Fusion and Blender run on the same PC and the
+bridge only ever connects to `127.0.0.1:9080` — itself. Nothing leaves for the
+internet, nothing can reach in, and there is no address to configure.
 
-> Make sure TCP port 9080 is allowed through your firewall.
+> If security software polices loopback traffic too, allow port 9080.
+
+<sub>Connecting to Fusion on another PC was dropped in 1.0.0. Nobody used it, and it
+was the only reason the add-on needed internet permission and a firewall hole.</sub>
 
 ## Troubleshooting
 
@@ -379,9 +383,9 @@ Click the **Sync** button. Connecting alone does not transfer data.
 <details>
 <summary><b>Can't connect</b></summary>
 
-1. Verify the Fusion 360 Add-in is running
-2. Check firewall for port 9080
-3. If using a different PC, verify the IP address
+1. Verify the Fusion 360 Add-in is running — it is almost always this
+2. Check Fusion and Blender are on the **same PC**
+3. Check security software isn't blocking port 9080
 </details>
 
 <details>

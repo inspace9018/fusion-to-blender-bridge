@@ -40,12 +40,12 @@ _STRINGS = {
     # ── Connection failure hints (EU05) ───────────────────────────────────────
     "err_refused":          {"ko": "Fusion 애드인이 실행 중인지 확인하세요 (Run)",
                              "en": "Check the Fusion add-in is running (Run)"},
-    "err_timeout":          {"ko": "방화벽/포트(9080) 또는 IP 주소를 확인하세요",
-                             "en": "Check firewall/port 9080 or the IP address"},
-    "err_unreachable":      {"ko": "주소에 연결할 수 없습니다 — IP·포트 확인",
-                             "en": "Can't reach that address — check IP/port"},
-    "err_invalid":          {"ko": "서버 주소 형식이 올바르지 않습니다 (host:port)",
-                             "en": "Server address is invalid (host:port)"},
+    "err_timeout":          {"ko": "Fusion 애드인이 응답하지 않습니다 — Fusion에서 Run 상태인지, 포트 9080이 막혀 있지 않은지 확인하세요",
+                             "en": "The Fusion add-in isn't answering — check it is Run in Fusion and that port 9080 isn't blocked"},
+    "err_unreachable":      {"ko": "이 컴퓨터의 Fusion에 연결할 수 없습니다 — 애드인을 Run 하셨나요?",
+                             "en": "Can't reach Fusion on this machine — did you Run the add-in?"},
+    "err_invalid":          {"ko": "연결 주소가 잘못되었습니다 — Blender를 다시 시작해 주세요",
+                             "en": "The connection address is wrong — restart Blender"},
     "reconnect_countdown":  {"ko": "↻  {cd:.0f}초 후 재연결...",
                              "en": "↻  Reconnect in {cd:.0f}s..."},
 

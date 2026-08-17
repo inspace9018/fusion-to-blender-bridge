@@ -106,7 +106,8 @@ class FTB_PT_MainPanel(bpy.types.Panel):
 
         else:
             conn_box.label(text=t("not_connected"), icon="CANCEL")
-            conn_box.prop(scene, "ftb_server", text=t("server"))
+            # No address field: the bridge only talks to Fusion on this machine,
+            # so there is nothing here for anyone to get right or wrong.
             conn_box.operator("ftb.connect", text="Connect", icon="LINKED")
             # EU04: first-use hint — with auto-connect/auto-sync this is all it takes.
             hint = conn_box.column(align=True)

@@ -31,6 +31,13 @@ from . import state
 from .handler import update_transform
 from .i18n import t
 
+
+def _local_server():
+    """The one address the bridge talks to. See __init__.BRIDGE_SERVER."""
+    from . import BRIDGE_SERVER
+    return BRIDGE_SERVER
+
+
 _get_client = state.get_client
 _get_handler = state.get_handler
 
@@ -65,7 +72,12 @@ class FTB_OT_Connect(bpy.types.Operator):
 
     def execute(self, context):
         client = _get_client()
-        server = context.scene.ftb_server
+        # Not read from the scene. A .blend saved with the old build can carry a
+        # remote address in ftb_server, and honouring it would quietly reopen the
+        # off-machine connection this version deliberately dropped. The address
+        # comes from one constant now, and nothing can steer it elsewhere.
+        server = _local_server()
+        context.scene.ftb_server = server
         client.connect(server)
         self.report({"INFO"}, t("connecting_to", server=server))
         return {"FINISHED"}
@@ -133,7 +145,8 @@ class FTB_OT_RequestSync(bpy.types.Operator):
         # the pending sync automatically the moment the connection is up.
         client.request_sync(quality=quality, include_hidden=True)
         if not client._should_reconnect:
-            server = context.scene.ftb_server
+            server = _local_server()
+            context.scene.ftb_server = server
             client.connect(server)
             self.report({"INFO"}, t("connecting_then_sync", server=server))
         else:
