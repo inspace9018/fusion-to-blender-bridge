@@ -14,8 +14,9 @@
 </p>
 
 <p align="center">
-  <b>Fusion 360 모델을, 재질 그대로, Blender에서 렌더링하세요.</b><br>
-  제품 디자이너를 위한 원클릭 동기화 — Material · Modifier · Light Link · 손으로 찍은 엣지 표시까지 그대로.<br>
+  <b>Blender에서 입힌 재질을, 모델을 고쳐도 다시 입히지 마세요.</b><br>
+  제품 디자이너를 위한 원클릭 동기화 — Fusion에서 형상만 새로 오고,<br>
+  Blender에 세팅해 둔 Material · Modifier · Light Link · 손으로 찍은 엣지 표시는 그 자리에 남습니다.<br>
   <sub>내보내기·재질 다시 입히기 같은 반복 작업 없이, 모델을 고치면 Blender에서 Sync 한 번.</sub>
 </p>
 
@@ -35,12 +36,22 @@
 
 Fusion에서 모델을 수정하고 Blender에서 **Sync** 한 번 누르면, 형상만 바뀌고 Material·Modifier·Light Link는 그대로 살아있습니다.
 
+> ### 🎯 한 줄로 정확히
+>
+> **이 도구가 지키는 재질은 "Blender에서 당신이 입힌 재질"입니다.**
+> Fusion에서 모델을 몇 번을 고쳐 와도, Blender에 세팅해 둔 셰이더·모디파이어·라이트 링크가
+> 그 자리에 남습니다. 렌더 세팅을 처음부터 다시 하지 않아도 됩니다.
+>
+> **Fusion의 Appearance(외형)는 가져오지 않습니다.** 이 도구는 형상만 옮깁니다 —
+> 룩은 Blender에서 만드는 것이 전제입니다. Fusion에서 색을 칠하고 Sync해도 Blender에는
+> 나타나지 않습니다. 정상 동작입니다.
+
 ## 핵심 기능
 
 | | 기능 | 설명 |
 |:---:|------|------|
 | 🔄 | **원클릭 동기화** | 버튼 하나로 Fusion 모델 전체를 Blender로 |
-| 🎨 | **재질 완전 보존** | 동기화해도 Material, Modifier, Light Link 유지 |
+| 🎨 | **Blender 재질 보존** | Blender에서 입힌 Material · Modifier · Light Link가 재동기화에도 그대로 |
 | 📁 | **컬렉션 자동 구성** | Fusion 컴포넌트 계층 → Blender Collection |
 | 🎛️ | **메시 품질 선택** | Low / Medium / High / Ultra 4단계 |
 | 👁️ | **숨김 Body 토글** | 재동기화 없이 즉시 표시/숨기기 |
@@ -124,7 +135,7 @@ Step 4    Sync 버튼 클릭
             ↓
 Step 5    Fusion에서 모델 수정 → 다시 Sync
             ↓
-          ✅ 형상만 변경, 재질은 유지!
+          ✅ 형상만 새로 오고, Blender 재질은 그대로!
 ```
 
 ## 설정
@@ -197,9 +208,11 @@ Step 5    Fusion에서 모델 수정 → 다시 Sync
 </details>
 
 <details>
-<summary><b>재질이 사라졌어요</b></summary>
+<summary><b>재질이 사라졌어요 / 안 넘어와요</b></summary>
 
-Fusion에서 Body를 **삭제 후 재생성**하면 고유 ID가 바뀌어 Blender에서 새 오브젝트로 인식됩니다. 가능하면 Body를 삭제하지 말고 수정하세요.
+**Fusion에서 입힌 색이 Blender에 안 보이는 경우** — 정상입니다. 이 도구는 형상만 옮기고 Fusion의 Appearance는 가져오지 않습니다. 재질은 Blender에서 한 번 입혀 두시면, 그 뒤로는 모델을 고쳐도 계속 유지됩니다.
+
+**Blender에서 입힌 재질이 동기화 후 사라진 경우** — Fusion에서 Body를 **삭제 후 재생성**하면 고유 ID가 바뀌어 Blender가 새 오브젝트로 인식합니다. 가능하면 Body를 삭제하지 말고 수정하세요.
 </details>
 
 ---
@@ -214,12 +227,22 @@ Fusion에서 Body를 **삭제 후 재생성**하면 고유 ID가 바뀌어 Blend
 
 Edit your model in Fusion, hit **Sync** in Blender — geometry updates, but your Materials, Modifiers, and Light Links stay exactly as they were.
 
+> ### 🎯 To be precise
+>
+> **The materials this protects are the ones YOU built in Blender.**
+> Revise the model in Fusion as often as you like; the shaders, modifiers and light
+> links you set up in Blender stay put. You never rebuild your render setup.
+>
+> **Fusion Appearances are not imported.** This tool moves geometry only — the look is
+> yours to author in Blender. Painting a body in Fusion and pressing Sync will not
+> bring that colour across. That is by design, not a fault.
+
 ## Key Features
 
 | | Feature | Description |
 |:---:|---------|-------------|
 | 🔄 | **One-click sync** | Bring your entire Fusion model into Blender |
-| 🎨 | **Full preservation** | Materials, Modifiers, Light Links survive every sync |
+| 🎨 | **Your Blender look, kept** | Materials, Modifiers and Light Links you set up in Blender survive every re-sync |
 | 📁 | **Auto collections** | Fusion component hierarchy → Blender Collections |
 | 🎛️ | **Quality presets** | Low / Medium / High / Ultra mesh quality |
 | 👁️ | **Hidden body toggle** | Show/hide instantly without re-syncing |
@@ -303,7 +326,7 @@ Step 4    Click Sync
             ↓
 Step 5    Edit model in Fusion → Sync again
             ↓
-          ✅ Geometry updates, materials preserved!
+          ✅ Geometry updates; your Blender materials stay!
 ```
 
 ## Settings
@@ -376,9 +399,11 @@ Switch to **High** or **Ultra** preset. Slower, but smoother curves.
 </details>
 
 <details>
-<summary><b>Materials disappeared</b></summary>
+<summary><b>Materials disappeared / didn't come across</b></summary>
 
-Deleting and recreating a body in Fusion changes its unique ID, so Blender sees it as a new object. Modify bodies instead of deleting them.
+**A colour you applied in Fusion doesn't show up in Blender** — that is expected. This tool moves geometry only; Fusion Appearances are not imported. Author the material once in Blender and it will survive every later edit.
+
+**A material you applied in Blender vanished after a sync** — deleting and recreating a body in Fusion changes its unique ID, so Blender sees it as a new object. Modify bodies instead of deleting them.
 </details>
 
 ---
@@ -390,7 +415,7 @@ Deleting and recreating a body in Fusion changes its unique ID, so Blender sees 
 **여기가 실제로 쓰시라고 내놓는 첫 버전입니다.**
 
 **하는 일**
-- 원클릭 동기화 — Material · Modifier · Light Link 보존
+- 원클릭 동기화 — Blender에 세팅해 둔 Material · Modifier · Light Link 보존
 - **엣지 표시 보존** — 손으로 찍은 Sharp · Seam · Crease · Bevel Weight가 재동기화에도 유지
 - 컬렉션 자동 구성 · 메시 품질 4단계 · 숨김 Body 토글 · 한/영 자동 전환
 - Edit Mode 유틸리티 — Face 선택 확장, 경계 Edge 선택, Edge 자동 마킹, UV Seam 병합, Face 페인팅
