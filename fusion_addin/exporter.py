@@ -586,7 +586,7 @@ def export_body(body, occurrence=None, quality: dict = None,
                     pass
         else:
             # Root-level body (no occurrence). parentComponent.name is the root
-            # component itself — will be added via root_name prepend below,
+            # component itself -- will be added via root_name prepend below,
             # so leave component_name empty to avoid duplication ("A/A").
             pass
 
@@ -843,8 +843,8 @@ def export_design(design, quality: dict = None, include_hidden: bool = False,
         # ALWAYS build this set, even when include_hidden=True. Reason: Blender
         # always requests include_hidden=True (it imports everything and hides
         # locally), so it still needs hidden_ancestor metadata to collection-hide
-        # the right occurrences. The flat fallback — which handles external
-        # references (xrefs) unreachable via component.occurrences — relies on
+        # the right occurrences. The flat fallback -- which handles external
+        # references (xrefs) unreachable via component.occurrences -- relies on
         # this set for ancestor-hidden detection. Leaving it empty made hidden
         # sub-assemblies inside an xref (e.g. a lightbulb-off FL25CR_030001_ASM
         # under an xref'd MF20-... parent) export as fully visible in Blender.
@@ -855,7 +855,7 @@ def export_design(design, quality: dict = None, include_hidden: bool = False,
         # Normalized form of the authoritative hidden set (version stripped, instance
         # kept), for matching against the recursive walk's accumulated full_path. The
         # recursive walk descends into an xref's INTERNAL definition, whose occurrences
-        # don't carry the parent document's hide override — so the only reliable signal
+        # don't carry the parent document's hide override -- so the only reliable signal
         # there is membership in this set (built from root.allOccurrences, which does).
         hidden_paths_norm = {_normalize_path(p, strip_instance=False) for p in hidden_paths}
 
@@ -1042,7 +1042,7 @@ def export_design(design, quality: dict = None, include_hidden: bool = False,
                     # Hidden iff this occurrence's root-context path is in the
                     # authoritative hidden set. That set is built from
                     # root.allOccurrences, which carries the parent document's hide
-                    # override even for proxies inside an xref — whereas the occ
+                    # override even for proxies inside an xref -- whereas the occ
                     # object we hold here came from the xref's INTERNAL definition
                     # and reports isLightBulbOn/isVisible from the xref's own
                     # (unhidden) state. Matching by normalized path is the only

@@ -16,7 +16,7 @@
 # You should have received a copy of the GNU General Public License along
 # with this program. If not, see <https://www.gnu.org/licenses/>.
 
-# Global singleton state — separated from __init__.py to prevent circular imports.
+# Global singleton state -- separated from __init__.py to prevent circular imports.
 _handler = None
 _client = None
 

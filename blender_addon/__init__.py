@@ -35,7 +35,7 @@ import bpy
 
 # ── Reload submodules on reinstall-without-restart ───────────────────────────
 # Python caches already-imported submodules, so reinstalling the add-on WITHOUT
-# restarting Blender keeps running the OLD code — only __init__ re-runs (which
+# restarting Blender keeps running the OLD code -- only __init__ re-runs (which
 # is why the version updates but the behavior would not). Force-reload our own
 # submodules here so a plain reinstall actually takes effect. Leaf modules
 # first; skipped on the very first load (nothing is cached yet).
@@ -79,7 +79,7 @@ class FTBPreferences(bpy.types.AddonPreferences):
     )
 
     # EU02: connect to the bridge automatically when Blender starts, so the
-    # common same-PC user never has to press Connect — just Sync.
+    # common same-PC user never has to press Connect -- just Sync.
     ftb_auto_connect: bpy.props.BoolProperty(
         name="Auto-connect on startup",
         description=(
@@ -324,7 +324,7 @@ def _try_auto_connect():
     """
     try:
         client = state.get_client()
-        # Already gone, already connected, or already connecting — nothing to do.
+        # Already gone, already connected, or already connecting -- nothing to do.
         if client is None or client.connected or client._should_reconnect:
             return None
         prefs = bpy.context.preferences.addons.get(__package__)

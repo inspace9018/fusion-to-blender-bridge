@@ -107,7 +107,7 @@ class FTB_OT_RequestSync(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        # EU01: Sync is usable even while disconnected — it connects first, then
+        # EU01: Sync is usable even while disconnected -- it connects first, then
         # syncs. Enabled whenever a client exists and a server address is set.
         client = _get_client()
         if client is None:
@@ -141,7 +141,7 @@ class FTB_OT_RequestSync(bpy.types.Operator):
                                   mode=mode_str))
             return {"FINISHED"}
 
-        # EU01: not connected — stash the sync, then connect. The client fires
+        # EU01: not connected -- stash the sync, then connect. The client fires
         # the pending sync automatically the moment the connection is up.
         client.request_sync(quality=quality, include_hidden=True)
         if not client._should_reconnect:
@@ -150,7 +150,7 @@ class FTB_OT_RequestSync(bpy.types.Operator):
             client.connect(server)
             self.report({"INFO"}, t("connecting_then_sync", server=server))
         else:
-            # Already connecting (reconnect countdown) — pending sync will fire.
+            # Already connecting (reconnect countdown) -- pending sync will fire.
             self.report({"INFO"}, t("sync_after_connect"))
         return {"FINISHED"}
 
@@ -611,8 +611,8 @@ class FTB_OT_AutoMarkEdges(bpy.types.Operator):
                                       mark_seam=self.mark_seam, smart_mode=self.smart_mode)
             if n < 0:
                 continue
-            # Remember that the user marked THIS object, so a later sync — which
-            # rebuilds the mesh and wipes the marks — can put them back.
+            # Remember that the user marked THIS object, so a later sync -- which
+            # rebuilds the mesh and wipes the marks -- can put them back.
             obj["ftb_auto_marked"] = 1
             total += n
 
@@ -804,7 +804,7 @@ class FTB_OT_InstallStepSupport(bpy.types.Operator):
                 and get_ocp_install_state()["state"] != "running")
 
     def invoke(self, context, event):
-        # Confirm first — it's a large download and runs in the background.
+        # Confirm first -- it's a large download and runs in the background.
         return context.window_manager.invoke_props_dialog(self, width=380)
 
     def draw(self, context):

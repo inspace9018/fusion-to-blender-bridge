@@ -50,7 +50,7 @@ OP_PING         = 0x9
 OP_PONG         = 0xA
 
 # Idle seconds on a client socket before we probe it with a ping.
-# During a long sync the server only *sends*, so its recv legitimately idles —
+# During a long sync the server only *sends*, so its recv legitimately idles --
 # so on timeout we PING (not drop). A healthy peer pongs and the sync continues;
 # only a failed ping send means the peer is truly gone. This detects dead
 # connections without false-disconnecting a long sync.
@@ -119,7 +119,7 @@ def _read_ws_frame(conn: socket.socket):
         if masked:
             data = bytes(b ^ mask[i % 4] for i, b in enumerate(data))
 
-        # Control frames can appear mid-stream — return immediately
+        # Control frames can appear mid-stream -- return immediately
         if opcode in (OP_PING, OP_PONG, OP_CLOSE):
             return data, opcode
 
@@ -160,7 +160,7 @@ class ClientConnection:
             self.alive = False
 
     def _send_pong(self, payload: bytes):
-        """Respond to ping with pong immediately — essential for keepalive"""
+        """Respond to ping with pong immediately -- essential for keepalive"""
         try:
             frame = _make_ws_frame(payload, opcode=OP_PONG)
             with self._send_lock:
@@ -231,7 +231,7 @@ class ClientConnection:
                 except socket.timeout:
                     # No inbound frame for RECV_IDLE_TIMEOUT. Don't assume death:
                     # during a long sync the recv channel idles while we stream.
-                    # Probe with a ping — only give up if it can't be sent.
+                    # Probe with a ping -- only give up if it can't be sent.
                     if not self._send_ping():
                         break
                     continue
@@ -386,5 +386,5 @@ class FusionBridgeServer:
             return len([c for c in self._clients if c.alive])
 
     def set_sync_callback(self, callback):
-        """callback(client, msg) — msg may contain quality settings"""
+        """callback(client, msg) -- msg may contain quality settings"""
         self._sync_callback = callback

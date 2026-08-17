@@ -227,17 +227,17 @@ Step 5    Fusion에서 모델 수정 → 다시 Sync
 >
 > **One button replaces this entire workflow.**
 
-Edit your model in Fusion, hit **Sync** in Blender — geometry updates, but your Materials, Modifiers, and Light Links stay exactly as they were.
+Edit your model in Fusion, hit **Sync** in Blender. The geometry updates. Your Materials, Modifiers and Light Links stay exactly as they were.
 
 > ### 🎯 To be precise
 >
 > **The materials this protects are the ones YOU built in Blender.**
-> Revise the model in Fusion as often as you like; the shaders, modifiers and light
+> Revise the model in Fusion as often as you like. The shaders, modifiers and light
 > links you set up in Blender stay put. You never rebuild your render setup.
 >
-> **Fusion Appearances are not imported.** This tool moves geometry only — the look is
+> **Fusion Appearances are not imported.** This tool moves geometry only. The look is
 > yours to author in Blender. Painting a body in Fusion and pressing Sync will not
-> bring that colour across. That is by design, not a fault.
+> bring that colour across. That is deliberate, not a fault.
 
 ## Key Features
 
@@ -261,7 +261,7 @@ Edit your model in Fusion, hit **Sync** in Blender — geometry updates, but you
 > | | What it does | |
 > |---|---|:---:|
 > | **Bridge** (this repo) | Fusion ↔ Blender sync and preservation | **Free** |
-> | **Bridge Pro** | **Keeps your UVs alive through CAD edits** — seams and UVs are re-derived from the CAD face structure every sync | In progress |
+> | **Bridge Pro** | **Keeps your UVs alive through CAD edits.** Seams and UVs are re-derived from the CAD face structure every sync | In progress |
 > | **ID Studio for Blender** | Render studio — product cameras, studio lighting, CMF variants, matrix batch render | Beta |
 >
 > ⭐ **Star** the repo to hear about Pro and Studio first.
@@ -291,7 +291,7 @@ Below is the manual method if you prefer to install each add-on separately.
 ### Step 1 — Fusion 360 Add-in (manual)
 
 1. Download `fusion_to_blender_addon_fusion.zip` from [Releases](../../releases) and **extract it**
-2. **Double-click** the installer inside the extracted folder — it copies the add-in to the right place automatically:
+2. **Double-click** the installer inside the extracted folder. It copies the add-in to the right place automatically:
    - **Windows:** `install.bat`
    - **Mac:** `install.command` (if blocked, right-click → Open)
 3. Fusion 360 → **Utilities (or Tools) → Add-Ins → "Scripts and Add-Ins"** → Add-Ins tab → select `fusion_to_blender_addon_fusion` → **Run**
@@ -299,7 +299,7 @@ Below is the manual method if you prefer to install each add-on separately.
 <details>
 <summary>Manual install (if you'd rather not run the script)</summary>
 
-Place the extracted folder here, then do step 3 above. Do NOT drop the ZIP in directly — **extract it first**.
+Place the extracted folder here, then do step 3 above. Do NOT drop the ZIP in directly. **Extract it first.**
 ```
 Windows:  %appdata%\Autodesk\Autodesk Fusion 360\API\AddIns\
 Mac:      ~/Library/Application Support/Autodesk/Autodesk Fusion 360/API/AddIns/
@@ -363,9 +363,9 @@ Step 5    Edit model in Fusion → Sync again
 
 ## Network
 
-**Everything stays on this machine.** Fusion and Blender run on the same PC and the
-bridge only ever connects to `127.0.0.1:9080` — itself. Nothing leaves for the
-internet, nothing can reach in, and there is no address to configure.
+**Everything stays on this machine.** Fusion and Blender run on the same PC, and the
+bridge only ever connects to `127.0.0.1:9080`, which is itself. Nothing leaves for
+the internet, nothing can reach in, and there is no address to configure.
 
 > If security software polices loopback traffic too, allow port 9080.
 
@@ -383,7 +383,7 @@ Click the **Sync** button. Connecting alone does not transfer data.
 <details>
 <summary><b>Can't connect</b></summary>
 
-1. Verify the Fusion 360 Add-in is running — it is almost always this
+1. Verify the Fusion 360 Add-in is running. It is almost always this
 2. Check Fusion and Blender are on the **same PC**
 3. Check security software isn't blocking port 9080
 </details>
@@ -405,9 +405,9 @@ Switch to **High** or **Ultra** preset. Slower, but smoother curves.
 <details>
 <summary><b>Materials disappeared / didn't come across</b></summary>
 
-**A colour you applied in Fusion doesn't show up in Blender** — that is expected. This tool moves geometry only; Fusion Appearances are not imported. Author the material once in Blender and it will survive every later edit.
+**A colour you applied in Fusion doesn't show up in Blender.** That is expected. This tool moves geometry only, and Fusion Appearances are not imported. Author the material once in Blender and it will survive every later edit.
 
-**A material you applied in Blender vanished after a sync** — deleting and recreating a body in Fusion changes its unique ID, so Blender sees it as a new object. Modify bodies instead of deleting them.
+**A material you applied in Blender vanished after a sync.** Deleting and recreating a body in Fusion changes its unique ID, so Blender sees it as a new object. Modify bodies instead of deleting them.
 </details>
 
 ---
@@ -482,7 +482,7 @@ Two suites, split by whether they need Blender:
 ```bash
 python -m pytest
 ```
-Pure helpers from `fusion_addin/exporter.py` — matrix maths and occurrence-path
+Pure helpers from `fusion_addin/exporter.py`: matrix maths and occurrence-path
 handling. Runs anywhere; no Blender, no Fusion.
 
 ```bash
@@ -510,11 +510,11 @@ sync performs. Needs Blender because that logic is `bpy` all the way down.
 **GPL-3.0-or-later** — 자유롭게 쓰고, 고치고, 상업적으로도 사용할 수 있습니다.
 다만 **고친 것을 배포한다면 소스도 같은 GPL로 함께 공개**해야 합니다.
 
-코드가 아닌 것(브랜드명·로고·데모 영상·스토어 리스팅 문구 등)은 GPL 대상이 아닙니다 — [`NOTICE`](NOTICE) 참고.
+코드가 아닌 것(브랜드명·로고·데모 영상·스토어 리스팅 문구 등)은 GPL 대상이 아닙니다. [`NOTICE`](NOTICE)를 참고하세요.
 
 **GPL-3.0-or-later** — free to use, modify, and use commercially. If you distribute a modified
 version, you must release its source under the same license. Non-code assets (brand, demo media,
-listing copy) are not covered — see [`NOTICE`](NOTICE).
+listing copy) are not covered. See [`NOTICE`](NOTICE).
 
 ---
 

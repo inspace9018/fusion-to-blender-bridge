@@ -112,7 +112,7 @@ def get_or_create_collection(component_path: str,
     """Component path -> collection (created if missing). "A/B" -> root > A > B.
 
     root_name is the top-level wrapper (default "Product" for the Fusion
-    bridge). Pass an empty string to place the path directly under the scene —
+    bridge). Pass an empty string to place the path directly under the scene --
     used by direct STEP import so it does NOT create a "Product" collection.
     """
     if root_name:
@@ -443,12 +443,12 @@ def _save_vertex_groups(obj, mesh):
     """Vertex group names + per-vertex weights.
 
     mesh.clear_geometry() destroys the groups themselves, not just the weights
-    (verified), and a modifier bound to one keeps pointing at the now-missing name —
+    (verified), and a modifier bound to one keeps pointing at the now-missing name --
     a Mask modifier silently masks the whole object away. So they have to be saved
     and rebuilt like UVs and colours are.
 
     Returns [(name, {vert_index: weight}), ...] in object order, or [] when there are
-    none — which is the common case, and costs nothing.
+    none -- which is the common case, and costs nothing.
     """
     if obj is None or not obj.vertex_groups:
         return []
@@ -467,7 +467,7 @@ def _apply_vertex_groups(obj, pairs):
     """Rebuild vertex groups from [(name, {vert_index: weight}), ...].
 
     Weights are bucketed by value because VertexGroup.add() takes one weight for a
-    list of indices — a weight-painted mesh has few distinct values, so this is a
+    list of indices -- a weight-painted mesh has few distinct values, so this is a
     handful of calls instead of one per vertex.
     """
     for name, weights in pairs:
@@ -814,7 +814,7 @@ def _restore_material_indices(mesh, saved):
     if n_new_polys == 0:
         return
 
-    # Tier 1: same polygon count — direct copy
+    # Tier 1: same polygon count -- direct copy
     if len(mat_indices) == n_new_polys:
         # Quick check: also verify topology matches (same vert/loop counts)
         old_n_verts = saved.get("n_verts", -1)
@@ -986,7 +986,7 @@ def _restore_mesh_userdata(obj, mesh, saved):
         if len(old_loops) == 1:
             new_to_old_loop[new_li] = old_loops[0]
         else:
-            # Multiple old loops for same vertex (UV seam) — pick best by
+            # Multiple old loops for same vertex (UV seam) -- pick best by
             # checking if neighboring loop vertices also match
             new_pi = int(new_loop_to_poly[new_li])
             new_ps = int(new_poly_starts[new_pi])
@@ -1045,7 +1045,7 @@ def _restore_mesh_userdata(obj, mesh, saved):
     _restore_material_indices(mesh, saved)
 
     # Vertex groups: remap each old vertex's weight onto the new vertex that landed in
-    # the same place. Vertices with no match keep no weight — same rule the UV and
+    # the same place. Vertices with no match keep no weight -- same rule the UV and
     # colour paths use. The group is recreated either way, so a modifier bound to it
     # still resolves even where the geometry moved.
     if has_vgroups:
@@ -1059,7 +1059,7 @@ def _restore_mesh_userdata(obj, mesh, saved):
             remapped.append((name, new_weights))
         _apply_vertex_groups(obj, remapped)
 
-    # Finalize — ensure edge marks & material indices are committed
+    # Finalize -- ensure edge marks & material indices are committed
     mesh.update()
 
     # Note: vertex group weights are stored on Object, not Mesh. They survive
@@ -1421,7 +1421,7 @@ def _maybe_auto_mark_edges(obj):
     operator leaves), or when the Scene toggle asks for every body.
 
     Deliberately does NOT stamp ftb_auto_marked here: stamping from the toggle path
-    would make the toggle irreversible — every body it ever touched would keep
+    would make the toggle irreversible -- every body it ever touched would keep
     re-marking itself after the user turned it back off.
     """
     try:
@@ -1500,7 +1500,7 @@ class SceneHandler:
         return bpy.data.objects.get(name) if name else None
 
     def _doc_ok(self, obj) -> bool:
-        """True if obj may belong to the current sync's document — same doc, or
+        """True if obj may belong to the current sync's document -- same doc, or
         either side unstamped (legacy objects are soft-migrated on first match).
         When this sync carries no doc id, scoping is disabled (old behavior)."""
         if obj is None:
@@ -1878,7 +1878,7 @@ class SceneHandler:
                     to_delete.add(fid)
                 # else: body belongs to a different design/document → keep it
         else:
-            # No design info at all (shouldn't happen) — legacy full-replace
+            # No design info at all (shouldn't happen) -- legacy full-replace
             to_delete = unseen
 
         kept = len(unseen) - len(to_delete)
@@ -1983,8 +1983,8 @@ class SceneHandler:
 
         # Build lookup maps. instance_path is the primary key (unique per
         # occurrence); component is the fallback for legacy objects.
-        # When multiple bodies share the same (name, component) — common when
-        # importing external files whose bodies have identical default names —
+        # When multiple bodies share the same (name, component) -- common when
+        # importing external files whose bodies have identical default names --
         # we store ALL candidate fids so that each old object can claim a
         # distinct new fid without collisions.
         name_inst_to_new_fid: dict[tuple, str] = {}
@@ -2058,8 +2058,8 @@ class SceneHandler:
              objects whose fusion_instance is empty AND whose fusion_component
              matches.
 
-        When multiple candidates share the same (name, component) — common for
-        root-level bodies with identical default names — return the FIRST
+        When multiple candidates share the same (name, component) -- common for
+        root-level bodies with identical default names -- return the FIRST
         unclaimed candidate (exclude_fids filters already-claimed objects).
         This pairs old→new bodies in arrival order, preserving materials and
         edge marks even when entityTokens change.
@@ -2142,7 +2142,7 @@ class SceneHandler:
             self.on_object_add(data)
             return
 
-        # Read the component BEFORE update_mesh_geometry — it stamps
+        # Read the component BEFORE update_mesh_geometry -- it stamps
         # obj["fusion_component"] from this same payload (see _update_mesh_geometry_impl),
         # so asking afterwards always answers "unchanged" and the move below never fires.
         old_component = obj.get("fusion_component", "")

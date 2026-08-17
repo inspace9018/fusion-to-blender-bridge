@@ -29,9 +29,9 @@ _get_client = state.get_client
 
 # Preset value display (for UI reference)
 # Note: Fusion 360 API limitations:
-#   - surfaceTolerance  (surface tolerance) — supported ✓
-#   - normalTolerance   (normal angle)      — supported ✓ (ignored if unsupported in some versions)
-#   - maximumEdgeLength (max edge length)   — not supported by API ✗
+#   - surfaceTolerance  (surface tolerance) -- supported ✓
+#   - normalTolerance   (normal angle)      -- supported ✓ (ignored if unsupported in some versions)
+#   - maximumEdgeLength (max edge length)   -- not supported by API ✗
 PRESET_INFO = {
     "low":    ("0.5 mm", "30°"),
     "medium": ("0.2 mm", "15°"),
@@ -41,7 +41,7 @@ PRESET_INFO = {
 
 
 def _panel_title() -> str:
-    """"Fusion to Blender Lite  v1.0" — the version read, never typed.
+    """"Fusion to Blender Lite  v1.0" -- the version read, never typed.
 
     It was typed, and it drifted: the panel still said v1.4 after the add-on was
     renumbered to 1.0.0, which is the version a user reads first and the one that
@@ -63,7 +63,7 @@ class FTB_PT_MainPanel(bpy.types.Panel):
     bl_category    = "Fusion 360"
 
     def _draw_step_support(self, layout):
-        """The STEP reader's install prompt — only in builds that ship it.
+        """The STEP reader's install prompt -- only in builds that ship it.
 
         `step_import` is left out of the extensions-platform zip (see
         __init__.has_step_support), so this whole section has to disappear
@@ -164,7 +164,7 @@ class FTB_PT_MainPanel(bpy.types.Panel):
             # No address field: the bridge only talks to Fusion on this machine,
             # so there is nothing here for anyone to get right or wrong.
             conn_box.operator("ftb.connect", text="Connect", icon="LINKED")
-            # EU04: first-use hint — with auto-connect/auto-sync this is all it takes.
+            # EU04: first-use hint -- with auto-connect/auto-sync this is all it takes.
             hint = conn_box.column(align=True)
             hint.scale_y = 0.7
             hint.label(text=t("hint_step1"), icon="INFO")
@@ -204,7 +204,7 @@ class FTB_PT_MainPanel(bpy.types.Panel):
             row = custom_col.row(align=True)
             row.prop(scene, "ftb_normal_tol_deg", text="")
 
-            # maximumEdgeLength removed — not supported by Fusion 360 API
+            # maximumEdgeLength removed -- not supported by Fusion 360 API
 
         layout.separator(factor=0.5)
 
@@ -219,7 +219,7 @@ class FTB_PT_MainPanel(bpy.types.Panel):
         # ── Import Options ────────────────────────────────────────────────────
         opt_box = layout.box()
         opt_box.label(text=t("import_options"), icon="IMPORT")
-        # Hidden Body toggle — operator button (immediate hide/show without re-sync)
+        # Hidden Body toggle -- operator button (immediate hide/show without re-sync)
         # Button label/icon changes based on current state.
         is_showing_hidden = getattr(scene, "ftb_show_hidden_bodies", False)
         hide_row = opt_box.row()
@@ -243,7 +243,7 @@ class FTB_PT_MainPanel(bpy.types.Panel):
         sync_row.scale_y = 1.5
         sync_row.operator("ftb.request_sync", text=t("sync"), icon="FILE_REFRESH")
 
-        # ── STEP support (OCP) installer — shown only while relevant (F033) ───
+        # ── STEP support (OCP) installer -- shown only while relevant (F033) ───
         # Absent entirely in the extensions-platform build; see
         # __init__.has_step_support() for why. Nothing below should run then.
         self._draw_step_support(layout)

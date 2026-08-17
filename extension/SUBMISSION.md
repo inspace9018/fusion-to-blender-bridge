@@ -47,27 +47,27 @@ Keep your Blender materials when the CAD model changes
 
 ````markdown
 Model in Fusion 360, press **Sync** in Blender, and the geometry updates while
-everything you built around it stays put — your materials, modifiers, light links,
-and the Sharp / Seam / Crease / Bevel Weight you marked by hand.
+everything you built around it stays put. Your materials, your modifiers, your
+light links, and the Sharp, Seam, Crease and Bevel Weight you marked by hand.
 
-The usual CAD-to-Blender loop is export STEP, import, reapply materials, and do it
-all again at the next revision. This removes the loop. You set up the look once,
-and it survives every change to the part.
+The usual CAD-to-Blender loop is export STEP, import, reapply materials, then do
+it all again at the next revision. This removes the loop. You set up the look
+once and it survives every change to the part.
 
 ## Features
 
 - One-click sync of the entire Fusion model
 - Materials, modifiers and light links you set up in Blender survive every re-sync
-- Hand-marked Sharp / Seam / Crease / Bevel Weight survive too
+- Hand-marked Sharp, Seam, Crease and Bevel Weight survive too
 - Fusion's component hierarchy arrives as Blender collections
-- Four mesh quality presets, from quick layout check to final render
+- Four mesh quality presets, from a quick layout check to a final render
 - Show or hide Fusion-hidden bodies instantly, with no re-sync
 - Custom split normals, so curved CAD surfaces read correctly
-- Interface follows Blender's language (English / Korean)
+- Interface follows Blender's language (English and Korean)
 
 ## Requirements
 
-- **Fusion 360** — this is a bridge; it needs Fusion running on the same computer
+- **Fusion 360.** This is a bridge. It needs Fusion running on the same computer
 - **The free Fusion add-in**, installed once from the project page below
 - Blender 4.2 or newer
 
@@ -78,16 +78,16 @@ and it survives every change to the part.
 3. In Blender: **N-panel → Fusion 360 tab → Sync**
 
 That is the whole setup. The add-on connects to Fusion on this computer
-(127.0.0.1) — it never reaches the internet and stores nothing outside Blender.
+(127.0.0.1). It never reaches the internet and stores nothing outside Blender.
 
 ## What it does not do
 
-**Fusion Appearances are not imported.** This moves geometry; the look is yours to
-author in Blender. That is the point rather than a limitation — a look you build in
-Blender is a look that survives the next twenty CAD revisions, which is not true of
+**Fusion Appearances are not imported.** This moves geometry. The look is yours
+to author in Blender. That is deliberate rather than a limitation: a look you
+build in Blender survives the next twenty CAD revisions, which is not true of
 anything that re-imports materials each time.
 
-**Opening .step / .stp files without Fusion** is not part of this package. That
+**Opening .step and .stp files without Fusion** is not part of this package. It
 needs a CAD kernel far larger than this platform allows, so it lives in the build
 on the project page. The add-on's preferences tell you where to find it.
 
@@ -97,7 +97,7 @@ Full documentation, the Fusion add-in, and the STEP-capable build are all on the
 [project page](https://github.com/inspace9018/fusion-to-blender-bridge).
 
 Found a bug or want a feature? Open an
-[issue](https://github.com/inspace9018/fusion-to-blender-bridge/issues) — it gets
+[issue](https://github.com/inspace9018/fusion-to-blender-bridge/issues). It gets
 read.
 ````
 

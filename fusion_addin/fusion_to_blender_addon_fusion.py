@@ -43,7 +43,7 @@ if _dir not in sys.path:
 
 # Reload our own submodules on reinstall-without-restart. Fusion caches imported
 # modules in sys.modules, so reinstalling the add-in WITHOUT restarting Fusion
-# would keep running the OLD code (the same trap we hit on the Blender side —
+# would keep running the OLD code (the same trap we hit on the Blender side --
 # version bumps show but behaviour doesn't change). Force-reload here.
 import importlib as _importlib
 for _name in ("i18n", "exporter", "server"):
@@ -71,7 +71,7 @@ DEFAULT_PORT           = 9080
 # collide with ours.
 SYNC_EVENT_ID          = "FusionToBlenderBridge_RunSync"
 DEFAULT_INCLUDE_HIDDEN = False
-# Bind loopback only by default (127.0.0.1) — the bridge stays private to this
+# Bind loopback only by default (127.0.0.1) -- the bridge stays private to this
 # PC. Turn on in Settings to accept LAN connections (Fusion on another machine).
 DEFAULT_ALLOW_REMOTE   = False
 DEFAULT_QUALITY        = {"preset": "medium"}
@@ -84,7 +84,7 @@ _CMD_IDS = [
     _NAV_SRV_ON, _NAV_SRV_OFF,
 ]
 
-# Legacy IDs from previous versions (for cleanup — backward compatibility)
+# Legacy IDs from previous versions (for cleanup -- backward compatibility)
 _LEGACY_IDS = [
     "FTB_LiveLink", "FTB_NavLiveOn", "FTB_NavLiveOff",
     "FTB_Push", "FTB_NavPush", "FTB_Diagnostic",
@@ -249,7 +249,7 @@ class FusionBlenderBridgeManager:
             # Stable per-document id so same-named bodies from DIFFERENT files are
             # never merged on the Blender side (F050). Prefer the saved dataFile
             # id (a UUID); fall back to the document name. Empty if neither is
-            # available — in which case Blender degrades to the old behavior.
+            # available -- in which case Blender degrades to the old behavior.
             doc_id = ""
             try:
                 _doc = _app.activeDocument
@@ -266,7 +266,7 @@ class FusionBlenderBridgeManager:
 
             # Hidden-occurrence detection summary, surfaced to the Blender console
             # so we can see (a) whether THIS (new) Fusion add-in is running and
-            # (b) how many occurrences Fusion thinks are hidden — without needing
+            # (b) how many occurrences Fusion thinks are hidden -- without needing
             # the separate Fusion-side log file.
             try:
                 _hidden = _build_hidden_occ_paths(root)
@@ -613,7 +613,7 @@ class _SimpleExecuteHandler(adsk.core.CommandEventHandler):
             self.run()
         except Exception as e:
             # Surface the failure instead of swallowing it into the hidden
-            # console — otherwise a failed action (e.g. Start Server when the
+            # console -- otherwise a failed action (e.g. Start Server when the
             # port is busy) looks like nothing happened. Tell the user why.
             traceback.print_exc()
             try:
@@ -685,7 +685,7 @@ class SettingsHandler(_SimpleCreatedHandler):
                 "include_hidden", ft("include_hidden"), True, "",
                 self.manager.include_hidden
             )
-            # Remote (LAN) access — off by default so the server binds loopback only.
+            # Remote (LAN) access -- off by default so the server binds loopback only.
             remote_input = inputs.addBoolValueInput(
                 "allow_remote", ft("allow_remote"), True, "",
                 self.manager.allow_remote
@@ -734,7 +734,7 @@ class SettingsExecuteHandler(adsk.core.CommandEventHandler):
                 idx = _LANG_ITEMS.index(selected_name) if selected_name in _LANG_ITEMS else 0
                 ft_set_language(_LANG_VALUES[idx])
             # Re-bind immediately if a socket-affecting setting changed while the
-            # server is running, so a new port — or turning remote access OFF —
+            # server is running, so a new port -- or turning remote access OFF --
             # takes effect at once (important: disabling remote should close the
             # LAN exposure immediately, not on the next manual restart).
             if self.manager.server_running and (

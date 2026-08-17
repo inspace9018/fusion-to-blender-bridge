@@ -191,7 +191,7 @@ class FusionBridgeClient:
             print(f"[FusionBridge] Connected to {uri}")
 
             # EU01: fire a Sync that was requested while disconnected, once.
-            # (General auto-sync on connect stays off — only an explicit pending
+            # (General auto-sync on connect stays off -- only an explicit pending
             # request set by pressing Sync triggers this.)
             pending = self._pending_sync
             self._pending_sync = None

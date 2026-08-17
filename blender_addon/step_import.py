@@ -8,7 +8,7 @@ creating duplicates.
 
 Dependencies:
     cadquery-ocp (pip install cadquery-ocp)
-    — or —
+    -- or --
     OCP (pip install OCP)
 """
 
@@ -68,7 +68,7 @@ def _get_occ():
             "TopLoc_Location": TopLoc_Location,
             "TopoDS": TopoDS,
         }
-        # XDE (Extended Data Exchange) for reading shape names — optional
+        # XDE (Extended Data Exchange) for reading shape names -- optional
         try:
             from OCP.STEPCAFControl import STEPCAFControl_Reader
             from OCP.TDocStd import TDocStd_Document
@@ -152,9 +152,9 @@ def _run_pip_install_ocp():
     except Exception:
         pass
     base = [py, "-m", "pip", "install", "--user", "cadquery-ocp"]
-    # Some setups break PyPI's TLS verification — Blender's bundled Python can
+    # Some setups break PyPI's TLS verification -- Blender's bundled Python can
     # ship without a CA bundle, or an SSL-inspecting proxy / VPN / security
-    # suite re-signs the connection — giving "CERTIFICATE_VERIFY_FAILED" and a
+    # suite re-signs the connection -- giving "CERTIFICATE_VERIFY_FAILED" and a
     # bogus "No matching distribution found". Retry against the official PyPI
     # hosts marked trusted so the install still goes through there.
     trusted = ["--trusted-host", "pypi.org",
@@ -255,7 +255,7 @@ def _read_step_xde(filepath: str, occ):
                     if not label.IsAttribute(attr_id):
                         return ""
                 except AttributeError:
-                    # OCP version may not expose IsAttribute — skip the guard
+                    # OCP version may not expose IsAttribute -- skip the guard
                     pass
                 name_attr = TDataStd_Name()
                 if label.FindAttribute(attr_id, name_attr):
@@ -307,7 +307,7 @@ def _read_step_xde(filepath: str, occ):
             has_components = shape_tool.GetComponents_s(label, comp)
 
             if has_components and comp.Size() > 0:
-                # This is an assembly — recurse into components, don't explore here
+                # This is an assembly -- recurse into components, don't explore here
                 for j in range(comp.Size()):
                     ref_label = comp.Value(j + 1)
                     try:
@@ -325,7 +325,7 @@ def _read_step_xde(filepath: str, occ):
                     else:
                         _collect_solids(ref_label, child_loc)
             else:
-                # Simple shape (leaf) — bake the accumulated assembly placement
+                # Simple shape (leaf) -- bake the accumulated assembly placement
                 # onto it, then extract solids.
                 shape_to_use = shape
                 if accum_loc is not None:
@@ -446,7 +446,7 @@ def _tessellate_shape(shape, occ, linear_deflection=0.1, angular_deflection=0.5)
     all_indices = []
     vert_offset = 0
 
-    # Iterate faces — collect positions + winding only (normals computed below).
+    # Iterate faces -- collect positions + winding only (normals computed below).
     explorer = occ["TopExp_Explorer"](shape, occ["TopAbs_FACE"])
     while explorer.More():
         face = occ["TopoDS"].Face_s(explorer.Current())
@@ -469,7 +469,7 @@ def _tessellate_shape(shape, occ, linear_deflection=0.1, angular_deflection=0.5)
             pnt.Transform(trsf)
             all_verts.append([pnt.X(), pnt.Y(), pnt.Z()])
 
-        # Triangles — flip winding for reversed faces (matches STEPper)
+        # Triangles -- flip winding for reversed faces (matches STEPper)
         for i in range(1, n_tris + 1):
             tri = triangulation.Triangle(i)
             n1, n2, n3 = tri.Get()
