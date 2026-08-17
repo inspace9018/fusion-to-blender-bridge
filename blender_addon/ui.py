@@ -40,9 +40,24 @@ PRESET_INFO = {
 }
 
 
+def _panel_title() -> str:
+    """"Fusion 360 Bridge  v1.0" — the version read, never typed.
+
+    It was typed, and it drifted: the panel still said v1.4 after the add-on was
+    renumbered to 1.0.0, which is the version a user reads first and the one that
+    ends up in every screenshot. Reading it from bl_info costs nothing and cannot
+    go stale.
+    """
+    try:
+        from . import bl_info
+        return "Fusion 360 Bridge  v{}.{}".format(*bl_info["version"][:2])
+    except Exception:
+        return "Fusion 360 Bridge"
+
+
 class FTB_PT_MainPanel(bpy.types.Panel):
     bl_idname   = "FTB_PT_main_panel"
-    bl_label    = "Fusion 360 Bridge  v1.4"
+    bl_label    = _panel_title()
     bl_space_type  = "VIEW_3D"
     bl_region_type = "UI"
     bl_category    = "Fusion 360"

@@ -27,85 +27,118 @@ Fusion 360 애드인과 `127.0.0.1:9080` 으로 통신한다. 심사 지침은 �
 
 ---
 
-## 2. 등록 양식에 붙여넣을 것
+## 2. 상세 페이지 — 그대로 붙여넣기
 
-### Tagline (한 줄, 64자 이내)
+등록 폼의 각 칸에 아래를 그대로 넣습니다. 마크다운이 렌더링되며,
+탭(About / What's New / Permissions / Reviews / Version History)은 자동으로 생깁니다.
+Permissions 탭은 매니페스트에서 만들어지고, 우리는 선언한 권한이 없어 비어 있게 됩니다.
+
+### Tagline — 64자 제한
 
 ```
 Keep your Blender materials when the CAD model changes
 ```
 
-### Description
-
-```
-Fusion to Blender Bridge keeps your Blender work alive across CAD revisions.
-
-Model in Fusion 360, press Sync in Blender, and the geometry updates while the
-materials, modifiers, light links and hand-marked Sharp / Seam / Crease / Bevel
-Weight you set up in Blender stay exactly where they were. No STEP export, no
-re-import, no rebuilding your shading every time the part changes.
-
-WHAT IT DOES
-• One-click sync of the whole Fusion model
-• Your Blender materials, modifiers and light links survive every re-sync
-• Hand-marked edges survive too
-• Fusion's component hierarchy becomes Blender collections
-• Four mesh quality presets, from quick layout to final render
-• Show or hide Fusion-hidden bodies instantly, without re-syncing
-• Interface follows Blender's language (English / Korean)
-
-WHAT IT DOES NOT DO
-Fusion Appearances are not imported. This moves geometry; the look is yours to
-author in Blender — which is the whole point, since that look then survives
-every later CAD edit.
-
-HOW IT CONNECTS
-Fusion 360 and Blender run on the same computer. The add-on talks to the Fusion
-add-in over 127.0.0.1 only. It never reaches the internet, reads no files of its
-own, and has no updater — Blender handles updates.
-
-SETUP
-1. Install the free Fusion 360 add-in from the project page (link below)
-2. Run it in Fusion (Utilities → Add-Ins)
-3. In Blender: N-panel → Fusion 360 tab → Sync
-
-Opening .step / .stp files directly, without Fusion, needs a CAD kernel too
-large for this platform's size limit. That version is on the project page.
-
-Requires Fusion 360 (any current version).
-```
-
-### Website
-```
-https://github.com/inspace9018/fusion-to-blender-bridge
-```
-
-### Tags
-`Import-Export`, `Pipeline`  ← 매니페스트와 동일
-
-### License
-`GPL-3.0-or-later` ← 매니페스트와 동일
+<sub>54자. 목록 카드에서 제품명 바로 아래 한 줄로 뜹니다.</sub>
 
 ---
 
-## 3. 사용자님이 하셔야 하는 것
+### About
 
-**계정** — Blender ID 로 extensions.blender.org 로그인.
+````markdown
+Model in Fusion 360, press **Sync** in Blender, and the geometry updates while
+everything you built around it stays put — your materials, modifiers, light links,
+and the Sharp / Seam / Crease / Bevel Weight you marked by hand.
 
-**이미지** — 심사에서 *"Check the overall quality of the images"* 를 봅니다.
-지침이 **무거운 GIF 를 쓰지 말라**고 명시하므로 `docs/demo.gif`(27MB) 는 그대로 쓰면
-안 됩니다. 정지 이미지 3~4장을 권합니다:
+The usual CAD-to-Blender loop is export STEP, import, reapply materials, and do it
+all again at the next revision. This removes the loop. You set up the look once,
+and it survives every change to the part.
 
-1. Blender 뷰포트에 Fusion 모델이 올라온 화면 + 오른쪽 N 패널이 보이게
-2. 재질을 입힌 상태 → Fusion 에서 고친 뒤 Sync → 재질이 그대로인 before/after
-3. 컬렉션 구조(아웃라이너)가 Fusion 컴포넌트 계층과 같은 모습
-4. (선택) 품질 프리셋 비교
+## Features
 
-**제출** — https://extensions.blender.org/submit/ 에 위 zip 업로드.
+- One-click sync of the entire Fusion model
+- Materials, modifiers and light links you set up in Blender survive every re-sync
+- Hand-marked Sharp / Seam / Crease / Bevel Weight survive too
+- Fusion's component hierarchy arrives as Blender collections
+- Four mesh quality presets, from quick layout check to final render
+- Show or hide Fusion-hidden bodies instantly, with no re-sync
+- Custom split normals, so curved CAD surfaces read correctly
+- Interface follows Blender's language (English / Korean)
+
+## Requirements
+
+- **Fusion 360** — this is a bridge; it needs Fusion running on the same computer
+- **The free Fusion add-in**, installed once from the project page below
+- Blender 4.2 or newer
+
+## Setup
+
+1. Download the Fusion add-in from the [project page](https://github.com/inspace9018/fusion-to-blender-bridge/releases/latest) and run the installer
+2. In Fusion: **Utilities → Add-Ins → fusion_to_blender_addon_fusion → Run**
+3. In Blender: **N-panel → Fusion 360 tab → Sync**
+
+That is the whole setup. The add-on connects to Fusion on this computer
+(127.0.0.1) — it never reaches the internet and stores nothing outside Blender.
+
+## What it does not do
+
+**Fusion Appearances are not imported.** This moves geometry; the look is yours to
+author in Blender. That is the point rather than a limitation — a look you build in
+Blender is a look that survives the next twenty CAD revisions, which is not true of
+anything that re-imports materials each time.
+
+**Opening .step / .stp files without Fusion** is not part of this package. That
+needs a CAD kernel far larger than this platform allows, so it lives in the build
+on the project page. The add-on's preferences tell you where to find it.
+
+## Docs & Support
+
+Full documentation, the Fusion add-in, and the STEP-capable build are all on the
+[project page](https://github.com/inspace9018/fusion-to-blender-bridge).
+
+Found a bug or want a feature? Open an
+[issue](https://github.com/inspace9018/fusion-to-blender-bridge/issues) — it gets
+read.
+````
 
 ---
 
-## 4. 승인 후
+### What's New — v1.0.0
 
-버전을 올릴 때는 `blender_addon/__init__.py` 의 `bl_info["version"]` 만 고치면
-`build_extension.py` 가 매니페스트를 맞춰 줍니다. 둘이 어긋날 수 없습니다.
+````markdown
+First public release.
+
+- One-click sync from Fusion 360, with the whole component hierarchy
+- Your Blender materials, modifiers and light links survive every re-sync
+- Hand-marked Sharp / Seam / Crease / Bevel Weight survive too
+- Four mesh quality presets
+- Instant show/hide of bodies hidden in Fusion
+- English / Korean interface
+````
+
+---
+
+### 나머지 칸
+
+| 칸 | 값 |
+|---|---|
+| Website | `https://github.com/inspace9018/fusion-to-blender-bridge` |
+| Tags | `Import-Export`, `Pipeline` (매니페스트와 동일) |
+| License | `GPL-3.0-or-later` (매니페스트와 동일) |
+
+---
+
+## 3. 이 문구가 이렇게 쓰인 이유
+
+**Fusion 애드인이 따로 필요하다는 사실을 Requirements 에 올려 두었다.**
+묻히면 안 되는 정보다. Blender 안에서 설치한 사람이 "아무것도 안 되는데" 로
+끝나면 별 하나짜리 후기가 남는다. 심사자도 자기완결성 항목에서 이걸 본다.
+
+**"하지 않는 일" 을 숨기지 않았다.** Fusion 재질이 안 넘어온다는 사실은 어차피
+5분이면 들킨다. 먼저 말하고, 왜 그게 오히려 이 도구의 요점인지까지 적었다.
+
+**STEP 이 왜 없는지도 적었다.** 그걸 찾으러 온 사람이 "이 도구는 못 하는구나" 로
+끝나지 않도록. 애드온 설정 화면에도 같은 안내가 들어가 있다.
+
+**첫 문단에 기능 나열을 하지 않았다.** 첫 두 문장은 사용자가 겪는 반복 작업과
+그것이 사라진다는 약속이고, 목록은 그 뒤다.
