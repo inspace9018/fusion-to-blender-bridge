@@ -1,6 +1,6 @@
 #!/bin/bash
 # =============================================================================
-#  Fusion to Blender Bridge - macOS Installer
+#  Fusion to Blender Lite - macOS Installer
 # -----------------------------------------------------------------------------
 #  WHAT THIS SCRIPT DOES (plain language):
 #    It sets up the bridge that syncs Fusion 360 models into Blender by copying
@@ -29,6 +29,13 @@ FUSION_ADDINS="$HOME/Library/Application Support/Autodesk/Autodesk Fusion 360/AP
 FUSION_DEST="$FUSION_ADDINS/$FUSION_NAME"
 BLENDER_BASE="$HOME/Library/Application Support/Blender"
 
+# Bridge Pro bundle: the paid download carries a third folder beside the two
+# free ones. Absent in the free bundle, and then every step below skips it.
+PRO_NAME="bridge_pro"
+PRO_SRC="$ROOT/$PRO_NAME"
+HAS_PRO=0
+[ -d "$PRO_SRC" ] && HAS_PRO=1
+
 pause() { [ -n "$MODE" ] && return 0; echo; read -n 1 -s -r -p "  Press any key to continue..."; echo; }
 
 # clean_replace SRC DEST EXPECTED_NAME — remove dest (guarded by name) then copy
@@ -54,7 +61,7 @@ remove_dir() {
 do_install() {
   clear
   echo
-  echo "  Installing Fusion to Blender Bridge..."
+  echo "  Installing Fusion to Blender Lite..."
   echo
   if [ ! -d "$FUSION_SRC" ] || [ ! -d "$BLENDER_SRC" ]; then
     echo "  [!] Missing add-on folder(s) next to this installer."
@@ -72,7 +79,7 @@ do_install() {
     echo "        -> FAILED"; fail=1
   fi
 
-  echo "  [2/2] Blender add-on"
+  if [ "$HAS_PRO" -eq 1 ]; then echo "  [2/3] Blender add-on"; else echo "  [2/2] Blender add-on"; fi
   local count=0
   if [ -d "$BLENDER_BASE" ]; then
     for vdir in "$BLENDER_BASE"/*/; do
@@ -93,6 +100,28 @@ do_install() {
     echo "           pointing at the $BLENDER_NAME folder."
   fi
 
+  if [ "$HAS_PRO" -eq 1 ]; then
+    echo "  [3/3] Bridge Pro"
+    pcount=0
+    if [ -d "$BLENDER_BASE" ]; then
+      for vdir in "$BLENDER_BASE"/*/; do
+        [ -d "$vdir" ] || continue
+        pdest="${vdir}scripts/addons/$PRO_NAME"
+        mkdir -p "${vdir}scripts/addons"
+        if clean_replace "$PRO_SRC" "$pdest" "$PRO_NAME"; then
+          echo "        -> $(basename "$vdir")  OK"; pcount=$((pcount+1))
+        else
+          echo "        -> $(basename "$vdir")  FAILED"; fail=1
+        fi
+      done
+    fi
+    if [ "$pcount" -eq 0 ]; then
+      echo "        -> No Blender user folder found automatically."
+      echo "           Install via Blender: Edit > Preferences > Add-ons >"
+      echo "           Install from Disk, pointing at the $PRO_NAME folder."
+    fi
+  fi
+
   echo
   if [ "$fail" -eq 0 ]; then echo "  [OK] Done."; else
     echo "  [!] Finished with errors. Close Fusion/Blender and run Update/Repair."
@@ -102,7 +131,7 @@ do_install() {
   echo "    - Fusion 360: Utilities (or Tools) > Add-Ins > \"Scripts and Add-Ins\""
   echo "                  > Add-Ins tab > select \"$FUSION_NAME\" > Run"
   echo "    - Blender:    Edit > Preferences > Add-ons > enable"
-  echo "                  \"Fusion to Blender Bridge\" (then restart Blender)"
+  echo "                  \"Fusion to Blender Lite\" (then restart Blender)"
   echo "    - Then in Blender just press Sync. Connection is automatic."
   pause
 }
@@ -115,15 +144,15 @@ do_uninstall() {
   echo "    - $BLENDER_BASE/<version>/scripts/addons/$BLENDER_NAME"
   echo
   if [ -z "$MODE" ]; then
-    read -r -p "  Remove Fusion to Blender Bridge? (y/N): " ok
+    read -r -p "  Remove Fusion to Blender Lite? (y/N): " ok
     case "$ok" in [yY]) ;; *) return;; esac
   fi
 
   echo
-  echo "  [1/2] Fusion 360 add-in"
+  if [ "$HAS_PRO" -eq 1 ]; then echo "  [1/3] Fusion 360 add-in"; else echo "  [1/2] Fusion 360 add-in"; fi
   if remove_dir "$FUSION_DEST" "$FUSION_NAME"; then echo "        -> removed"; else echo "        -> not found"; fi
 
-  echo "  [2/2] Blender add-on"
+  if [ "$HAS_PRO" -eq 1 ]; then echo "  [2/3] Blender add-on"; else echo "  [2/2] Blender add-on"; fi
   local rm=0
   if [ -d "$BLENDER_BASE" ]; then
     for vdir in "$BLENDER_BASE"/*/; do
@@ -134,6 +163,20 @@ do_uninstall() {
     done
   fi
   [ "$rm" -eq 0 ] && echo "        -> none found"
+
+  if [ "$HAS_PRO" -eq 1 ]; then
+    echo "  [3/3] Bridge Pro"
+    prm=0
+    if [ -d "$BLENDER_BASE" ]; then
+      for vdir in "$BLENDER_BASE"/*/; do
+        pdest="${vdir}scripts/addons/$PRO_NAME"
+        if [ -d "$pdest" ] && remove_dir "$pdest" "$PRO_NAME"; then
+          echo "        -> $(basename "$vdir")  removed"; prm=$((prm+1))
+        fi
+      done
+    fi
+    [ "$prm" -eq 0 ] && echo "        -> none found"
+  fi
   echo
   echo "  [OK] Uninstall complete. (Disable it in Blender if still listed.)"
   pause
@@ -148,7 +191,7 @@ while true; do
   clear
   echo
   echo "  ========================================================"
-  echo "    Fusion to Blender Bridge  -  Installer"
+  echo "    Fusion to Blender Lite  -  Installer"
   echo "  ========================================================"
   echo
   echo "    This sets up the bridge that brings your Fusion 360"

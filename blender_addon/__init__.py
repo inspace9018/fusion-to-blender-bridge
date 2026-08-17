@@ -1,14 +1,14 @@
 """
-Fusion to Blender Bridge - Blender Add-on
+Fusion to Blender Lite - Blender Add-on
 All settings, including mesh quality, are managed on the Blender side.
 """
 
-# Fusion to Blender Bridge
+# Fusion to Blender Lite
 # Copyright (C) 2026 inspace
 #
-# This file is part of Fusion to Blender Bridge.
+# This file is part of Fusion to Blender Lite.
 #
-# Fusion to Blender Bridge is free software: you can redistribute it and/or modify it
+# Fusion to Blender Lite is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by the Free
 # Software Foundation, either version 3 of the License, or (at your option)
 # any later version.
@@ -22,7 +22,7 @@ All settings, including mesh quality, are managed on the Blender side.
 # with this program. If not, see <https://www.gnu.org/licenses/>.
 
 bl_info = {
-    "name": "Fusion to Blender Bridge",
+    "name": "Fusion to Blender Lite",
     "description": "Fusion 360 ↔ Blender real-time geometry sync (preserves materials/modifiers/light links)",
     "author": "FusionToBlenderBridge",
     "version": (1, 0, 0),
@@ -69,7 +69,7 @@ class FTBPreferences(bpy.types.AddonPreferences):
 
     ftb_language: bpy.props.EnumProperty(
         name="Language",
-        description="UI language for Fusion to Blender Bridge",
+        description="UI language for Fusion to Blender Lite",
         items=[
             ("auto", "Auto (System)", "Auto-detect from Blender system language"),
             ("en",   "English",       "English"),

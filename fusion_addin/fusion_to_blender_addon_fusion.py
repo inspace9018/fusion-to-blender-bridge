@@ -1,16 +1,16 @@
 """
-Fusion to Blender Bridge - Fusion 360 Add-in entry point
+Fusion to Blender Lite - Fusion 360 Add-in entry point
 Install location: %appdata%\\Autodesk\\Autodesk Fusion 360\\API\\AddIns\\fusion_to_blender_addon_fusion\\
 
 Mesh quality settings are managed on the Blender side. Fusion 360 only acts as a server.
 """
 
-# Fusion to Blender Bridge
+# Fusion to Blender Lite
 # Copyright (C) 2026 inspace
 #
-# This file is part of Fusion to Blender Bridge.
+# This file is part of Fusion to Blender Lite.
 #
-# Fusion to Blender Bridge is free software: you can redistribute it and/or modify it
+# Fusion to Blender Lite is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by the Free
 # Software Foundation, either version 3 of the License, or (at your option)
 # any later version.

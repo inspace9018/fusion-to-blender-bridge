@@ -117,7 +117,7 @@ Mac:      ~/Library/Application Support/Autodesk/Autodesk Fusion 360/API/AddIns/
 
 1. [Releases](../../releases)에서 `fusion_to_blender_addon_blender.zip` 다운로드
 2. Blender → **Edit** → **Preferences** → **Add-ons** → **Install from Disk**
-3. ZIP 파일 선택 → 설치 → **Fusion to Blender Bridge** 활성화
+3. ZIP 파일 선택 → 설치 → **Fusion to Blender Lite** 활성화
 4. 3D Viewport 우측 `N` 키 → **Fusion 360** 탭 확인
 
 ## 사용법
@@ -310,7 +310,7 @@ Mac:      ~/Library/Application Support/Autodesk/Autodesk Fusion 360/API/AddIns/
 
 1. Download `fusion_to_blender_addon_blender.zip` from [Releases](../../releases)
 2. Blender → **Edit** → **Preferences** → **Add-ons** → **Install from Disk**
-3. Select the ZIP → install → enable **Fusion to Blender Bridge**
+3. Select the ZIP → install → enable **Fusion to Blender Lite**
 4. Press `N` in 3D Viewport → find the **Fusion 360** tab
 
 ## Usage

@@ -92,7 +92,7 @@ def main():
     args = ap.parse_args()
 
     version = addon_version()
-    print(f"Fusion to Blender Bridge {version} -- extension build")
+    print(f"Fusion to Blender Lite {version} -- extension build")
     sync_manifest_version(os.path.join(EXT, "blender_manifest.toml"), version)
     stage()
 

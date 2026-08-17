@@ -1,6 +1,6 @@
 @echo off
 REM ============================================================================
-REM  Fusion to Blender Bridge - Windows Installer
+REM  Fusion to Blender Lite - Windows Installer
 REM ----------------------------------------------------------------------------
 REM  WHAT THIS SCRIPT DOES (plain language):
 REM    It sets up the bridge that syncs Fusion 360 models into Blender by
@@ -15,7 +15,7 @@ REM  It reads the two add-on folders that sit next to this script:
 REM      fusion_to_blender_addon_fusion\   and   fusion_to_blender_addon_blender\
 REM ============================================================================
 setlocal enableextensions enabledelayedexpansion
-title Fusion to Blender Bridge - Installer
+title Fusion to Blender Lite - Installer
 color 0F
 
 set "ROOT=%~dp0"
@@ -23,6 +23,15 @@ set "FUSION_NAME=fusion_to_blender_addon_fusion"
 set "BLENDER_NAME=fusion_to_blender_addon_blender"
 set "FUSION_SRC=%ROOT%%FUSION_NAME%"
 set "BLENDER_SRC=%ROOT%%BLENDER_NAME%"
+
+REM Bridge Pro bundle: the same installer serves the paid download, which
+REM carries a third folder next to these two. Absent in the free bundle, and
+REM then everything below simply skips it.
+set "PRO_NAME=bridge_pro"
+set "PRO_SRC=%ROOT%%PRO_NAME%"
+set "HAS_PRO="
+if exist "%PRO_SRC%\" set "HAS_PRO=1"
+if defined HAS_PRO title Bridge Pro - Installer
 
 set "FUSION_ADDINS=%APPDATA%\Autodesk\Autodesk Fusion 360\API\AddIns"
 set "FUSION_DEST=%FUSION_ADDINS%\%FUSION_NAME%"
@@ -41,7 +50,7 @@ if defined MODE goto %MODE%
 cls
 echo.
 echo  ========================================================
-echo    Fusion to Blender Bridge  -  Installer
+echo    Fusion to Blender Lite  -  Installer
 echo  ========================================================
 echo.
 echo    This sets up the bridge that brings your Fusion 360
@@ -79,7 +88,7 @@ REM ----------------------------------------------------------------------------
 :install
 cls
 echo.
-echo   Installing Fusion to Blender Bridge...
+echo   Installing Fusion to Blender Lite...
 echo.
 
 REM --- Sanity: the two source folders must sit next to this script ----------
@@ -95,20 +104,23 @@ if not exist "%BLENDER_SRC%\" (
 )
 
 REM --- Part 1: Fusion 360 add-in -------------------------------------------
-echo   [1/2] Fusion 360 add-in
+if defined HAS_PRO ( echo   [1/3] Fusion 360 add-in ) else ( echo   [1/2] Fusion 360 add-in )
 if not exist "%FUSION_ADDINS%\" mkdir "%FUSION_ADDINS%"
 call :clean_replace "%FUSION_SRC%" "%FUSION_DEST%" "%FUSION_NAME%"
 if errorlevel 1 ( echo        ^-^> FAILED  & set "FAIL=1" ) else ( echo        ^-^> OK  ^(%FUSION_DEST%^) )
 
 REM --- Part 2: Blender add-on (every detected version) ----------------------
-echo   [2/2] Blender add-on
+if defined HAS_PRO ( echo   [2/3] Blender add-on ) else ( echo   [2/2] Blender add-on )
 set "BL_COUNT=0"
 if exist "%BLENDER_BASE%\" (
     for /d %%V in ("%BLENDER_BASE%\*") do (
         set "DEST=%%~fV\scripts\addons\%BLENDER_NAME%"
         if not exist "%%~fV\scripts\addons\" mkdir "%%~fV\scripts\addons"
         call :clean_replace "%BLENDER_SRC%" "!DEST!" "%BLENDER_NAME%"
-        if errorlevel 1 ( echo        ^-^> %%~nxV  FAILED & set "FAIL=1" ) else ( echo        ^-^> %%~nxV  OK & set /a BL_COUNT+=1 )
+        REM Judge by the outcome, not the errorlevel. Inside a for-block the
+        REM errorlevel from a called label is not reliable -- this said FAILED
+        REM on installs that had in fact worked.
+        if exist "!DEST!\__init__.py" ( echo        ^-^> %%~nxV  OK & set /a BL_COUNT+=1 ) else ( echo        ^-^> %%~nxV  FAILED & set "FAIL=1" )
     )
 )
 if "%BL_COUNT%"=="0" (
@@ -116,6 +128,25 @@ if "%BL_COUNT%"=="0" (
     echo           Open Blender once ^(so it creates its folder^), or install the
     echo           add-on via Blender: Edit ^> Preferences ^> Add-ons ^> Install from Disk,
     echo           pointing at the %BLENDER_NAME% folder.
+)
+
+REM --- Part 3: Bridge Pro (paid bundle only) -------------------------------
+if defined HAS_PRO (
+    echo   [3/3] Bridge Pro
+    set "PRO_COUNT=0"
+    if exist "%BLENDER_BASE%\" (
+        for /d %%V in ("%BLENDER_BASE%\*") do (
+            set "PDEST=%%~fV\scripts\addons\%PRO_NAME%"
+            if not exist "%%~fV\scripts\addons\" mkdir "%%~fV\scripts\addons"
+            call :clean_replace "%PRO_SRC%" "!PDEST!" "%PRO_NAME%"
+            if exist "!PDEST!\__init__.py" ( echo        ^-^> %%~nxV  OK & set /a PRO_COUNT+=1 ) else ( echo        ^-^> %%~nxV  FAILED & set "FAIL=1" )
+        )
+    )
+    if "!PRO_COUNT!"=="0" (
+        echo        ^-^> No Blender user folder found automatically.
+        echo           Install via Blender: Edit ^> Preferences ^> Add-ons ^> Install from Disk,
+        echo           pointing at the %PRO_NAME% folder.
+    )
 )
 
 echo.
@@ -129,7 +160,7 @@ echo   NEXT STEPS:
 echo     - Fusion 360:  Utilities ^(or Tools^) ^> Add-Ins ^> "Scripts and Add-Ins"
 echo                    ^> Add-Ins tab ^> select "%FUSION_NAME%" ^> Run
 echo     - Blender:     Edit ^> Preferences ^> Add-ons ^> enable
-echo                    "Fusion to Blender Bridge"  ^(then restart Blender^)
+echo                    "Fusion to Blender Lite"  ^(then restart Blender^)
 echo     - Then in Blender just press Sync. Connection is automatic.
 echo.
 if defined MODE goto end
@@ -145,16 +176,16 @@ echo     - %BLENDER_BASE%\<version>\scripts\addons\%BLENDER_NAME%
 echo.
 if not defined MODE (
     set "OK="
-    set /p "OK=   Remove Fusion to Blender Bridge? (Y/N): "
+    set /p "OK=   Remove Fusion to Blender Lite? (Y/N): "
     if /i not "!OK!"=="Y" goto menu
 )
 
 echo.
-echo   [1/2] Fusion 360 add-in
+if defined HAS_PRO ( echo   [1/3] Fusion 360 add-in ) else ( echo   [1/2] Fusion 360 add-in )
 call :remove_dir "%FUSION_DEST%" "%FUSION_NAME%"
 if errorlevel 1 ( echo        ^-^> not found / nothing to remove ) else ( echo        ^-^> removed )
 
-echo   [2/2] Blender add-on
+if defined HAS_PRO ( echo   [2/3] Blender add-on ) else ( echo   [2/2] Blender add-on )
 set "BL_RM=0"
 if exist "%BLENDER_BASE%\" (
     for /d %%V in ("%BLENDER_BASE%\*") do (
@@ -166,6 +197,21 @@ if exist "%BLENDER_BASE%\" (
     )
 )
 if "%BL_RM%"=="0" echo        ^-^> none found
+
+if defined HAS_PRO (
+    echo   [3/3] Bridge Pro
+    set "PRO_RM=0"
+    if exist "%BLENDER_BASE%\" (
+        for /d %%V in ("%BLENDER_BASE%\*") do (
+            set "PDEST=%%~fV\scripts\addons\%PRO_NAME%"
+            if exist "!PDEST!\" (
+                call :remove_dir "!PDEST!" "%PRO_NAME%"
+                if not errorlevel 1 ( echo        ^-^> %%~nxV  removed & set /a PRO_RM+=1 )
+            )
+        )
+    )
+    if "!PRO_RM!"=="0" echo        ^-^> none found
+)
 echo.
 echo   [OK] Uninstall complete. ^(Disable the add-on in Blender if it is still listed.^)
 echo.

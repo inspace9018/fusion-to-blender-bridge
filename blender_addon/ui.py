@@ -3,12 +3,12 @@ Fusion to Blender - Blender UI Panel
 N-panel > Fusion 360 tab
 """
 
-# Fusion to Blender Bridge
+# Fusion to Blender Lite
 # Copyright (C) 2026 inspace
 #
-# This file is part of Fusion to Blender Bridge.
+# This file is part of Fusion to Blender Lite.
 #
-# Fusion to Blender Bridge is free software: you can redistribute it and/or modify it
+# Fusion to Blender Lite is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by the Free
 # Software Foundation, either version 3 of the License, or (at your option)
 # any later version.
@@ -41,7 +41,7 @@ PRESET_INFO = {
 
 
 def _panel_title() -> str:
-    """"Fusion 360 Bridge  v1.0" — the version read, never typed.
+    """"Fusion to Blender Lite  v1.0" — the version read, never typed.
 
     It was typed, and it drifted: the panel still said v1.4 after the add-on was
     renumbered to 1.0.0, which is the version a user reads first and the one that
@@ -50,9 +50,9 @@ def _panel_title() -> str:
     """
     try:
         from . import bl_info
-        return "Fusion 360 Bridge  v{}.{}".format(*bl_info["version"][:2])
+        return "Fusion to Blender Lite  v{}.{}".format(*bl_info["version"][:2])
     except Exception:
-        return "Fusion 360 Bridge"
+        return "Fusion to Blender Lite"
 
 
 class FTB_PT_MainPanel(bpy.types.Panel):
