@@ -11,6 +11,25 @@ Dependencies:
     — or —
     OCP (pip install OCP)
 """
+
+# Fusion to Blender Bridge
+# Copyright (C) 2026 inspace
+#
+# This file is part of Fusion to Blender Bridge.
+#
+# Fusion to Blender Bridge is free software: you can redistribute it and/or modify it
+# under the terms of the GNU General Public License as published by the Free
+# Software Foundation, either version 3 of the License, or (at your option)
+# any later version.
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+# more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program. If not, see <https://www.gnu.org/licenses/>.
+
 import os
 import sys
 import site
@@ -594,7 +613,6 @@ def _build_mesh_data(vertices, indices, normals):
 def _get_or_create_step_root_empty(step_filename: str, collection):
     """Create/retrieve root Empty inside the STEP file's collection."""
     import bpy
-    import mathutils
 
     empty_name = f"{step_filename}_origin"
     existing = bpy.data.objects.get(empty_name)
@@ -666,7 +684,7 @@ def _step_batch_tick():
 
     import bpy
     from .handler import (update_mesh_geometry, update_transform,
-                          get_or_create_collection, link_object_to_collection)
+                          get_or_create_collection)
 
     try:
         _progress = None
