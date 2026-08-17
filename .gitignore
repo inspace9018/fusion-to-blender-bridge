@@ -28,3 +28,6 @@ Sequence*.gif
 /insights.json
 /usage_budget.json
 /scripts/
+
+# 확장 빌드 산출물
+/build/

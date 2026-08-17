@@ -47,6 +47,46 @@ class FTB_PT_MainPanel(bpy.types.Panel):
     bl_region_type = "UI"
     bl_category    = "Fusion 360"
 
+    def _draw_step_support(self, layout):
+        """The STEP reader's install prompt — only in builds that ship it.
+
+        `step_import` is left out of the extensions-platform zip (see
+        __init__.has_step_support), so this whole section has to disappear
+        without a trace rather than raise on a missing import.
+        """
+        try:
+            from .step_import import is_occ_available, get_ocp_install_state
+        except ImportError:
+            return
+
+        ocp = get_ocp_install_state()
+        ocp_state = ocp["state"]
+        if is_occ_available() and ocp_state not in ("running", "done", "error"):
+            return
+
+        layout.separator(factor=0.4)
+        sbox = layout.box()
+        if ocp_state == "running":
+            sbox.label(text=t("ocp_installing"), icon="SORTTIME")
+            note = sbox.column(align=True); note.scale_y = 0.7
+            note.label(text=t("ocp_running_note"))
+        elif ocp_state == "done":
+            sbox.label(text=t("ocp_done_restart"), icon="CHECKMARK")
+        elif ocp_state == "error":
+            r = sbox.row(); r.alert = True
+            r.label(text=t("ocp_failed"), icon="ERROR")
+            msg = ocp.get("msg", "")
+            if msg:
+                m = sbox.column(align=True); m.scale_y = 0.7
+                m.label(text=msg[:60])
+            sbox.operator("ftb.install_step_support", text=t("ocp_retry"), icon="IMPORT")
+        else:
+            head = sbox.column(align=True); head.scale_y = 0.8
+            head.label(text=t("ocp_hint1"), icon="INFO")
+            head.label(text=t("ocp_hint2"))
+            sbox.operator("ftb.install_step_support",
+                          text=t("ocp_install_btn"), icon="IMPORT")
+
     def draw(self, context):
         layout = self.layout
         scene  = context.scene
@@ -189,32 +229,9 @@ class FTB_PT_MainPanel(bpy.types.Panel):
         sync_row.operator("ftb.request_sync", text=t("sync"), icon="FILE_REFRESH")
 
         # ── STEP support (OCP) installer — shown only while relevant (F033) ───
-        from .step_import import is_occ_available, get_ocp_install_state
-        ocp = get_ocp_install_state()
-        ocp_state = ocp["state"]
-        if (not is_occ_available()) or ocp_state in ("running", "done", "error"):
-            layout.separator(factor=0.4)
-            sbox = layout.box()
-            if ocp_state == "running":
-                sbox.label(text=t("ocp_installing"), icon="SORTTIME")
-                note = sbox.column(align=True); note.scale_y = 0.7
-                note.label(text=t("ocp_running_note"))
-            elif ocp_state == "done":
-                sbox.label(text=t("ocp_done_restart"), icon="CHECKMARK")
-            elif ocp_state == "error":
-                r = sbox.row(); r.alert = True
-                r.label(text=t("ocp_failed"), icon="ERROR")
-                msg = ocp.get("msg", "")
-                if msg:
-                    m = sbox.column(align=True); m.scale_y = 0.7
-                    m.label(text=msg[:60])
-                sbox.operator("ftb.install_step_support", text=t("ocp_retry"), icon="IMPORT")
-            else:
-                head = sbox.column(align=True); head.scale_y = 0.8
-                head.label(text=t("ocp_hint1"), icon="INFO")
-                head.label(text=t("ocp_hint2"))
-                sbox.operator("ftb.install_step_support",
-                              text=t("ocp_install_btn"), icon="IMPORT")
+        # Absent entirely in the extensions-platform build; see
+        # __init__.has_step_support() for why. Nothing below should run then.
+        self._draw_step_support(layout)
 
         # ── Language selector ────────────────────────────────────────────────
         layout.separator(factor=0.5)

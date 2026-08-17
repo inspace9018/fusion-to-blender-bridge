@@ -1,0 +1,37 @@
+schema_version = "1.0.0"
+
+id = "fusion_to_blender_bridge"
+version = "1.0.0"
+name = "Fusion to Blender Bridge"
+tagline = "Keep your Blender materials when the CAD model changes"
+maintainer = "inspace <inspace9018@gmail.com>"
+
+type = "add-on"
+tags = ["Import-Export", "Pipeline"]
+
+blender_version_min = "4.2.0"
+
+license = ["SPDX:GPL-3.0-or-later"]
+copyright = ["2026 inspace"]
+
+website = "https://github.com/inspace9018/fusion-to-blender-bridge"
+
+# No permissions are declared, and that is deliberate.
+#
+# The add-on opens one TCP connection, to 127.0.0.1:9080 -- the Fusion 360
+# add-in running on the same computer. It never reaches the internet, never
+# reads or writes files of its own, and has no updater (this platform handles
+# updates). The moderation guidelines allow exactly this: extensions "should not
+# depend on external servers (localhost is fine)".
+#
+# The STEP file reader that the GitHub build carries is NOT in this package. It
+# needs a CAD kernel whose wheels come to ~150 MB per platform and bring a second
+# numpy alongside Blender's own; both the size limit and the numpy clash rule it
+# out here. Anyone wanting it can take the full build from the website above.
+
+[build]
+paths_exclude_pattern = [
+  "__pycache__/",
+  "/.git/",
+  "*.zip",
+]

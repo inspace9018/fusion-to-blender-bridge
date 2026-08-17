@@ -48,6 +48,8 @@ import sys as _sys
 for _name in ("state", "i18n", "progress", "lighting_presets",
               "step_import", "handler", "client",
               "operators", "ui"):
+    # step_import is absent from the extensions-platform build; _sys.modules
+    # simply has no entry for it and the loop skips it.
     _mod = _sys.modules.get(f"{__package__}.{_name}")
     if _mod is not None:
         try:
@@ -272,6 +274,24 @@ def _unregister_properties():
             pass
 
 
+def has_step_support() -> bool:
+    """Is the STEP reader part of this build?
+
+    It is not, in the build published to Blender's extensions platform. Reading a
+    STEP file needs a CAD kernel, and that kernel drags in ~150 MB of wheels
+    (OpenCascade, and VTK, which OpenCascade's loader insists on even though
+    nothing here calls it) plus a second copy of numpy alongside Blender's own.
+    The platform's limit is 100 MB and the numpy clash is worse than the size.
+
+    So `step_import.py` is simply absent from that zip, and everything STEP hides
+    itself. Anyone who wants it downloads the full build from GitHub. Nobody
+    finding this add-on inside Blender is short of a way to get CAD in -- they
+    have Fusion, which is the entire point of the bridge.
+    """
+    import importlib.util
+    return importlib.util.find_spec(f"{__package__}.step_import") is not None
+
+
 def _step_import_menu(self, context):
     """Add STEP import to File > Import menu."""
     self.layout.operator("ftb.import_step", text="STEP via Fusion Bridge (.step/.stp)")
@@ -322,7 +342,8 @@ def register():
     progress.register()
 
     # Register in File > Import menu
-    bpy.types.TOPBAR_MT_file_import.append(_step_import_menu)
+    if has_step_support():
+        bpy.types.TOPBAR_MT_file_import.append(_step_import_menu)
 
     # EU02: auto-connect shortly after startup (deferred so context is ready).
     try:
@@ -344,7 +365,10 @@ def unregister():
         pass
 
     # Remove from File > Import menu
-    bpy.types.TOPBAR_MT_file_import.remove(_step_import_menu)
+    try:
+        bpy.types.TOPBAR_MT_file_import.remove(_step_import_menu)
+    except Exception:
+        pass          # never added (build without STEP)
 
     progress.unregister()
 

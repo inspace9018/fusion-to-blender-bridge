@@ -908,13 +908,29 @@ class FTB_OT_ImportStep(bpy.types.Operator, ImportHelper):
             box.label(text=t("step_occ_missing_short"), icon="ERROR")
 
 
+# The three STEP operators only exist where the STEP reader ships. Registering
+# them in the extensions-platform build would leave buttons that raise
+# ImportError the moment their poll() or draw() ran -- a dead control is worse
+# than an absent one.
+_STEP_CLASSES = [
+    FTB_OT_ImportStepConfirm,
+    FTB_OT_InstallStepSupport,
+    FTB_OT_ImportStep,
+]
+
+
+def _step_classes():
+    import importlib.util
+    if importlib.util.find_spec(f"{__package__}.step_import") is None:
+        return []
+    return _STEP_CLASSES
+
+
 OPERATOR_CLASSES = [
     FTB_OT_Connect,
     FTB_OT_Disconnect,
     FTB_OT_RequestSync,
-    FTB_OT_ImportStepConfirm,
-    FTB_OT_InstallStepSupport,
-    FTB_OT_ImportStep,
+    *_step_classes(),
     FTB_OT_ClearAll,
     FTB_OT_SelectFusionObjects,
     FTB_OT_ToggleHiddenBodies,
