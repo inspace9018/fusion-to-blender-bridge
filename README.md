@@ -446,6 +446,23 @@ fusion-to-blender-bridge/
 - **Protocol** — WebSocket + zlib-compressed JSON with Base64 binary mesh data
 - **Compression** — server-side zlib level 1 for low-latency streaming
 
+### Tests
+
+Two suites, split by whether they need Blender:
+
+```bash
+python -m pytest
+```
+Pure helpers from `fusion_addin/exporter.py` — matrix maths and occurrence-path
+handling. Runs anywhere; no Blender, no Fusion.
+
+```bash
+blender --background --factory-startup --python tests/test_preservation_blender.py
+```
+The re-sync promise: hand-marked Sharp / Seam / Bevel Weight, materials and their
+per-face assignment, UVs and modifiers all survive the `clear_geometry()` that a
+sync performs. Needs Blender because that logic is `bpy` all the way down.
+
 ---
 
 ## Support This Project
