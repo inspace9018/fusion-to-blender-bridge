@@ -38,6 +38,16 @@ _STRINGS = {
     "hint_step2":           {"ko": "2) 아래 Sync 누르기 (연결은 자동)",
                              "en": "2) Press Sync below (connects automatically)"},
     # ── Connection failure hints (EU05) ───────────────────────────────────────
+    # ── Preferences: where the STEP reader lives ─────────────────────────────
+    "pref_step_title":      {"ko": "STEP 파일을 직접 열고 싶으신가요?",
+                             "en": "Want to open .step files directly?"},
+    "pref_step_body":       {"ko": "이 버전에는 STEP 리더가 들어 있지 않습니다.\n"
+                                   "GitHub 배포판을 받으시면 Fusion 없이도 .step / .stp 를 바로 엽니다.\n"
+                                   "(CAD 엔진이 커서 확장 저장소의 용량 제한을 넘습니다)",
+                             "en": "This build does not include the STEP reader.\n"
+                                   "The GitHub download opens .step / .stp without Fusion.\n"
+                                   "(Its CAD engine exceeds the platform size limit)"},
+    "pref_step_btn":        {"ko": "GitHub 에서 받기",  "en": "Get it on GitHub"},
     "err_refused":          {"ko": "Fusion 애드인이 실행 중인지 확인하세요 (Run)",
                              "en": "Check the Fusion add-in is running (Run)"},
     "err_timeout":          {"ko": "Fusion 애드인이 응답하지 않습니다 — Fusion에서 Run 상태인지, 포트 9080이 막혀 있지 않은지 확인하세요",

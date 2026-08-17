@@ -83,18 +83,37 @@ class FTBPreferences(bpy.types.AddonPreferences):
     ftb_auto_connect: bpy.props.BoolProperty(
         name="Auto-connect on startup",
         description=(
-            "Automatically connect to the Fusion bridge when Blender starts,\n"
-            "so you can just press Sync. Uses the saved server address\n"
-            "(default localhost:9080). Turn off if Fusion runs on another PC\n"
-            "and you don't want the localhost retry."
+            "Connect to the Fusion bridge when Blender starts, so you can go\n"
+            "straight to Sync. Fusion runs on this same computer, so this only\n"
+            "ever talks to 127.0.0.1 — it never reaches the internet."
         ),
         default=True,
     )
 
     def draw(self, context):
+        from .i18n import t as _t
         layout = self.layout
         layout.prop(self, "ftb_language")
         layout.prop(self, "ftb_auto_connect")
+
+        # Only in the build without the STEP reader, i.e. the one from Blender's
+        # extensions platform. Someone who came looking for "open a .step file"
+        # deserves to be told where it lives instead of concluding it does not
+        # exist. The build that has it needs no notice.
+        if has_step_support():
+            return
+
+        layout.separator()
+        box = layout.box()
+        col = box.column(align=True)
+        col.label(text=_t("pref_step_title"), icon="INFO")
+        note = box.column(align=True)
+        note.scale_y = 0.8
+        for line in _t("pref_step_body").split("\n"):
+            note.label(text=line)
+        box.operator("wm.url_open", text=_t("pref_step_btn"), icon="URL").url = (
+            "https://github.com/inspace9018/fusion-to-blender-bridge/releases/latest"
+        )
 
 
 # Fusion runs on this machine, so the bridge only ever talks to this machine.
