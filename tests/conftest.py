@@ -12,3 +12,14 @@ _ROOT = os.path.dirname(os.path.abspath(__file__))
 _PROJECT = os.path.dirname(_ROOT)
 
 sys.path.insert(0, os.path.join(_PROJECT, "fusion_addin"))
+
+# Files that must run INSIDE Blender, not under pytest. They are named test_*.py
+# so they read like tests and are easy to find, which also means pytest tries to
+# collect them and dies importing `bpy`. Launch them with:
+#
+#   blender --background --factory-startup --python tests/<name>.py
+#
+# Keep this list in step with the README's Tests section.
+collect_ignore = [
+    "test_preservation_blender.py",
+]
