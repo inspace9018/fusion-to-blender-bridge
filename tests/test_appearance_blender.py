@@ -161,6 +161,73 @@ except Exception:
     chk("section 6", False, "raised")
 
 
+# ── 7. A Fusion material the user has since tuned ────────────────────────────
+# Ours by origin, theirs by now. Fusion recolouring the body must move the LINK
+# and never rewrite what they adjusted.
+say("\n=== 7. we made it, then the user tuned it ===")
+try:
+    wipe()
+    obj = cube()
+    handler._apply_appearance(obj, RED)
+    ours = obj.data.materials[0]
+    handler._principled(ours).inputs["Roughness"].default_value = 0.9   # their call
+
+    handler._apply_appearance(obj, RED)
+    chk("their roughness is not reverted",
+        abs(handler._principled(ours).inputs["Roughness"].default_value - 0.9) < 1e-6,
+        handler._principled(ours).inputs["Roughness"].default_value)
+    chk("their colour is not reverted either",
+        base_color(ours)[:3] == [1.0, 0.0, 0.0])
+
+    handler._apply_appearance(obj, BLUE)
+    chk("a new appearance moves the link",
+        obj.data.materials[0].name == "Paint - Blue", obj.data.materials[0].name)
+    chk("their tuned material survives untouched",
+        abs(handler._principled(ours).inputs["Roughness"].default_value - 0.9) < 1e-6)
+except Exception:
+    traceback.print_exc()
+    chk("section 7", False, "raised")
+
+
+# ── 8. A texture wired in counts as a modification ───────────────────────────
+# Wiring a node leaves default_value alone, so comparing values alone would call
+# this material untouched and overwrite the colour they plugged in.
+say("\n=== 8. a texture wired into the colour ===")
+try:
+    wipe()
+    obj = cube()
+    handler._apply_appearance(obj, RED)
+    mat = obj.data.materials[0]
+    tex = mat.node_tree.nodes.new("ShaderNodeTexChecker")
+    mat.node_tree.links.new(tex.outputs["Color"],
+                            handler._principled(mat).inputs["Base Color"])
+
+    handler._apply_appearance(obj, BLUE)
+    chk("the texture link is still there",
+        handler._principled(mat).inputs["Base Color"].is_linked)
+    chk("the object moved to the new appearance instead",
+        obj.data.materials[0] is not mat, obj.data.materials[0].name)
+except Exception:
+    traceback.print_exc()
+    chk("section 8", False, "raised")
+
+
+# ── 9. An untouched Fusion material still updates ────────────────────────────
+# The rule must not become "never update anything".
+say("\n=== 9. an untouched one still takes the recolour ===")
+try:
+    wipe()
+    obj = cube()
+    handler._apply_appearance(obj, {"name": "Anodised", "color": [1.0, 0.0, 0.0, 1.0]})
+    mat = obj.data.materials[0]
+    handler._apply_appearance(obj, {"name": "Anodised", "color": [0.0, 1.0, 0.0, 1.0]})
+    chk("same material object", obj.data.materials[0] is mat)
+    chk("recoloured in place", base_color(mat)[:3] == [0.0, 1.0, 0.0], base_color(mat))
+except Exception:
+    traceback.print_exc()
+    chk("section 9", False, "raised")
+
+
 failed = [l for l, ok in _results if not ok]
 say(f"\n{len(_results) - len(failed)} passed, {len(failed)} failed")
 for l in failed:

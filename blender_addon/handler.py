@@ -1450,9 +1450,56 @@ def _maybe_auto_mark_edges(obj):
 # break that -- so it fills in what is empty and stops there.
 FTB_MATERIAL_MARK = "ftb_fusion_appearance"
 
+# What we last wrote into the material. Compared against what is there now to
+# tell "we made this and nobody has touched it" from "we made this and the user
+# has since tuned it" -- two cases that must be handled differently, because a
+# material someone has adjusted is their work now even though we created it.
+FTB_MATERIAL_STAMP = "ftb_fusion_stamp"
+
 
 def _owned_by_us(mat) -> bool:
     return bool(mat) and mat.get(FTB_MATERIAL_MARK) is not None
+
+
+def _material_stamp(mat):
+    """A fingerprint of the parts of the material we set.
+
+    Node and link counts are in it on purpose: wiring a texture into Base Color
+    leaves the default_value untouched, so values alone would call that material
+    unmodified and quietly overwrite the colour the user wired up.
+    """
+    node = _principled(mat)
+    if node is None:
+        return None
+
+    def value_of(socket_name):
+        try:
+            value = node.inputs[socket_name].default_value
+        except Exception:
+            return []
+        try:
+            return [round(float(v), 5) for v in value]
+        except TypeError:
+            return [round(float(value), 5)]
+
+    return (value_of("Base Color") + value_of("Roughness") + value_of("Metallic")
+            + [len(mat.node_tree.nodes), len(mat.node_tree.links)])
+
+
+def _user_modified(mat) -> bool:
+    """True when this material is no longer exactly as we left it.
+
+    Unknown counts as modified. A material we cannot verify is one we must not
+    revert -- being wrong in that direction costs the user a re-sync, being wrong
+    in the other costs them their work.
+    """
+    stored = mat.get(FTB_MATERIAL_STAMP)
+    if stored is None:
+        return True
+    try:
+        return [round(float(v), 5) for v in stored] != _material_stamp(mat)
+    except Exception:
+        return True
 
 
 def _principled(mat):
@@ -1500,6 +1547,9 @@ def _write_appearance_into(mat, appearance: dict):
                 node.inputs[socket].default_value = float(appearance[key])
             except Exception:
                 pass
+    stamp = _material_stamp(mat)
+    if stamp is not None:
+        mat[FTB_MATERIAL_STAMP] = stamp
 
 
 def _material_for_appearance(appearance: dict):
@@ -1518,6 +1568,13 @@ def _material_for_appearance(appearance: dict):
         existing = bpy.data.materials.get(name)
         if existing is not None and not _owned_by_us(existing):
             return None
+    if existing is not None and _user_modified(existing):
+        # Ours by origin, theirs by now. Fusion may have recoloured the body, but
+        # reverting a roughness someone deliberately tuned -- or unplugging the
+        # texture they wired in -- is not a colour update, it is losing their
+        # work. The object still gets pointed at the right material; what that
+        # material looks like is no longer ours to decide.
+        return existing
     mat = existing or bpy.data.materials.new(name)
     _write_appearance_into(mat, appearance)
     return mat
@@ -1526,10 +1583,13 @@ def _material_for_appearance(appearance: dict):
 def _apply_appearance(obj, appearance):
     """Give the object its Fusion appearance, but never over the user's own work.
 
-    Three cases, and only the first two do anything:
-      * no material at all      -> assign
-      * only a material we made -> replace it, so a recolour in Fusion lands
-      * anything the user made  -> leave it completely alone
+    Four cases:
+      * no material at all              -> assign
+      * a material we made, untouched   -> update it, so a recolour lands
+      * a material we made, since edited -> keep their version; only the link
+                                            moves if Fusion now names a
+                                            different appearance
+      * anything the user made          -> leave it completely alone
     """
     if not appearance or not isinstance(appearance, dict):
         return
