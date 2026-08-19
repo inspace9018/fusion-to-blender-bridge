@@ -108,7 +108,20 @@ class FusionBridgeClient:
 
         def run_loop():
             asyncio.set_event_loop(self._loop)
-            self._loop.run_until_complete(self._reconnect_loop(f"ws://{server}"))
+            try:
+                self._loop.run_until_complete(self._reconnect_loop(f"ws://{server}"))
+            except RuntimeError:
+                # disconnect() stops this loop deliberately, and run_until_complete
+                # reports that as "Event loop stopped before Future completed".
+                # It is the shutdown working. Left alone, Python prints the whole
+                # traceback into the console -- the same console a user is told to
+                # read when something has actually gone wrong, where a fake crash
+                # on every disconnect makes the real ones harder to spot.
+                #
+                # Only silent when we asked to stop. A RuntimeError while we still
+                # intend to reconnect is news, and stays loud.
+                if self._should_reconnect:
+                    raise
 
         self._thread = threading.Thread(target=run_loop, daemon=True, name="FusionBridgeWS")
         self._thread.start()
