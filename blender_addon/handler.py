@@ -1583,7 +1583,7 @@ def _material_for_appearance(appearance: dict):
 # Tally for the per-sync report. A body arriving with no appearance and a body
 # whose appearance we declined to apply look identical in the viewport -- both
 # stay the colour they were -- so the difference has to be said out loud.
-_appearance_tally = {"with": 0, "without": 0, "kept_user": 0}
+_appearance_tally = {"with": 0, "without": 0, "kept_user": 0, "name_only": 0}
 
 
 def reset_appearance_tally():
@@ -1597,6 +1597,10 @@ def appearance_summary() -> str:
         return ""
     parts = [f"{t['with']} carried a Fusion appearance",
              f"{t['without']} carried none"]
+    if t["name_only"]:
+        # A name with no colour still makes a material, and that material is
+        # default grey -- which looks exactly like nothing having happened.
+        parts.append(f"{t['name_only']} had a name but NO COLOUR")
     if t["kept_user"]:
         parts.append(f"{t['kept_user']} kept the material you set")
     return "[FusionBridge] appearances: " + ", ".join(parts)
@@ -1617,6 +1621,8 @@ def _apply_appearance(obj, appearance):
         _appearance_tally["without"] += 1
         return
     _appearance_tally["with"] += 1
+    if "color" not in appearance:
+        _appearance_tally["name_only"] += 1
     try:
         slots = [s.material for s in obj.material_slots]
         if slots and not all(_owned_by_us(m) for m in slots if m is not None):

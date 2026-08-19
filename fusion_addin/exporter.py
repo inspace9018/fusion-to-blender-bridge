@@ -577,6 +577,10 @@ _APPEARANCE_BUDGET_S = 3.0
 _appearance_cache = {}
 _appearance_spent = [0.0]
 
+# Property names from the most recent scan, kept so the first appearance of a
+# sync can be reported without walking its properties a second time.
+_last_property_names = []
+
 
 def reset_appearance_budget():
     """Called at the start of each export so the budget is per sync, not forever."""
@@ -630,13 +634,20 @@ def _scan_properties(appearance) -> dict:
     happens to list first.
     """
     found = {}
+    seen_names = []
     best_color_rank = None
     try:
         props = appearance.appearanceProperties
     except Exception:
+        _last_property_names[:] = []
         return found
 
     for prop in props:
+        if len(seen_names) < 40:
+            try:
+                seen_names.append(f"{getattr(prop, 'id', '?')}|{getattr(prop, 'name', '?')}")
+            except Exception:
+                pass
         try:
             value = prop.value
         except Exception:
@@ -667,6 +678,7 @@ def _scan_properties(appearance) -> dict:
             if key not in found and _prop_matches(prop, keywords):
                 found[key] = float(value)
                 break
+    _last_property_names[:] = seen_names
     return found
 
 
@@ -713,11 +725,27 @@ def _appearance_cached(appearance) -> dict | None:
         return _appearance_cache[key]
     if _appearance_spent[0] >= _APPEARANCE_BUDGET_S:
         return None
+    first = not _appearance_cache
     started = time.time()
     try:
         got = _appearance_to_dict(appearance)
     except Exception:
         got = None
+
+    if first:
+        # The first appearance of each sync gets its property list written out,
+        # from the names collected during the walk above -- no second pass.
+        # Autodesk appearances name their properties differently per definition
+        # family and no keyword list covers all of them, so when a design arrives
+        # with names but no colour this is the only way to see WHICH property
+        # held the colour we failed to recognise.
+        try:
+            _log(f"[APPEARANCE] first of this sync: "
+                 f"'{getattr(appearance, 'name', '?')}' -> {got}")
+            _log(f"[APPEARANCE] its properties (id|name): "
+                 f"{', '.join(_last_property_names) or '(none)'}")
+        except Exception:
+            traceback.print_exc()
     _appearance_spent[0] += time.time() - started
     if key is not None:
         _appearance_cache[key] = got
