@@ -22,4 +22,5 @@ sys.path.insert(0, os.path.join(_PROJECT, "fusion_addin"))
 # Keep this list in step with the README's Tests section.
 collect_ignore = [
     "test_preservation_blender.py",
+    "test_joint_sides_blender.py",
 ]

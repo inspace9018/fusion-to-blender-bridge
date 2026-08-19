@@ -2292,14 +2292,36 @@ class SceneHandler:
         print(f"[FusionBridge] Joint processing complete ({len(empties_by_joint_id)}/{len(joints)} Empties built)")
         self._tag_redraw()
 
-    def _link_joints_to_bodies(self, joints: list, empties_by_joint_id: dict):
-        """Re-parent occ_two's bodies (and chained joints) onto each joint Empty,
-        and move each joint Empty into the mover's own component collection.
+    @staticmethod
+    def _joint_sides(jdata: dict):
+        """(mover, ground) for one joint -- which side the Empty should drive.
 
-        occ_two is the occurrence that moves relative to occ_one (Fusion's own
-        convention), so parenting it to the joint Empty makes the Empty's
-        rotation/slider constraints actually drive that part. When occ_one is
-        itself the occ_two of another joint, this joint's Empty is chained
+        Fusion's convention is that occurrenceOne moves relative to occurrenceTwo:
+        in the UI the first component you pick is the one that snaps onto the
+        second. This code had them the other way round, so a hinge between a
+        sub-component and its parent drove the PARENT. In a real assembly that
+        meant a joint whose mover is one body inside Component2 moved 9 bodies --
+        the whole of Component1, Component2 included.
+
+        The guard covers the case that reversal makes obvious. If the mover's
+        path is a prefix of the ground's, the mover CONTAINS the thing it is
+        supposed to pivot against, so moving it moves its own reference. That
+        cannot be right whichever way the sides were labelled, so swap.
+        """
+        mover = jdata.get("occ_one", "")
+        ground = jdata.get("occ_two", "")
+        if mover and ground and ground.startswith(mover + "/"):
+            mover, ground = ground, mover
+        return mover, ground
+
+    def _link_joints_to_bodies(self, joints: list, empties_by_joint_id: dict):
+        """Re-parent the moving side's bodies (and chained joints) onto each joint
+        Empty, and move each joint Empty into the mover's own component collection.
+
+        The mover is the occurrence that moves relative to the other (see
+        _joint_sides), so parenting it to the joint Empty makes the Empty's
+        rotation/slider constraints actually drive that part. When this joint's
+        ground is itself another joint's mover, this joint's Empty is chained
         under that joint's Empty instead of staying world-parented, so motion
         propagates down a kinematic chain (e.g. base -> arm -> gripper).
 
@@ -2309,10 +2331,10 @@ class SceneHandler:
         """
         carrier_by_occ = {}
         for jdata in joints:
-            occ_two = jdata.get("occ_two", "")
+            mover, _ground = self._joint_sides(jdata)
             jid = jdata.get("joint_id", "")
-            if occ_two and jid in empties_by_joint_id:
-                carrier_by_occ[occ_two] = jid
+            if mover and jid in empties_by_joint_id:
+                carrier_by_occ[mover] = jid
 
         intended_parent = {}       # obj -> joint Empty
         movers_by_joint = {}       # joint_id -> [obj, ...] (for collection placement)
@@ -2323,17 +2345,16 @@ class SceneHandler:
             if empty is None:
                 continue
 
-            occ_one = jdata.get("occ_one", "")
-            parent_jid = carrier_by_occ.get(occ_one)
+            mover, ground = self._joint_sides(jdata)
+            parent_jid = carrier_by_occ.get(ground)
             if parent_jid and parent_jid != jid:
                 parent_empty = empties_by_joint_id.get(parent_jid)
                 if parent_empty is not None and parent_empty is not empty:
                     self._reparent_keep_transform(empty, parent_empty)
 
-            occ_two = jdata.get("occ_two", "")
-            if not occ_two:
+            if not mover:
                 continue
-            prefix = occ_two + "/"
+            prefix = mover + "/"
             movers = []
             for obj in bpy.data.objects:
                 if obj is empty or obj.get("ftb_joint_id"):
@@ -2341,11 +2362,12 @@ class SceneHandler:
                 if not self._doc_ok(obj):
                     continue
                 inst = obj.get("fusion_instance", "")
-                if inst == occ_two or inst.startswith(prefix):
+                if inst == mover or inst.startswith(prefix):
                     movers.append(obj)
                     intended_parent[obj] = empty
             movers_by_joint[jid] = movers
-            print(f"[FusionBridge] [JOINT] '{jdata.get('name', '')}' occ_two='{occ_two}' "
+            print(f"[FusionBridge] [JOINT] '{jdata.get('name', '')}' moves "
+                  f"'{mover}' (against '{ground}') -- "
                   f"matched {len(movers)} body object(s)"
                   + ("" if movers else " -- NO MATCH: check fusion_instance values above"))
 
