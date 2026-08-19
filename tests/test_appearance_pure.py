@@ -117,3 +117,68 @@ def test_the_component_material_is_the_last_resort():
     body = Body(appearance=None,
                 component_appearance=Appearance("ABS", Prop("Color", Color(200, 200, 200))))
     assert exporter._body_appearance(body, None)["name"] == "ABS"
+
+
+# ── reading them cannot be allowed to stall a sync ───────────────────────────
+# The first real run froze at "Fusion Computing...". Autodesk appearances are
+# not cheap property lookups -- reading one can make Fusion resolve a material
+# library -- and this was reading one per body.
+class CountingAppearance(Appearance):
+    """Counts how many times its properties are actually walked."""
+    reads = 0
+
+    @property
+    def appearanceProperties(self):
+        CountingAppearance.reads += 1
+        return self._props
+
+    def __init__(self, name, *props):
+        self.name = name
+        self._props = list(props)
+
+
+class SlowAppearance(Appearance):
+    """Stands in for an appearance that takes real time to read."""
+    def __init__(self, name, seconds):
+        self.name = name
+        self._seconds = seconds
+
+    @property
+    def appearanceProperties(self):
+        import time as _t
+        _t.sleep(self._seconds)
+        return []
+
+
+def test_one_appearance_is_read_once_however_many_bodies_share_it():
+    exporter.reset_appearance_budget()
+    CountingAppearance.reads = 0
+    shared = CountingAppearance("Aluminium", Prop("Color", Color(200, 200, 200)))
+    for _ in range(16):
+        exporter._body_appearance(Body(appearance=shared), None)
+    assert CountingAppearance.reads == 1, CountingAppearance.reads
+
+
+def test_the_cache_is_cleared_between_syncs():
+    """A recolour in Fusion has to reach the next sync."""
+    exporter.reset_appearance_budget()
+    CountingAppearance.reads = 0
+    shared = CountingAppearance("Aluminium", Prop("Color", Color(200, 200, 200)))
+    exporter._body_appearance(Body(appearance=shared), None)
+    exporter.reset_appearance_budget()
+    exporter._body_appearance(Body(appearance=shared), None)
+    assert CountingAppearance.reads == 2, CountingAppearance.reads
+
+
+def test_slow_appearances_stop_being_read_rather_than_stalling_the_sync():
+    """Colour is what gets dropped -- never the geometry Sync was pressed for."""
+    exporter.reset_appearance_budget()
+    budget = exporter._APPEARANCE_BUDGET_S
+    # Distinct names, so the cache cannot absorb them.
+    for i in range(6):
+        exporter._body_appearance(Body(appearance=SlowAppearance(f"Slow{i}", budget / 2)), None)
+    # Two reads is already the budget; anything past that must be refused.
+    assert exporter._appearance_spent[0] >= budget
+    CountingAppearance.reads = 0
+    exporter._body_appearance(Body(appearance=CountingAppearance("Late", Prop("Color", Color(1, 2, 3)))), None)
+    assert CountingAppearance.reads == 0

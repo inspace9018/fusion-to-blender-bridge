@@ -562,6 +562,38 @@ _ROUGH_KEYS = ("roughness", "rough")
 _GLOSS_KEYS = ("glossiness", "gloss", "shininess")
 _METAL_KEYS = ("metallic", "metalness", "metal")
 
+# Reading an Autodesk appearance is not a cheap property lookup. Each one can
+# carry dozens of properties, some backed by textures, and touching a value can
+# make Fusion resolve a material library. A sync that reads them per body on a
+# large assembly can sit there long enough to look frozen -- which is exactly
+# what happened on the first real run.
+#
+# Two guards. The cache means one read per distinct appearance instead of one
+# per body, which is the whole win on an assembly where everything is the same
+# aluminium. The budget means that even if a single design has appearances that
+# are pathologically slow, colour is what gets dropped -- never the geometry the
+# user actually pressed Sync for.
+_APPEARANCE_BUDGET_S = 3.0
+_appearance_cache = {}
+_appearance_spent = [0.0]
+
+
+def reset_appearance_budget():
+    """Called at the start of each export so the budget is per sync, not forever."""
+    _appearance_cache.clear()
+    _appearance_spent[0] = 0.0
+
+
+def _appearance_key(appearance):
+    for attr in ("id", "name"):
+        try:
+            value = getattr(appearance, attr, None)
+            if value:
+                return f"{attr}:{value}"
+        except Exception:
+            continue
+    return None
+
 
 def _prop_rank(prop, keys):
     """Position of the best-matching keyword, or None when none match.
@@ -585,54 +617,57 @@ def _prop_matches(prop, keys) -> bool:
     return _prop_rank(prop, keys) is not None
 
 
-def _first_color(appearance):
-    """(r, g, b, a) in 0..1, or None.
+def _scan_properties(appearance) -> dict:
+    """Everything worth having, from ONE walk of the property list.
 
-    Takes the colour property whose name matches _COLOR_KEYS most strongly, and
-    falls back to any colour property at all when none of them do -- an
-    appearance with one unrecognised colour is still better than grey.
+    One walk on purpose. Reading an Autodesk appearance can make Fusion resolve
+    a material library, so asking four separate questions of the same appearance
+    cost four times what it should -- which is how a sync ended up looking
+    frozen. Colour, roughness, glossiness and metallic all come out of this pass.
+
+    Colour is ranked rather than first-match: a metallic paint carries both
+    "Surface Color" and "Fleck Color", and first-match picks whichever the API
+    happens to list first.
     """
+    found = {}
+    best_color_rank = None
     try:
         props = appearance.appearanceProperties
     except Exception:
-        return None
-    best_rank = None
-    best = None
-    fallback = None
+        return found
+
     for prop in props:
         try:
             value = prop.value
+        except Exception:
+            continue
+
+        try:                                # a colour property?
             rgb = (value.red, value.green, value.blue)
-        except Exception:
-            continue                       # not a colour property
-        try:
-            opacity = value.opacity
-        except Exception:
-            opacity = 255
-        rgba = tuple(c / 255.0 for c in rgb) + (opacity / 255.0,)
-        rank = _prop_rank(prop, _COLOR_KEYS)
-        if rank is not None and (best_rank is None or rank < best_rank):
-            best_rank, best = rank, rgba
-        if fallback is None:
-            fallback = rgba
-    return best if best is not None else fallback
-
-
-def _first_float(appearance, keys):
-    try:
-        props = appearance.appearanceProperties
-    except Exception:
-        return None
-    for prop in props:
-        if not _prop_matches(prop, keys):
+        except AttributeError:
+            rgb = None
+        if rgb is not None:
+            try:
+                opacity = value.opacity
+            except Exception:
+                opacity = 255
+            rgba = tuple(c / 255.0 for c in rgb) + (opacity / 255.0,)
+            rank = _prop_rank(prop, _COLOR_KEYS)
+            if rank is not None and (best_color_rank is None or rank < best_color_rank):
+                best_color_rank, found["color"] = rank, rgba
+            elif "color" not in found:
+                found["color"] = rgba       # unrecognised, but better than grey
             continue
-        try:
-            value = prop.value
-        except Exception:
+
+        if isinstance(value, bool) or not isinstance(value, (int, float)):
             continue
-        if isinstance(value, (int, float)) and not isinstance(value, bool):
-            return float(value)
-    return None
+        for key, keywords in (("roughness", _ROUGH_KEYS),
+                              ("glossiness", _GLOSS_KEYS),
+                              ("metallic", _METAL_KEYS)):
+            if key not in found and _prop_matches(prop, keywords):
+                found[key] = float(value)
+                break
+    return found
 
 
 def _appearance_to_dict(appearance) -> dict | None:
@@ -651,24 +686,46 @@ def _appearance_to_dict(appearance) -> dict | None:
     if name:
         out["name"] = name
 
-    color = _first_color(appearance)
-    if color is not None:
-        out["color"] = [round(c, 6) for c in color]
+    found = _scan_properties(appearance)
 
-    rough = _first_float(appearance, _ROUGH_KEYS)
-    if rough is None:
-        gloss = _first_float(appearance, _GLOSS_KEYS)
-        if gloss is not None:
-            # Autodesk stores shininess the other way round from Blender.
-            rough = 1.0 - max(0.0, min(1.0, gloss))
+    if "color" in found:
+        out["color"] = [round(c, 6) for c in found["color"]]
+
+    rough = found.get("roughness")
+    if rough is None and "glossiness" in found:
+        # Autodesk stores shininess the other way round from Blender.
+        rough = 1.0 - max(0.0, min(1.0, found["glossiness"]))
     if rough is not None:
         out["roughness"] = round(max(0.0, min(1.0, rough)), 6)
 
-    metal = _first_float(appearance, _METAL_KEYS)
-    if metal is not None:
-        out["metallic"] = round(max(0.0, min(1.0, metal)), 6)
+    if "metallic" in found:
+        out["metallic"] = round(max(0.0, min(1.0, found["metallic"])), 6)
 
     return out or None
+
+
+def _appearance_cached(appearance) -> dict | None:
+    """_appearance_to_dict, but once per appearance and inside the time budget."""
+    if appearance is None:
+        return None
+    key = _appearance_key(appearance)
+    if key is not None and key in _appearance_cache:
+        return _appearance_cache[key]
+    if _appearance_spent[0] >= _APPEARANCE_BUDGET_S:
+        return None
+    started = time.time()
+    try:
+        got = _appearance_to_dict(appearance)
+    except Exception:
+        got = None
+    _appearance_spent[0] += time.time() - started
+    if key is not None:
+        _appearance_cache[key] = got
+    if _appearance_spent[0] >= _APPEARANCE_BUDGET_S:
+        _log(f"[APPEARANCE] reading appearances is slow on this design "
+             f"({_appearance_spent[0]:.1f}s); colours are skipped for the rest "
+             f"of this sync so the geometry keeps moving")
+    return got
 
 
 def _body_appearance(body, occurrence=None) -> dict | None:
@@ -679,17 +736,19 @@ def _body_appearance(body, occurrence=None) -> dict | None:
     inherited one anyway in most cases, but not when someone has painted a whole
     occurrence a different colour -- which is exactly how assemblies get coloured.
     """
+    if _appearance_spent[0] >= _APPEARANCE_BUDGET_S:
+        return None
     for source in (body, occurrence):
         if source is None:
             continue
         try:
-            got = _appearance_to_dict(source.appearance)
+            got = _appearance_cached(source.appearance)
         except Exception:
             got = None
         if got:
             return got
     try:
-        return _appearance_to_dict(body.parentComponent.material.appearance)
+        return _appearance_cached(body.parentComponent.material.appearance)
     except Exception:
         return None
 
@@ -954,6 +1013,7 @@ def export_design(design, quality: dict = None, include_hidden: bool = False,
     """
     results = []
     seen_ids = set()
+    reset_appearance_budget()
 
     _log(f"[FusionBridge] === Export start === (quality={quality}, "
          f"include_hidden={include_hidden})")
