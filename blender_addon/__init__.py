@@ -32,6 +32,7 @@ bl_info = {
 }
 
 import bpy
+import traceback
 
 # ── Reload submodules on reinstall-without-restart ───────────────────────────
 # Python caches already-imported submodules, so reinstalling the add-on WITHOUT
@@ -341,6 +342,22 @@ def _try_auto_connect():
     return None  # one-shot
 
 
+@bpy.app.handlers.persistent
+def _restore_queue_drain(_dummy):
+    """Opening a .blend removes every registered timer, including the one that
+    reads what Fusion sends back. Put it back.
+
+    Marked persistent because a handler that is not survives exactly the event
+    it exists to react to.
+    """
+    client = state.get_client()
+    if client is not None:
+        try:
+            client.reinstate_timer()
+        except Exception:
+            traceback.print_exc()
+
+
 def register():
     print("[FusionBridge] v1.0.0 Registering add-on...")
 
@@ -364,6 +381,9 @@ def register():
     if has_step_support():
         bpy.types.TOPBAR_MT_file_import.append(_step_import_menu)
 
+    if _restore_queue_drain not in bpy.app.handlers.load_post:
+        bpy.app.handlers.load_post.append(_restore_queue_drain)
+
     # EU02: auto-connect shortly after startup (deferred so context is ready).
     try:
         bpy.app.timers.register(_try_auto_connect, first_interval=1.0)
@@ -375,6 +395,9 @@ def register():
 
 def unregister():
     print("[FusionBridge] Unregistering add-on...")
+
+    if _restore_queue_drain in bpy.app.handlers.load_post:
+        bpy.app.handlers.load_post.remove(_restore_queue_drain)
 
     # EU02: drop the deferred auto-connect timer if it hasn't fired yet.
     try:

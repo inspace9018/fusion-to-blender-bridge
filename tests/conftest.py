@@ -24,4 +24,5 @@ collect_ignore = [
     "test_preservation_blender.py",
     "test_joint_sides_blender.py",
     "test_appearance_blender.py",
+    "test_file_load_blender.py",
 ]

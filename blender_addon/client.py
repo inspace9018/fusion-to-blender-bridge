@@ -94,6 +94,14 @@ class FusionBridgeClient:
         # here and fired exactly once on the next successful connect.
         self._pending_sync: dict = None
 
+        # bpy.app.timers compares by IDENTITY, and `self._process_queue` builds a
+        # new bound-method object on every attribute read. Passing it fresh each
+        # time means is_registered always answers False and unregister never
+        # finds anything -- which is why _unregister_timer had quietly done
+        # nothing since it was written. One reference, made once, used
+        # everywhere.
+        self._queue_timer = self._process_queue
+
     # ── Connect / Disconnect ────────────────────────────────────────────────
     def connect(self, server: str):
         if self._should_reconnect:
@@ -276,13 +284,33 @@ class FusionBridgeClient:
     # ── Blender timer ──────────────────────────────────────────────────────────
     def _register_timer(self):
         if not self._timer_registered:
-            bpy.app.timers.register(self._process_queue, first_interval=0.1)
+            bpy.app.timers.register(self._queue_timer, first_interval=0.1)
             self._timer_registered = True
+
+    def reinstate_timer(self):
+        """Put the queue drain back after Blender has thrown it away.
+
+        Opening a .blend removes every registered timer -- verified, not assumed:
+        a timer registered before wm.open_mainfile reports is_registered False
+        straight after it. Nothing tells the add-on this happened.
+
+        The consequence was the bug people actually saw. The socket thread keeps
+        running across a file load and keeps filling the queue, so the panel
+        still says Connected and Fusion still does the export -- its own log
+        shows the bodies going out. Only the side that reads the queue is gone,
+        so Blender sits on "Fusion computing..." until it times out at 90
+        seconds. Disconnecting and reconnecting fixed it, which is why it looked
+        intermittent.
+        """
+        if self._thread is None or not self._thread.is_alive():
+            return
+        self._timer_registered = bpy.app.timers.is_registered(self._queue_timer)
+        self._register_timer()
 
     def _unregister_timer(self):
         if self._timer_registered:
             try:
-                bpy.app.timers.unregister(self._process_queue)
+                bpy.app.timers.unregister(self._queue_timer)
             except Exception:
                 pass
             self._timer_registered = False
