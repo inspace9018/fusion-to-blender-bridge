@@ -1440,6 +1440,114 @@ def _maybe_auto_mark_edges(obj):
 
 
 # ─── Component path normalization (for comparison) ────────────────────────────
+# ── Fusion appearance -> Blender material ─────────────────────────────────────
+# Marks the materials this add-on created. Everything about applying an
+# appearance hangs off this: a material without the mark belongs to the user and
+# is never touched, no matter what Fusion says the body should look like.
+#
+# The free bridge's whole promise is that the look you built in Blender survives
+# the next CAD revision. Importing appearances is only worth having if it cannot
+# break that -- so it fills in what is empty and stops there.
+FTB_MATERIAL_MARK = "ftb_fusion_appearance"
+
+
+def _owned_by_us(mat) -> bool:
+    return bool(mat) and mat.get(FTB_MATERIAL_MARK) is not None
+
+
+def _principled(mat):
+    if not mat.use_nodes:
+        return None
+    for node in mat.node_tree.nodes:
+        if node.type == 'BSDF_PRINCIPLED':
+            return node
+    return None
+
+
+def _write_appearance_into(mat, appearance: dict):
+    """Set what the appearance actually specifies, and leave the rest alone.
+
+    Fusion sends only the properties it could find, and a missing roughness is
+    not the same as a roughness of zero -- writing a default would make every
+    unspecified surface mirror-smooth.
+    """
+    mat[FTB_MATERIAL_MARK] = appearance.get("name", "")
+    mat.use_nodes = True
+    node = _principled(mat)
+    if node is None:
+        return
+    color = appearance.get("color")
+    if color and len(color) >= 3:
+        rgba = list(color[:4]) + [1.0] * (4 - len(color[:4]))
+        try:
+            node.inputs["Base Color"].default_value = rgba
+        except Exception:
+            pass
+        alpha = rgba[3]
+        try:
+            node.inputs["Alpha"].default_value = alpha
+        except Exception:
+            pass
+        if alpha < 0.999:
+            mat.blend_method = 'BLEND'
+        try:
+            mat.diffuse_color = rgba          # so it reads right in solid view too
+        except Exception:
+            pass
+    for key, socket in (("roughness", "Roughness"), ("metallic", "Metallic")):
+        if key in appearance:
+            try:
+                node.inputs[socket].default_value = float(appearance[key])
+            except Exception:
+                pass
+
+
+def _material_for_appearance(appearance: dict):
+    """One Blender material per Fusion appearance, reused across bodies.
+
+    Sixteen bodies painted the same colour in Fusion should arrive sharing one
+    material, the way they do in Fusion -- otherwise recolouring the design means
+    editing sixteen materials in Blender.
+    """
+    name = appearance.get("name") or "Fusion Appearance"
+    existing = bpy.data.materials.get(name)
+    if existing is not None and not _owned_by_us(existing):
+        # The name is taken by something the user made. Do not adopt it and do
+        # not rename theirs -- take a neighbouring name instead.
+        name = name + " (Fusion)"
+        existing = bpy.data.materials.get(name)
+        if existing is not None and not _owned_by_us(existing):
+            return None
+    mat = existing or bpy.data.materials.new(name)
+    _write_appearance_into(mat, appearance)
+    return mat
+
+
+def _apply_appearance(obj, appearance):
+    """Give the object its Fusion appearance, but never over the user's own work.
+
+    Three cases, and only the first two do anything:
+      * no material at all      -> assign
+      * only a material we made -> replace it, so a recolour in Fusion lands
+      * anything the user made  -> leave it completely alone
+    """
+    if not appearance or not isinstance(appearance, dict):
+        return
+    try:
+        slots = [s.material for s in obj.material_slots]
+        if slots and not all(_owned_by_us(m) for m in slots if m is not None):
+            return                          # the user's look wins, always
+        mat = _material_for_appearance(appearance)
+        if mat is None:
+            return
+        if not obj.data.materials:
+            obj.data.materials.append(mat)
+        elif obj.data.materials[0] is not mat:
+            obj.data.materials[0] = mat
+    except Exception:
+        traceback.print_exc()
+
+
 def _norm_component(comp: str) -> str:
     """Comparison key: remove version/instance, lowercase.
     "External1 v16:1/SubComp:2" -> "external1/subcomp"
@@ -2149,6 +2257,7 @@ class SceneHandler:
 
         try:
             update_mesh_geometry(obj, data)
+            _apply_appearance(obj, data.get("appearance"))
             _maybe_auto_mark_edges(obj)
             hooks.run_post_body_sync(obj)
 
@@ -2219,6 +2328,7 @@ class SceneHandler:
             obj["fusion_doc"]       = getattr(self, "_sync_doc", "")
 
             update_mesh_geometry(obj, data)
+            _apply_appearance(obj, data.get("appearance"))
             _maybe_auto_mark_edges(obj)
             hooks.run_post_body_sync(obj)
 

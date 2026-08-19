@@ -542,6 +542,158 @@ def _auto_orient_correction(world_bbox):
     return list(_IDENTITY_16), 'identity'
 
 
+# ── Appearance ────────────────────────────────────────────────────────────────
+# Fusion's appearances are Autodesk material definitions, not PBR materials, and
+# the property names differ per definition family -- "Color" in one, "Surface
+# Color" or "opaque_albedo" in another. There is no schema to read, so the
+# properties are searched by keyword and everything that cannot be found is left
+# out rather than guessed at.
+#
+# What comes across is base colour, roughness and metallic. That is not the whole
+# of an Autodesk appearance and never will be, but it is the part a person means
+# when they say the part is "red and shiny", and arriving grey is the thing worth
+# fixing first.
+# Ordered strongest first, because a real metallic-paint appearance carries both
+# "Surface Color" and "Fleck Color" and a first-match search picks whichever the
+# API happens to list first. Ranking makes that deterministic: "albedo" beats
+# "fleck color", which only matches on the weak bare "color".
+_COLOR_KEYS = ("base color", "albedo", "diffuse", "surface color", "color", "tint")
+_ROUGH_KEYS = ("roughness", "rough")
+_GLOSS_KEYS = ("glossiness", "gloss", "shininess")
+_METAL_KEYS = ("metallic", "metalness", "metal")
+
+
+def _prop_rank(prop, keys):
+    """Position of the best-matching keyword, or None when none match.
+
+    Lower is a stronger match. Both the id and the display name are searched --
+    appearances vary in which of the two carries the meaningful string.
+    """
+    best = None
+    for attr in ("id", "name"):
+        try:
+            text = str(getattr(prop, attr, "") or "").lower()
+        except Exception:
+            continue
+        for rank, key in enumerate(keys):
+            if key in text and (best is None or rank < best):
+                best = rank
+    return best
+
+
+def _prop_matches(prop, keys) -> bool:
+    return _prop_rank(prop, keys) is not None
+
+
+def _first_color(appearance):
+    """(r, g, b, a) in 0..1, or None.
+
+    Takes the colour property whose name matches _COLOR_KEYS most strongly, and
+    falls back to any colour property at all when none of them do -- an
+    appearance with one unrecognised colour is still better than grey.
+    """
+    try:
+        props = appearance.appearanceProperties
+    except Exception:
+        return None
+    best_rank = None
+    best = None
+    fallback = None
+    for prop in props:
+        try:
+            value = prop.value
+            rgb = (value.red, value.green, value.blue)
+        except Exception:
+            continue                       # not a colour property
+        try:
+            opacity = value.opacity
+        except Exception:
+            opacity = 255
+        rgba = tuple(c / 255.0 for c in rgb) + (opacity / 255.0,)
+        rank = _prop_rank(prop, _COLOR_KEYS)
+        if rank is not None and (best_rank is None or rank < best_rank):
+            best_rank, best = rank, rgba
+        if fallback is None:
+            fallback = rgba
+    return best if best is not None else fallback
+
+
+def _first_float(appearance, keys):
+    try:
+        props = appearance.appearanceProperties
+    except Exception:
+        return None
+    for prop in props:
+        if not _prop_matches(prop, keys):
+            continue
+        try:
+            value = prop.value
+        except Exception:
+            continue
+        if isinstance(value, (int, float)) and not isinstance(value, bool):
+            return float(value)
+    return None
+
+
+def _appearance_to_dict(appearance) -> dict | None:
+    """Appearance -> the parts Blender can act on, or None when there is nothing.
+
+    A name with no colour is still worth sending: it lets the Blender side reuse
+    one material per Fusion appearance instead of making a new one per body.
+    """
+    if appearance is None:
+        return None
+    try:
+        name = str(appearance.name or "").strip()
+    except Exception:
+        name = ""
+    out = {}
+    if name:
+        out["name"] = name
+
+    color = _first_color(appearance)
+    if color is not None:
+        out["color"] = [round(c, 6) for c in color]
+
+    rough = _first_float(appearance, _ROUGH_KEYS)
+    if rough is None:
+        gloss = _first_float(appearance, _GLOSS_KEYS)
+        if gloss is not None:
+            # Autodesk stores shininess the other way round from Blender.
+            rough = 1.0 - max(0.0, min(1.0, gloss))
+    if rough is not None:
+        out["roughness"] = round(max(0.0, min(1.0, rough)), 6)
+
+    metal = _first_float(appearance, _METAL_KEYS)
+    if metal is not None:
+        out["metallic"] = round(max(0.0, min(1.0, metal)), 6)
+
+    return out or None
+
+
+def _body_appearance(body, occurrence=None) -> dict | None:
+    """The appearance that actually shows on this body in Fusion.
+
+    Fusion resolves appearance by override: a body's own beats the occurrence's,
+    which beats the component's. Reading only body.appearance would return the
+    inherited one anyway in most cases, but not when someone has painted a whole
+    occurrence a different colour -- which is exactly how assemblies get coloured.
+    """
+    for source in (body, occurrence):
+        if source is None:
+            continue
+        try:
+            got = _appearance_to_dict(source.appearance)
+        except Exception:
+            got = None
+        if got:
+            return got
+    try:
+        return _appearance_to_dict(body.parentComponent.material.appearance)
+    except Exception:
+        return None
+
+
 def export_body(body, occurrence=None, quality: dict = None,
                 world_transform: list = None, explicit_path: str = None,
                 root_name: str = "") -> dict | None:
@@ -677,6 +829,9 @@ def export_body(body, occurrence=None, quality: dict = None,
             "face_count":    len(idx_arr) // 3,
             "surface_tol_m": surface_cm * CM_TO_M,
         }
+        appearance = _body_appearance(body, occurrence)
+        if appearance:
+            result["appearance"] = appearance
         if len(fg_arr):
             result["face_groups_b64"] = base64.b64encode(fg_arr.tobytes()).decode('ascii')
             result["face_ids_b64"]    = base64.b64encode(fi_arr.tobytes()).decode('ascii')

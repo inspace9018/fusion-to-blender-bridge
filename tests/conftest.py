@@ -23,4 +23,5 @@ sys.path.insert(0, os.path.join(_PROJECT, "fusion_addin"))
 collect_ignore = [
     "test_preservation_blender.py",
     "test_joint_sides_blender.py",
+    "test_appearance_blender.py",
 ]

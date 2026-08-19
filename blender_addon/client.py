@@ -194,7 +194,19 @@ class FusionBridgeClient:
         async with ws_client.connect(
             uri,
             max_size=2 ** 32,
-            ping_interval=None,
+            # Keepalive. With this off, a Fusion that goes away without closing
+            # the socket -- it crashed, the machine slept, the add-in was
+            # stopped -- leaves the panel reading "Connected" indefinitely, and
+            # the first hint is a 90 second wait on the next Sync. Observed
+            # exactly that after a 28 minute idle gap.
+            #
+            # Safe to enable: the Fusion side hand-rolls its WebSocket but does
+            # answer PING with PONG (server.py), and it already pings us the
+            # same way after 30s idle. And this receive loop only decompresses
+            # and queues -- every heavy Blender operation runs later on a timer
+            # in the main thread -- so a pong is never held up behind a sync.
+            ping_interval=20,
+            ping_timeout=30,
             close_timeout=10,
         ) as websocket:
             self.websocket = websocket
