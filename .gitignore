@@ -31,3 +31,8 @@ Sequence*.gif
 
 # 확장 빌드 산출물
 /build/
+
+# Real customer geometry used as a regression fixture. These files are someone's
+# actual product design, and this repository is public -- the tests look for them
+# and skip when they are absent, so nothing breaks by leaving them out.
+tests/fixtures/*.blend
