@@ -1237,6 +1237,13 @@ def export_joints(design) -> list:
 
     root = design.rootComponent
 
+    # An AsBuiltJoint keeps its pivot on `geometry`; a Joint keeps one per
+    # connected side. Ask for the type's own shape first, then the others --
+    # the API is forgiving about which names exist, and a joint that answers
+    # any of them is better than one that falls through to the world origin.
+    _GEOMETRY_ATTRS_AS_BUILT = ("geometry", "geometryOrOriginOne", "geometryOrOriginTwo")
+    _GEOMETRY_ATTRS_JOINT = ("geometryOrOriginOne", "geometryOrOriginTwo", "geometry")
+
     _JOINT_TYPE_MAP = {
         0: "Rigid",
         1: "Revolute",
@@ -1298,50 +1305,84 @@ def export_joints(design) -> list:
             except Exception:
                 pass
 
-            # Origin and axis from joint geometry. geometryOrOriginOne is only
-            # populated for joints created from explicit geometry selections --
-            # AsBuiltJoints (captured from the occurrences' current relative
-            # position, no geometry picked) generally do not expose it, so the
-            # old bare try/except silently left every as-built joint's Empty at
-            # world origin (0,0,0), rotating around the wrong pivot entirely.
+            # Fusion keeps a joint's pivot and axis in more than one place, and
+            # which one is populated depends on how the joint was made. Reading
+            # only geometryOrOriginOne -- which is what this did -- meant every
+            # as-built joint fell through to the occurrence's own origin, and
+            # from there to (0,0,0). A revolute joint pinned to the world origin
+            # spins the whole sub-assembly around the wrong point, which is what
+            # "the Empty is in the wrong place" turned out to be.
+            #
+            # So: ask each source in turn, and say in the log which one answered.
+            # Without that line there is no way to tell a real pivot from a
+            # fallback that happened to look plausible.
             origin = None
             axis = None
-            try:
-                geo = joint.geometryOrOriginOne
-                if geo is not None:
+            origin_from = "none"
+            axis_from = "none"
+
+            for attr in _GEOMETRY_ATTRS_AS_BUILT if is_as_built else _GEOMETRY_ATTRS_JOINT:
+                try:
+                    geo = getattr(joint, attr, None)
+                except Exception:
+                    continue
+                if geo is None:
+                    continue
+                if origin is None:
                     try:
                         pt = geo.origin
                         if pt is not None:
                             origin = [pt.x * CM_TO_M, pt.y * CM_TO_M, pt.z * CM_TO_M]
+                            origin_from = attr
                     except Exception:
                         pass
+                if axis is None:
                     try:
                         ax = geo.primaryAxisVector
                         if ax is not None:
                             axis = [ax.x, ax.y, ax.z]
+                            axis_from = attr
                     except Exception:
                         pass
-            except Exception:
-                pass
+                if origin is not None and axis is not None:
+                    break
+
+            # The motion itself knows what it turns about or slides along, even
+            # when no geometry was ever picked. For an as-built revolute this is
+            # usually the only place the real axis exists, and defaulting to
+            # world Z instead put the hinge on the wrong plane entirely.
+            if axis is None:
+                try:
+                    motion = joint.jointMotion
+                    for attr in ("rotationAxisVector", "slideDirectionVector"):
+                        ax = getattr(motion, attr, None)
+                        if ax is not None:
+                            axis = [ax.x, ax.y, ax.z]
+                            axis_from = "jointMotion." + attr
+                            break
+                except Exception:
+                    pass
 
             if origin is None:
-                # Fall back to the moving occurrence's own world position --
-                # not exact for every joint type, but far closer to the real
-                # pivot than the world origin, and exact for Rigid joints
-                # (which need no axis, just the right parenting).
+                # Last resort: the moving occurrence's own world position. Not
+                # the pivot for a hinge, but exact for Rigid joints (which only
+                # need the parenting) and closer than the world origin for the
+                # rest.
                 fallback_occ = occ_two_obj or occ_one_obj
                 if fallback_occ is not None:
                     try:
                         world = _occ_world_xform(fallback_occ)
                         origin = [world[12] * CM_TO_M, world[13] * CM_TO_M, world[14] * CM_TO_M]
-                        _log(f"[JOINT] '{name}' (as_built={is_as_built}): "
-                             f"geometryOrOriginOne unavailable, using occurrence "
-                             f"world position as origin fallback")
+                        origin_from = "occurrence world position"
                     except Exception:
                         traceback.print_exc()
                 if origin is None:
                     origin = [0.0, 0.0, 0.0]
-                    _log(f"[JOINT] '{name}': no origin available, defaulting to (0,0,0)")
+                    origin_from = "DEFAULT (0,0,0) -- nothing usable was found"
+
+            _log(f"[JOINT] '{name}' ({jtype}, as_built={is_as_built}): "
+                 f"origin from {origin_from}, axis from {axis_from}")
+
             if axis is None:
                 axis = [0.0, 0.0, 1.0]
 
