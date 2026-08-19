@@ -1580,6 +1580,28 @@ def _material_for_appearance(appearance: dict):
     return mat
 
 
+# Tally for the per-sync report. A body arriving with no appearance and a body
+# whose appearance we declined to apply look identical in the viewport -- both
+# stay the colour they were -- so the difference has to be said out loud.
+_appearance_tally = {"with": 0, "without": 0, "kept_user": 0}
+
+
+def reset_appearance_tally():
+    for key in _appearance_tally:
+        _appearance_tally[key] = 0
+
+
+def appearance_summary() -> str:
+    t = _appearance_tally
+    if not any(t.values()):
+        return ""
+    parts = [f"{t['with']} carried a Fusion appearance",
+             f"{t['without']} carried none"]
+    if t["kept_user"]:
+        parts.append(f"{t['kept_user']} kept the material you set")
+    return "[FusionBridge] appearances: " + ", ".join(parts)
+
+
 def _apply_appearance(obj, appearance):
     """Give the object its Fusion appearance, but never over the user's own work.
 
@@ -1592,10 +1614,13 @@ def _apply_appearance(obj, appearance):
       * anything the user made          -> leave it completely alone
     """
     if not appearance or not isinstance(appearance, dict):
+        _appearance_tally["without"] += 1
         return
+    _appearance_tally["with"] += 1
     try:
         slots = [s.material for s in obj.material_slots]
         if slots and not all(_owned_by_us(m) for m in slots if m is not None):
+            _appearance_tally["kept_user"] += 1
             return                          # the user's look wins, always
         mat = _material_for_appearance(appearance)
         if mat is None:
@@ -1872,6 +1897,7 @@ class SceneHandler:
         self._sync_processed = 0
         self._sync_error_count = 0
         self._last_redraw_time = 0.0
+        reset_appearance_tally()
         # Reset hidden ancestor collection tracking
         self._sync_hidden_collection_paths = set()
         # Track fids already claimed by remap in this sync (prevent cross-component collisions)
@@ -2111,12 +2137,18 @@ class SceneHandler:
             self._set_status(t("sync_done_with_errors",
                                errors=self._sync_error_count,
                                count=self._sync_processed, ts=ts))
+            summary = appearance_summary()
+            if summary:
+                print(summary)
             print(f"[FusionBridge] Streaming sync complete with {self._sync_error_count} "
                   f"error(s): {self._sync_processed} objects")
         else:
             self._set_error(False)
             self._set_status(t("sync_done", count=self._sync_processed, ts=ts))
             print(f"[FusionBridge] Streaming sync complete: {self._sync_processed} objects")
+            summary = appearance_summary()
+            if summary:
+                print(summary)
         self._set_syncing(False)
         _prog("clear_progress")
         self._tag_redraw()
