@@ -324,7 +324,8 @@ def _calc_per_face_mesh(body, surface_cm: float, normal_rad: float):
 
     See _face_key() for what makes face_keys different from face_ids.
 
-    Returns: (coords, normals, indices, face_groups, face_ids, face_keys)
+    Returns: (coords, normals, indices, face_groups, face_ids, face_keys,
+              face_appearances)
       face_groups: [start_0, count_0, start_1, count_1, ...]  (loop units)
       face_ids:    [id_0, id_1, ...]  (position in body.faces -- see below)
       face_keys:   [key_0, key_1, ...]  (stable identity, 64-bit, see below)
@@ -348,6 +349,12 @@ def _calc_per_face_mesh(body, surface_cm: float, normal_rad: float):
     face_groups = []
     face_ids = []
     face_keys = []
+    # One entry per face group: the appearance painted on THAT face, or None
+    # when the face just inherits the body's. Fusion lets you drop an appearance
+    # on a single face, and that is how a logo panel, a soft-touch grip or a
+    # two-tone housing is coloured -- reading only body.appearance loses all of
+    # it and the part arrives in one flat colour.
+    face_appearances = []
     vert_offset = 0
     loop_offset = 0
 
@@ -357,7 +364,7 @@ def _calc_per_face_mesh(body, surface_cm: float, normal_rad: float):
         mesh = _calc_local_mesh(body, surface_cm, normal_rad)
         return (list(mesh.nodeCoordinatesAsDouble),
                 list(mesh.normalVectorsAsDouble),
-                list(mesh.nodeIndices), [], [], [])
+                list(mesh.nodeIndices), [], [], [], [])
 
     for fi in range(faces.count):
         try:
@@ -382,6 +389,7 @@ def _calc_per_face_mesh(body, surface_cm: float, normal_rad: float):
             face_groups.append(n_loops)
             face_ids.append(fi)
             face_keys.append(_face_key(face, fi))
+            face_appearances.append(_face_appearance(face))
 
             vert_offset += n_verts
             loop_offset += n_loops
@@ -393,9 +401,10 @@ def _calc_per_face_mesh(body, surface_cm: float, normal_rad: float):
         mesh = _calc_local_mesh(body, surface_cm, normal_rad)
         return (list(mesh.nodeCoordinatesAsDouble),
                 list(mesh.normalVectorsAsDouble),
-                list(mesh.nodeIndices), [], [], [])
+                list(mesh.nodeIndices), [], [], [], [])
 
-    return all_coords, all_normals, all_indices, face_groups, face_ids, face_keys
+    return (all_coords, all_normals, all_indices,
+            face_groups, face_ids, face_keys, face_appearances)
 
 
 # ── Auto-orient: automatic rotation correction for tall lying objects ────────
@@ -774,6 +783,33 @@ def _appearance_cached(appearance) -> dict | None:
     return got
 
 
+# Reading an appearance off a FACE is the same cost as off a body, and a body
+# can have a thousand faces. The per-appearance cache below absorbs the repeats
+# (a two-tone part has two distinct appearances however many faces it has), and
+# the shared time budget stops a pathological design from holding up the sync --
+# it just falls back to the body's one colour, which is what happened before
+# this existed.
+def _face_appearance(face) -> dict | None:
+    """The appearance painted on this face specifically, or None.
+
+    None means "nothing of its own", not "no colour": the face then shows the
+    body's appearance, and saying so lets the Blender side skip it entirely
+    rather than making a duplicate material per face.
+    """
+    if _appearance_spent[0] >= _APPEARANCE_BUDGET_S:
+        return None
+    try:
+        own = face.appearance
+    except Exception:
+        return None
+    if own is None:
+        return None
+    try:
+        return _appearance_cached(own)
+    except Exception:
+        return None
+
+
 def _body_appearance(body, occurrence=None) -> dict | None:
     """The appearance that actually shows on this body in Fusion.
 
@@ -937,6 +973,26 @@ def export_body(body, occurrence=None, quality: dict = None,
         appearance = _body_appearance(body, occurrence)
         if appearance:
             result["appearance"] = appearance
+
+        # Per-face appearances, as a table plus one index per face group. Sent
+        # only when a face actually differs from the body -- the common case is
+        # a body in one colour, and that payload should not grow by a list of
+        # nulls as long as its face count.
+        if face_appearances and any(face_appearances):
+            table, index = [], []
+            seen = {}
+            for got in face_appearances:
+                if not got:
+                    index.append(-1)          # -1 = "use the body's"
+                    continue
+                key = got.get("name") or repr(sorted(got.items()))
+                if key not in seen:
+                    seen[key] = len(table)
+                    table.append(got)
+                index.append(seen[key])
+            if any(i >= 0 for i in index):
+                result["face_appearances"] = table
+                result["face_appearance_index"] = index
         if len(fg_arr):
             result["face_groups_b64"] = base64.b64encode(fg_arr.tobytes()).decode('ascii')
             result["face_ids_b64"]    = base64.b64encode(fi_arr.tobytes()).decode('ascii')

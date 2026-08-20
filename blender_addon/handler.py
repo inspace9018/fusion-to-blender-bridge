@@ -1429,17 +1429,28 @@ def update_transform(obj: bpy.types.Object, transform: list):
 APPEARANCE_KEY = "ftb_appearance"
 
 
-def _stash_appearance(obj, appearance):
-    """Park the body's appearance on the object for whoever wants it.
+def _stash_appearance(obj, appearance, face_table=None, face_index=None):
+    """Park the body's appearance -- and any per-face ones -- on the object.
 
     Stored as JSON text. Blender's ID properties can hold nested data, but the
     exact shape Fusion sends varies by appearance family and a round-trip
     through a dict-like property drops types quietly; text comes back the same
     way it went in.
+
+    Per-face appearances ride in the same payload under "faces": a small table
+    of the distinct ones plus an index per CAD face (-1 meaning "the body's").
+    Fusion lets you paint a single face, and that is how a logo panel, a grip
+    or a two-tone housing is coloured.
     """
     try:
+        payload = None
         if appearance and isinstance(appearance, dict):
-            obj[APPEARANCE_KEY] = json.dumps(appearance)
+            payload = dict(appearance)
+        if face_table and face_index:
+            payload = payload or {}
+            payload["faces"] = {"table": face_table, "index": list(face_index)}
+        if payload:
+            obj[APPEARANCE_KEY] = json.dumps(payload)
         elif APPEARANCE_KEY in obj:
             # Fusion no longer reports one for this body. Leaving the old value
             # would have Pro repaint a colour the design does not have any more.
@@ -2157,7 +2168,9 @@ class SceneHandler:
 
         try:
             update_mesh_geometry(obj, data)
-            _stash_appearance(obj, data.get("appearance"))
+            _stash_appearance(obj, data.get("appearance"),
+                              data.get("face_appearances"),
+                              data.get("face_appearance_index"))
             hooks.run_post_body_sync(obj)
 
             # Only update transform when Scene's ftb_update_transforms is true
@@ -2227,7 +2240,9 @@ class SceneHandler:
             obj["fusion_doc"]       = getattr(self, "_sync_doc", "")
 
             update_mesh_geometry(obj, data)
-            _stash_appearance(obj, data.get("appearance"))
+            _stash_appearance(obj, data.get("appearance"),
+                              data.get("face_appearances"),
+                              data.get("face_appearance_index"))
             hooks.run_post_body_sync(obj)
 
             should_update_xform = getattr(bpy.context.scene, "ftb_update_transforms", True)
