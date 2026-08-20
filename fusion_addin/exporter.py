@@ -246,13 +246,35 @@ def _occ_lightbulb_on(occ) -> bool:
             return True
 
 
+# How long and thin a triangle Fusion is allowed to hand us.
+#
+# Fusion left to itself meshes a cylindrical wall with triangles spanning the
+# full height of the part. Measured on a real body: a median of 2:1, and a worst
+# case of 7924:1. Those needles are what tore gashes down the wall when Auto
+# Bevel touched an edge of one -- a bevel moves the vertices around an edge, and
+# on a needle that change travels its whole length.
+#
+# Five is loose enough not to multiply the triangle count much, and tight enough
+# that no triangle spans a part. Set defensively: it is not on every Fusion
+# version, and a missing setting must not stop the export.
+_MAX_ASPECT_RATIO = 5.0
+
+
+def _apply_mesh_quality(calc, surface_cm, normal_rad):
+    """The three knobs, each optional, in one place instead of three."""
+    calc.surfaceTolerance = surface_cm
+    for attr, value in (("normalTolerance", normal_rad),
+                        ("maxAspectRatio", _MAX_ASPECT_RATIO)):
+        try:
+            setattr(calc, attr, value)
+        except (AttributeError, RuntimeError):
+            pass
+    return calc
+
+
 def _calc_local_mesh(body, surface_cm: float, normal_rad: float):
     calc = body.meshManager.createMeshCalculator()
-    calc.surfaceTolerance = surface_cm
-    try:
-        calc.normalTolerance = normal_rad
-    except AttributeError:
-        pass
+    _apply_mesh_quality(calc, surface_cm, normal_rad)
     return calc.calculate()
 
 
@@ -341,11 +363,7 @@ def _calc_per_face_mesh(body, surface_cm: float, normal_rad: float):
         try:
             face = faces.item(fi)
             calc = face.meshManager.createMeshCalculator()
-            calc.surfaceTolerance = surface_cm
-            try:
-                calc.normalTolerance = normal_rad
-            except AttributeError:
-                pass
+            _apply_mesh_quality(calc, surface_cm, normal_rad)
             fm = calc.calculate()
 
             coords = fm.nodeCoordinatesAsDouble

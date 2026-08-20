@@ -85,3 +85,47 @@ def test_normalize_path_keep_instance():
 def test_normalize_path_empty_is_empty():
     assert exporter._normalize_path("") == ""
     assert exporter._normalize_path("   ") == ""
+
+
+# ── mesh quality knobs ───────────────────────────────────────────────────────
+# Fusion left to itself meshes a cylindrical wall with triangles spanning the
+# whole part -- measured at 7924:1 on a real body -- and Auto Bevel tears gashes
+# down one of those. maxAspectRatio is the setting that stops it at the source,
+# and it was never being set.
+class _Calc:
+    """Accepts every setting, like a current Fusion."""
+    def __init__(self):
+        self.applied = {}
+
+    def __setattr__(self, name, value):
+        if name == "applied":
+            object.__setattr__(self, name, value)
+        else:
+            self.applied[name] = value
+
+
+class _OldCalc(_Calc):
+    """Refuses the newer settings, like an older Fusion."""
+    def __setattr__(self, name, value):
+        if name in ("normalTolerance", "maxAspectRatio"):
+            raise AttributeError(name)
+        super().__setattr__(name, value)
+
+
+def test_all_three_quality_knobs_are_set():
+    calc = exporter._apply_mesh_quality(_Calc(), 0.001, 0.07)
+    assert calc.applied["surfaceTolerance"] == 0.001
+    assert calc.applied["normalTolerance"] == 0.07
+    assert calc.applied["maxAspectRatio"] == exporter._MAX_ASPECT_RATIO
+
+
+def test_a_fusion_without_them_still_exports():
+    """A missing setting must not cost the user their geometry."""
+    calc = exporter._apply_mesh_quality(_OldCalc(), 0.001, 0.07)
+    assert calc.applied["surfaceTolerance"] == 0.001
+    assert "maxAspectRatio" not in calc.applied
+
+
+def test_the_limit_is_loose_enough_to_be_safe():
+    """Too tight multiplies the triangle count on every body."""
+    assert 3.0 <= exporter._MAX_ASPECT_RATIO <= 10.0
