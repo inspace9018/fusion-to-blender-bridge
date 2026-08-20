@@ -107,6 +107,71 @@ def unregister_post_sync(fn):
         _post_sync.remove(fn)
 
 
+# Callables taking (joints, doc_id), run when Fusion reports the design's joints.
+#
+# Why a third hook rather than reusing the per-body one: joints arrive as their
+# own message, after the bodies, and they describe relationships BETWEEN bodies.
+# There is no single object to hand a per-body callback, and running it before
+# every body exists would parent things to Empties that are not built yet.
+_joints = []
+
+
+def register_joints(fn):
+    """Subscribe to "Fusion reported the design's joints"."""
+    if fn not in _joints:
+        _joints.append(fn)
+    return fn
+
+
+def unregister_joints(fn):
+    if fn in _joints:
+        _joints.remove(fn)
+
+
+def run_joints(joints, doc_id=""):
+    """Run joint subscribers. Never raises.
+
+    doc_id scopes the work to the document this sync came from: a .blend can
+    hold bodies from more than one Fusion document, and a joint in one of them
+    must not re-parent bodies belonging to another.
+    """
+    for fn in tuple(_joints):
+        try:
+            fn(list(joints), doc_id)
+        except Exception:
+            print(f"[FusionBridge] joints hook {getattr(fn, '__qualname__', fn)!r} raised")
+            traceback.print_exc()
+
+
+# ── Services offered to subscribers ──────────────────────────────────────────
+# An add-on that builds on top of the bridge sometimes needs to put things back
+# the way the bridge would have them -- the design-root Empty, the collection
+# layout, the up-axis the user chose. Those are this add-on's conventions, and
+# a subscriber reimplementing them would drift out of step the first time they
+# change here. Published as functions so they stay usable while the internals
+# move around.
+#
+# Imported lazily: handler imports this module, so importing it back at module
+# level would be circular.
+
+def root_collection_name() -> str:
+    """The collection everything the bridge creates lives under."""
+    from .handler import ROOT_COLLECTION_NAME
+    return ROOT_COLLECTION_NAME
+
+
+def parent_to_root(obj) -> None:
+    """Put an object back under its design-root Empty, keeping its transform."""
+    from .handler import _parent_to_root_empty
+    _parent_to_root_empty(obj, obj.get("fusion_component", ""))
+
+
+def global_axis_matrix():
+    """Fusion-space -> Blender-space, for the up axis the user selected."""
+    from .handler import _global_axis_matrix
+    return _global_axis_matrix()
+
+
 def run_post_sync(objects):
     """Run end-of-sync subscribers. Never raises.
 
