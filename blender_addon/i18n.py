@@ -35,8 +35,8 @@ _STRINGS = {
     # ── First-use hint (EU04) ─────────────────────────────────────────────────
     "hint_step1":           {"ko": "1) Fusion 360에서 애드인 Run",
                              "en": "1) Run the add-in in Fusion 360"},
-    "hint_step2":           {"ko": "2) 아래 Sync 누르기 (연결은 자동)",
-                             "en": "2) Press Sync below (connects automatically)"},
+    "hint_step2":           {"ko": "2) Sync 누르기 · 연결은 자동",
+                             "en": "2) Press Sync -- it connects"},
     # ── Connection failure hints (EU05) ───────────────────────────────────────
     # ── Preferences: where the STEP reader lives ─────────────────────────────
     "pref_step_title":      {"ko": "STEP 파일을 직접 열고 싶으신가요?",
@@ -68,15 +68,15 @@ _STRINGS = {
 
     # ── Coordinate System ─────────────────────────────────────────────────────
     "coord_system":         {"ko": "좌표계",             "en": "Coordinate System"},
-    "coord_hint":           {"ko": "  객체들이 눕거나 거꾸로면 토글",
-                             "en": "  Toggle if objects appear sideways or upside down"},
+    "coord_hint":           {"ko": "  누워 있거나 거꾸로면 바꾸세요",
+                             "en": "  Change if parts lie sideways"},
 
     # ── Import Options ────────────────────────────────────────────────────────
     "import_options":       {"ko": "임포트 옵션",        "en": "Import Options"},
-    "hide_hidden":          {"ko": "숨김 Body 숨기기 (현재: 표시)",
-                             "en": "Hide Hidden Bodies (Current: Shown)"},
-    "show_hidden":          {"ko": "숨김 Body 표시하기 (현재: 숨김)",
-                             "en": "Show Hidden Bodies (Current: Hidden)"},
+    "hide_hidden":          {"ko": "숨김 Body 다시 숨기기",
+                             "en": "Hide Hidden Bodies"},
+    "show_hidden":          {"ko": "숨김 Body 보이기",
+                             "en": "Show Hidden Bodies"},
     "root_empty":           {"ko": "최상위 Empty parent", "en": "Top-level Empty Parent"},
     "update_transforms":    {"ko": "Transform 갱신",     "en": "Update Transforms"},
     "auto_update_col":      {"ko": "Collection 자동 갱신", "en": "Auto Update Collections"},

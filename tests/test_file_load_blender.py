@@ -118,6 +118,41 @@ except Exception:
     chk("section 3", False, "raised")
 
 
+# ── 4. A quality preset that no longer exists ────────────────────────────────
+# Ultra and Custom moved to Bridge Pro. Blender stores an enum as an index, so a
+# .blend saved on one of them points past the end of the list: the dropdown
+# draws EMPTY and the tolerance readout shows dashes. Found by looking at the
+# real app, not by any of the headless checks -- none of them draw anything.
+say("\n=== 4. a stale quality preset is repaired on load ===")
+try:
+    valid = {"low", "medium", "high"}
+
+    chk("the repair handler is registered",
+        blender_addon._fix_stale_mesh_preset in bpy.app.handlers.load_post)
+
+    fixture = os.path.abspath(os.path.join(
+        os.path.dirname(__file__), "fixtures", "parts16_ultra.blend"))
+    if os.path.exists(fixture):
+        # This fixture really was saved on Ultra, which is what makes it worth
+        # opening here rather than building a scene: the invalid value cannot be
+        # set through the API, only loaded from a file that predates the change.
+        bpy.ops.wm.open_mainfile(filepath=fixture)
+        got = bpy.context.scene.ftb_mesh_preset
+        chk("a .blend saved on Ultra opens on a real preset", got in valid, got)
+    else:
+        say(f"  (fixture absent, skipped: {fixture})")
+
+    bpy.ops.wm.read_homefile(use_empty=True)
+    bpy.context.scene.ftb_mesh_preset = "high"
+    blender_addon._fix_stale_mesh_preset(None)
+    chk("a preset that IS valid is left alone",
+        bpy.context.scene.ftb_mesh_preset == "high",
+        bpy.context.scene.ftb_mesh_preset)
+except Exception:
+    traceback.print_exc()
+    chk("section 4", False, "raised")
+
+
 failed = [l for l, ok in _results if not ok]
 say(f"\n{len(_results) - len(failed)} passed, {len(failed)} failed")
 for l in failed:

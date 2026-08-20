@@ -331,6 +331,47 @@ def _restore_queue_drain(_dummy):
             traceback.print_exc()
 
 
+_VALID_PRESETS = {"low", "medium", "high"}
+
+
+@bpy.app.handlers.persistent
+def _fix_stale_mesh_preset(_dummy):
+    """Repair a quality preset that no longer exists.
+
+    Ultra and Custom moved to Bridge Pro. Blender stores an enum as an index,
+    so a .blend saved on one of them now points past the end of the list: the
+    dropdown draws EMPTY and the tolerance readout shows dashes. Seen in the
+    real app -- it reads as the add-on being broken, not as a setting having
+    moved.
+
+    Reset rather than left alone, and said out loud rather than silently: the
+    sync would otherwise go out at whatever the empty value resolves to.
+    """
+    for scene in bpy.data.scenes:
+        try:
+            current = scene.ftb_mesh_preset
+        except Exception:
+            current = None
+        if current in _VALID_PRESETS:
+            continue
+        try:
+            scene.ftb_mesh_preset = "medium"
+            print(f"[FusionBridge] '{scene.name}' had a quality preset that no "
+                  f"longer exists (Ultra and Custom are in Bridge Pro now); "
+                  f"reset to Medium.")
+        except Exception:
+            traceback.print_exc()
+
+
+def _fix_stale_mesh_preset_once():
+    """Timer wrapper: run the repair once, then stop."""
+    try:
+        _fix_stale_mesh_preset(None)
+    except Exception:
+        traceback.print_exc()
+    return None
+
+
 def register():
     print("[FusionBridge] v1.0.0 Registering add-on...")
 
@@ -356,6 +397,14 @@ def register():
 
     if _restore_queue_drain not in bpy.app.handlers.load_post:
         bpy.app.handlers.load_post.append(_restore_queue_drain)
+    if _fix_stale_mesh_preset not in bpy.app.handlers.load_post:
+        bpy.app.handlers.load_post.append(_fix_stale_mesh_preset)
+    # Also for the file that is already open when the add-on is enabled -- but
+    # NOT from here. During registration bpy.data is a _RestrictData stand-in
+    # and touching it raises, which at startup means a traceback on every launch
+    # and the add-on failing to enable. A zero-delay timer runs at the first
+    # moment data is real.
+    bpy.app.timers.register(_fix_stale_mesh_preset_once, first_interval=0.0)
 
     # EU02: auto-connect shortly after startup (deferred so context is ready).
     try:
@@ -371,6 +420,8 @@ def unregister():
 
     if _restore_queue_drain in bpy.app.handlers.load_post:
         bpy.app.handlers.load_post.remove(_restore_queue_drain)
+    if _fix_stale_mesh_preset in bpy.app.handlers.load_post:
+        bpy.app.handlers.load_post.remove(_fix_stale_mesh_preset)
 
     # EU02: drop the deferred auto-connect timer if it hasn't fired yet.
     try:
