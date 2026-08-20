@@ -143,6 +143,43 @@ def run_joints(joints, doc_id=""):
             traceback.print_exc()
 
 
+# Callables taking the quality dict about to be sent to Fusion. A subscriber
+# may change what is in it, in place.
+#
+# This one runs BEFORE anything is requested, not after something arrived: mesh
+# density is decided by Fusion while it tessellates, so it cannot be improved
+# afterwards from this side. Asking for it is the only moment there is.
+_quality = []
+
+
+def register_quality(fn):
+    """Subscribe to "a sync is about to be requested at this quality"."""
+    if fn not in _quality:
+        _quality.append(fn)
+    return fn
+
+
+def unregister_quality(fn):
+    if fn in _quality:
+        _quality.remove(fn)
+
+
+def run_quality(quality: dict) -> dict:
+    """Let subscribers change the request. Never raises; returns the dict.
+
+    A subscriber that fails leaves the dict as it was, so the sync goes out at
+    the quality this add-on chose. Losing the upgrade is a worse-looking mesh;
+    losing the sync would be the whole feature.
+    """
+    for fn in tuple(_quality):
+        try:
+            fn(quality)
+        except Exception:
+            print(f"[FusionBridge] quality hook {getattr(fn, '__qualname__', fn)!r} raised")
+            traceback.print_exc()
+    return quality
+
+
 # ── Services offered to subscribers ──────────────────────────────────────────
 # An add-on that builds on top of the bridge sometimes needs to put things back
 # the way the bridge would have them -- the design-root Empty, the collection

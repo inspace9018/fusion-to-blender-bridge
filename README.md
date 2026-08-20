@@ -53,7 +53,7 @@ Fusion에서 모델을 수정하고 Blender에서 **Sync** 한 번 누르면, �
 | 🔄 | **원클릭 동기화** | 버튼 하나로 Fusion 모델 전체를 Blender로 |
 | 🎨 | **Blender 재질 보존** | Blender에서 입힌 Material · Modifier · Light Link가 재동기화에도 그대로 |
 | 📁 | **컬렉션 자동 구성** | Fusion 컴포넌트 계층 → Blender Collection |
-| 🎛️ | **메시 품질 선택** | Low / Medium / High / Ultra 4단계 |
+| 🎛️ | **메시 품질 선택** | Low / Medium / High 3단계 |
 | 👁️ | **숨김 Body 토글** | 재동기화 없이 즉시 표시/숨기기 |
 | 🌐 | **한/영 자동 전환** | Blender 시스템 언어 감지 (수동 선택도 가능) |
 | ✏️ | **엣지 표시 보존** | 손으로 찍은 Sharp · Seam · Crease · Bevel Weight가 재동기화에도 유지 |
@@ -127,7 +127,7 @@ Step 1    Fusion 360에서 Add-in 실행 (서버 자동 시작)
             ↓
 Step 2    Blender N패널 → Fusion 360 탭 → Connect
             ↓
-Step 3    품질 프리셋 선택 (Low ~ Ultra)
+Step 3    품질 프리셋 선택 (Low ~ High)
             ↓
 Step 4    Sync 버튼 클릭
             ↓
@@ -147,7 +147,6 @@ Step 5    Fusion에서 모델 수정 → 다시 Sync
 | Low | 0.5 mm | 30° | 빠른 레이아웃 확인 |
 | **Medium** | **0.2 mm** | **15°** | **일반 작업 (기본값)** |
 | High | 0.05 mm | 8° | 렌더링 준비 |
-| Ultra | 0.01 mm | 4° | 최종 결과물 |
 
 ### 임포트 옵션
 
@@ -199,13 +198,13 @@ Step 5    Fusion에서 모델 수정 → 다시 Sync
 
 1. Blender를 완전히 재시작
 2. 복잡한 모델은 **Medium** 품질부터 시도
-3. Ultra는 처리 시간이 길 수 있습니다
+3. High는 처리 시간이 길 수 있습니다
 </details>
 
 <details>
 <summary><b>메시가 거칠어요</b></summary>
 
-품질 프리셋을 **High** 또는 **Ultra**로 변경하세요. 처리 시간이 늘어나지만 곡면이 더 매끄러워집니다.
+품질 프리셋을 **High**로 변경하세요. 처리 시간이 늘어나지만 곡면이 더 매끄러워집니다.
 </details>
 
 <details>
@@ -245,7 +244,7 @@ Edit your model in Fusion, hit **Sync** in Blender. The geometry updates. Your M
 | 🔄 | **One-click sync** | Bring your entire Fusion model into Blender |
 | 🎨 | **Your Blender look, kept** | Materials, Modifiers and Light Links you set up in Blender survive every re-sync |
 | 📁 | **Auto collections** | Fusion component hierarchy → Blender Collections |
-| 🎛️ | **Quality presets** | Low / Medium / High / Ultra mesh quality |
+| 🎛️ | **Quality presets** | Low / Medium / High mesh quality |
 | 👁️ | **Hidden body toggle** | Show/hide instantly without re-syncing |
 | 🌐 | **Auto language** | Detects Blender system language (manual override available) |
 | ✏️ | **Edge marks preserved** | Hand-marked Sharp / Seam / Crease / Bevel Weight survive every re-sync |
@@ -319,7 +318,7 @@ Step 1    Run Add-in in Fusion 360 (server starts automatically)
             ↓
 Step 2    Blender N-Panel → Fusion 360 tab → Connect
             ↓
-Step 3    Choose quality preset (Low ~ Ultra)
+Step 3    Choose quality preset (Low ~ High)
             ↓
 Step 4    Click Sync
             ↓
@@ -339,7 +338,6 @@ Step 5    Edit model in Fusion → Sync again
 | Low | 0.5 mm | 30° | Quick layout check |
 | **Medium** | **0.2 mm** | **15°** | **General work (default)** |
 | High | 0.05 mm | 8° | Render-ready |
-| Ultra | 0.01 mm | 4° | Final output |
 
 ### Import Options
 
@@ -391,13 +389,13 @@ Click the **Sync** button. Connecting alone does not transfer data.
 
 1. Restart Blender completely
 2. Try **Medium** quality first for complex models
-3. Ultra quality may take a long time
+3. High quality may take a long time
 </details>
 
 <details>
 <summary><b>Mesh too rough</b></summary>
 
-Switch to **High** or **Ultra** preset. Slower, but smoother curves.
+Switch to the **High** preset. Slower, but smoother curves.
 </details>
 
 <details>

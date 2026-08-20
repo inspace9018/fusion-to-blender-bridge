@@ -191,36 +191,20 @@ def _register_properties():
     )
 
     # ── Mesh quality preset ─────────────────────────────────────────────────
+    # Ultra and Custom moved to Bridge Pro. The three items left keep their
+    # original order on purpose: Blender stores an enum as an index, so
+    # reordering would silently give every saved .blend a different preset.
+    # A .blend saved on Ultra or Custom no longer has a matching item and falls
+    # back to the default, which is the intended product change -- with Pro
+    # installed its own precision setting takes over.
     bpy.types.Scene.ftb_mesh_preset = bpy.props.EnumProperty(
         name="Quality Preset",
         items=[
             ("low",    "Low",    "Rough, fast — quick layout check"),
             ("medium", "Medium", "Default quality — general work"),
             ("high",   "High",   "Precise — render-ready"),
-            ("ultra",  "Ultra",  "Highest quality, slow — final output"),
-            ("custom", "Custom", "Enter parameters manually"),
         ],
         default="medium",
-    )
-
-    # ── Custom parameters ──────────────────────────────────────────────────
-    bpy.types.Scene.ftb_surface_tol_mm = bpy.props.FloatProperty(
-        name="Surface Tolerance",
-        description="How far the mesh can deviate from the true surface (mm). Lower = more precise",
-        default=0.2, min=0.001, max=10.0, precision=3, step=1,
-        unit="NONE",
-    )
-    bpy.types.Scene.ftb_normal_tol_deg = bpy.props.FloatProperty(
-        name="Normal Angle Tolerance",
-        description="Tolerance for adjacent triangle normal angles (deg). Lower = denser curves (biggest quality impact)",
-        default=15.0, min=1.0, max=60.0, precision=1, step=10,
-        unit="NONE",
-    )
-    bpy.types.Scene.ftb_max_edge_mm = bpy.props.FloatProperty(
-        name="Max Triangle Edge Length",
-        description="Maximum length of a triangle edge (mm). 0 = unlimited. Controls flat-area density",
-        default=0.0, min=0.0, max=100.0, precision=1, step=10,
-        unit="NONE",
     )
 
     # ── Import options ──────────────────────────────────────────────────────
@@ -267,15 +251,16 @@ def _refresh_all_transforms():
 
 def _unregister_properties():
     for prop in ("ftb_server", "ftb_up_axis", "ftb_show_hidden_bodies",
-                 "ftb_create_root_empty", "ftb_mesh_preset", "ftb_surface_tol_mm",
-                 "ftb_normal_tol_deg", "ftb_max_edge_mm", "ftb_update_transforms",
+                 "ftb_create_root_empty", "ftb_mesh_preset", "ftb_update_transforms",
                  "ftb_update_collections", "ftb_sync_status", "ftb_sync_progress",
                  "ftb_is_syncing", "ftb_sync_error",
                  # Edge marking moved to Bridge Pro. A .blend saved while it
                  # lived here still carries these, so they are cleaned up on
                  # the way out rather than left behind as stray properties.
                  "ftb_mark_sharp", "ftb_mark_seam", "ftb_mark_smart",
-                 "ftb_auto_mark_on_sync"):
+                 "ftb_auto_mark_on_sync",
+                 # Custom tolerances moved with Ultra.
+                 "ftb_surface_tol_mm", "ftb_normal_tol_deg", "ftb_max_edge_mm"):
         try:
             delattr(bpy.types.Scene, prop)
         except AttributeError:

@@ -43,16 +43,15 @@ _get_handler = state.get_handler
 
 
 def _build_quality(context) -> dict:
-    """Build quality dict from scene settings → included in request_sync."""
-    scene = context.scene
-    preset = scene.ftb_mesh_preset
-    if preset == "custom":
-        return {
-            "surface_tolerance_mm": scene.ftb_surface_tol_mm,
-            "normal_tolerance_deg": scene.ftb_normal_tol_deg,
-            "max_edge_length_mm":   scene.ftb_max_edge_mm,
-        }
-    return {"preset": preset}
+    """The quality to ask Fusion for, after subscribers have had their say.
+
+    Density is decided by Fusion while it tessellates, so this is the only
+    moment it can be influenced -- nothing on the Blender side can add detail
+    to a mesh that arrived without it. Bridge Pro subscribes here to ask for
+    tolerances finer than the presets offered below.
+    """
+    from . import hooks
+    return hooks.run_quality({"preset": context.scene.ftb_mesh_preset})
 
 
 def _selected_fusion_objects(context):

@@ -36,7 +36,6 @@ PRESET_INFO = {
     "low":    ("0.5 mm", "30°"),
     "medium": ("0.2 mm", "15°"),
     "high":   ("0.05 mm", "8°"),
-    "ultra":  ("0.01 mm", "4°"),
 }
 
 
@@ -179,32 +178,11 @@ class FTB_PT_MainPanel(bpy.types.Panel):
         col.separator(factor=0.3)
         col.prop(scene, "ftb_mesh_preset", text="")
 
-        preset = scene.ftb_mesh_preset
-
-        if preset != "custom":
-            # Preset value info
-            info = PRESET_INFO.get(preset, ("—", "—"))
-            info_col = q_box.column(align=True)
-            info_col.scale_y = 0.75
-            info_col.label(text=f"  {t('surface_tol')}:  {info[0]}", icon="DOT")
-            info_col.label(text=f"  {t('normal_angle')}:  {info[1]}", icon="DOT")
-        else:
-            # Custom parameter input
-            custom_col = q_box.column(align=True)
-            custom_col.separator(factor=0.5)
-
-            row = custom_col.row(align=True)
-            row.label(text=t("surface_tol_mm"))
-            row = custom_col.row(align=True)
-            row.prop(scene, "ftb_surface_tol_mm", text="")
-
-            custom_col.separator(factor=0.3)
-            row = custom_col.row(align=True)
-            row.label(text=t("normal_angle_deg"))
-            row = custom_col.row(align=True)
-            row.prop(scene, "ftb_normal_tol_deg", text="")
-
-            # maximumEdgeLength removed -- not supported by Fusion 360 API
+        info = PRESET_INFO.get(scene.ftb_mesh_preset, ("—", "—"))
+        info_col = q_box.column(align=True)
+        info_col.scale_y = 0.75
+        info_col.label(text=f"  {t('surface_tol')}:  {info[0]}", icon="DOT")
+        info_col.label(text=f"  {t('normal_angle')}:  {info[1]}", icon="DOT")
 
         layout.separator(factor=0.5)
 
