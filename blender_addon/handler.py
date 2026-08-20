@@ -24,6 +24,7 @@ Materials, Modifiers, and Light Links live at the Object level, so replacing onl
 
 import array as _arr
 import base64
+import json
 import math
 import re
 import time
@@ -1413,201 +1414,36 @@ def update_transform(obj: bpy.types.Object, transform: list):
 
 
 # ─── Component path normalization (for comparison) ────────────────────────────
-# ── Fusion appearance -> Blender material ─────────────────────────────────────
-# Marks the materials this add-on created. Everything about applying an
-# appearance hangs off this: a material without the mark belongs to the user and
-# is never touched, no matter what Fusion says the body should look like.
+# ── Fusion appearance: carried, not applied ───────────────────────────────────
+# The Fusion add-in sends each body's appearance (name, colour, roughness,
+# metallic). Turning that into a Blender material belongs to Bridge Pro, so this
+# side only carries it: the payload is parked on the object and the post-body
+# hook fires right after, which is where Pro picks it up.
 #
-# The free bridge's whole promise is that the look you built in Blender survives
-# the next CAD revision. Importing appearances is only worth having if it cannot
-# break that -- so it fills in what is empty and stops there.
-FTB_MATERIAL_MARK = "ftb_fusion_appearance"
-
-# What we last wrote into the material. Compared against what is there now to
-# tell "we made this and nobody has touched it" from "we made this and the user
-# has since tuned it" -- two cases that must be handled differently, because a
-# material someone has adjusted is their work now even though we created it.
-FTB_MATERIAL_STAMP = "ftb_fusion_stamp"
+# Why park it on the object rather than hand it to the hook: the hook's contract
+# is "here is the object whose geometry was just rebuilt", and a released version
+# of this add-on is already out with that signature. Widening it would break Pro
+# builds compiled against either side of the change, silently -- the callback
+# would raise, be muted, and the feature would simply stop with no error anyone
+# would connect to it.
+APPEARANCE_KEY = "ftb_appearance"
 
 
-def _owned_by_us(mat) -> bool:
-    return bool(mat) and mat.get(FTB_MATERIAL_MARK) is not None
+def _stash_appearance(obj, appearance):
+    """Park the body's appearance on the object for whoever wants it.
 
-
-def _material_stamp(mat):
-    """A fingerprint of the parts of the material we set.
-
-    Node and link counts are in it on purpose: wiring a texture into Base Color
-    leaves the default_value untouched, so values alone would call that material
-    unmodified and quietly overwrite the colour the user wired up.
+    Stored as JSON text. Blender's ID properties can hold nested data, but the
+    exact shape Fusion sends varies by appearance family and a round-trip
+    through a dict-like property drops types quietly; text comes back the same
+    way it went in.
     """
-    node = _principled(mat)
-    if node is None:
-        return None
-
-    def value_of(socket_name):
-        try:
-            value = node.inputs[socket_name].default_value
-        except Exception:
-            return []
-        try:
-            return [round(float(v), 5) for v in value]
-        except TypeError:
-            return [round(float(value), 5)]
-
-    return (value_of("Base Color") + value_of("Roughness") + value_of("Metallic")
-            + [len(mat.node_tree.nodes), len(mat.node_tree.links)])
-
-
-def _user_modified(mat) -> bool:
-    """True when this material is no longer exactly as we left it.
-
-    Unknown counts as modified. A material we cannot verify is one we must not
-    revert -- being wrong in that direction costs the user a re-sync, being wrong
-    in the other costs them their work.
-    """
-    stored = mat.get(FTB_MATERIAL_STAMP)
-    if stored is None:
-        return True
     try:
-        return [round(float(v), 5) for v in stored] != _material_stamp(mat)
-    except Exception:
-        return True
-
-
-def _principled(mat):
-    if not mat.use_nodes:
-        return None
-    for node in mat.node_tree.nodes:
-        if node.type == 'BSDF_PRINCIPLED':
-            return node
-    return None
-
-
-def _write_appearance_into(mat, appearance: dict):
-    """Set what the appearance actually specifies, and leave the rest alone.
-
-    Fusion sends only the properties it could find, and a missing roughness is
-    not the same as a roughness of zero -- writing a default would make every
-    unspecified surface mirror-smooth.
-    """
-    mat[FTB_MATERIAL_MARK] = appearance.get("name", "")
-    mat.use_nodes = True
-    node = _principled(mat)
-    if node is None:
-        return
-    color = appearance.get("color")
-    if color and len(color) >= 3:
-        rgba = list(color[:4]) + [1.0] * (4 - len(color[:4]))
-        try:
-            node.inputs["Base Color"].default_value = rgba
-        except Exception:
-            pass
-        alpha = rgba[3]
-        try:
-            node.inputs["Alpha"].default_value = alpha
-        except Exception:
-            pass
-        if alpha < 0.999:
-            mat.blend_method = 'BLEND'
-        try:
-            mat.diffuse_color = rgba          # so it reads right in solid view too
-        except Exception:
-            pass
-    for key, socket in (("roughness", "Roughness"), ("metallic", "Metallic")):
-        if key in appearance:
-            try:
-                node.inputs[socket].default_value = float(appearance[key])
-            except Exception:
-                pass
-    stamp = _material_stamp(mat)
-    if stamp is not None:
-        mat[FTB_MATERIAL_STAMP] = stamp
-
-
-def _material_for_appearance(appearance: dict):
-    """One Blender material per Fusion appearance, reused across bodies.
-
-    Sixteen bodies painted the same colour in Fusion should arrive sharing one
-    material, the way they do in Fusion -- otherwise recolouring the design means
-    editing sixteen materials in Blender.
-    """
-    name = appearance.get("name") or "Fusion Appearance"
-    existing = bpy.data.materials.get(name)
-    if existing is not None and not _owned_by_us(existing):
-        # The name is taken by something the user made. Do not adopt it and do
-        # not rename theirs -- take a neighbouring name instead.
-        name = name + " (Fusion)"
-        existing = bpy.data.materials.get(name)
-        if existing is not None and not _owned_by_us(existing):
-            return None
-    if existing is not None and _user_modified(existing):
-        # Ours by origin, theirs by now. Fusion may have recoloured the body, but
-        # reverting a roughness someone deliberately tuned -- or unplugging the
-        # texture they wired in -- is not a colour update, it is losing their
-        # work. The object still gets pointed at the right material; what that
-        # material looks like is no longer ours to decide.
-        return existing
-    mat = existing or bpy.data.materials.new(name)
-    _write_appearance_into(mat, appearance)
-    return mat
-
-
-# Tally for the per-sync report. A body arriving with no appearance and a body
-# whose appearance we declined to apply look identical in the viewport -- both
-# stay the colour they were -- so the difference has to be said out loud.
-_appearance_tally = {"with": 0, "without": 0, "kept_user": 0, "name_only": 0}
-
-
-def reset_appearance_tally():
-    for key in _appearance_tally:
-        _appearance_tally[key] = 0
-
-
-def appearance_summary() -> str:
-    t = _appearance_tally
-    if not any(t.values()):
-        return ""
-    parts = [f"{t['with']} carried a Fusion appearance",
-             f"{t['without']} carried none"]
-    if t["name_only"]:
-        # A name with no colour still makes a material, and that material is
-        # default grey -- which looks exactly like nothing having happened.
-        parts.append(f"{t['name_only']} had a name but NO COLOUR")
-    if t["kept_user"]:
-        parts.append(f"{t['kept_user']} kept the material you set")
-    return "[FusionBridge] appearances: " + ", ".join(parts)
-
-
-def _apply_appearance(obj, appearance):
-    """Give the object its Fusion appearance, but never over the user's own work.
-
-    Four cases:
-      * no material at all              -> assign
-      * a material we made, untouched   -> update it, so a recolour lands
-      * a material we made, since edited -> keep their version; only the link
-                                            moves if Fusion now names a
-                                            different appearance
-      * anything the user made          -> leave it completely alone
-    """
-    if not appearance or not isinstance(appearance, dict):
-        _appearance_tally["without"] += 1
-        return
-    _appearance_tally["with"] += 1
-    if "color" not in appearance:
-        _appearance_tally["name_only"] += 1
-    try:
-        slots = [s.material for s in obj.material_slots]
-        if slots and not all(_owned_by_us(m) for m in slots if m is not None):
-            _appearance_tally["kept_user"] += 1
-            return                          # the user's look wins, always
-        mat = _material_for_appearance(appearance)
-        if mat is None:
-            return
-        if not obj.data.materials:
-            obj.data.materials.append(mat)
-        elif obj.data.materials[0] is not mat:
-            obj.data.materials[0] = mat
+        if appearance and isinstance(appearance, dict):
+            obj[APPEARANCE_KEY] = json.dumps(appearance)
+        elif APPEARANCE_KEY in obj:
+            # Fusion no longer reports one for this body. Leaving the old value
+            # would have Pro repaint a colour the design does not have any more.
+            del obj[APPEARANCE_KEY]
     except Exception:
         traceback.print_exc()
 
@@ -1876,7 +1712,6 @@ class SceneHandler:
         self._sync_processed = 0
         self._sync_error_count = 0
         self._last_redraw_time = 0.0
-        reset_appearance_tally()
         # Reset hidden ancestor collection tracking
         self._sync_hidden_collection_paths = set()
         # Track fids already claimed by remap in this sync (prevent cross-component collisions)
@@ -2116,18 +1951,12 @@ class SceneHandler:
             self._set_status(t("sync_done_with_errors",
                                errors=self._sync_error_count,
                                count=self._sync_processed, ts=ts))
-            summary = appearance_summary()
-            if summary:
-                print(summary)
             print(f"[FusionBridge] Streaming sync complete with {self._sync_error_count} "
                   f"error(s): {self._sync_processed} objects")
         else:
             self._set_error(False)
             self._set_status(t("sync_done", count=self._sync_processed, ts=ts))
             print(f"[FusionBridge] Streaming sync complete: {self._sync_processed} objects")
-            summary = appearance_summary()
-            if summary:
-                print(summary)
         self._set_syncing(False)
         _prog("clear_progress")
         self._tag_redraw()
@@ -2328,7 +2157,7 @@ class SceneHandler:
 
         try:
             update_mesh_geometry(obj, data)
-            _apply_appearance(obj, data.get("appearance"))
+            _stash_appearance(obj, data.get("appearance"))
             hooks.run_post_body_sync(obj)
 
             # Only update transform when Scene's ftb_update_transforms is true
@@ -2398,7 +2227,7 @@ class SceneHandler:
             obj["fusion_doc"]       = getattr(self, "_sync_doc", "")
 
             update_mesh_geometry(obj, data)
-            _apply_appearance(obj, data.get("appearance"))
+            _stash_appearance(obj, data.get("appearance"))
             hooks.run_post_body_sync(obj)
 
             should_update_xform = getattr(bpy.context.scene, "ftb_update_transforms", True)
