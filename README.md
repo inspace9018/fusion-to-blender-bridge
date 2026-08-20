@@ -68,7 +68,7 @@ Fusion에서 모델을 수정하고 Blender에서 **Sync** 한 번 누르면, �
 > | | 하는 일 | |
 > |---|---|:---:|
 > | **Bridge** (이 저장소) | Fusion ↔ Blender 동기화와 보존 | **무료** |
-> | **Bridge Pro** | **CAD를 고쳐도 UV가 살아 있게** — CAD 면 구조에서 seam·UV를 매번 다시 만듭니다 | 준비 중 |
+> | **Bridge Pro** | **Fusion이 아는 것을 전부** — 색 · 움직임 · 모서리 · 정밀도 · 토폴로지 | 준비 중 |
 > | **ID Studio for Blender** | 렌더 스튜디오 — 제품 카메라 · 스튜디오 조명 · CMF 배리에이션 · 매트릭스 배치 렌더 | 베타 |
 >
 > ⭐ **Star**를 눌러두시면 Pro · Studio 출시 소식을 가장 먼저 받아보실 수 있어요.
@@ -164,7 +164,6 @@ Step 5    Fusion에서 모델 수정 → 다시 Sync
 |------|------|
 | **Face 선택 확장** | 같은 BRep Face 전체 선택 |
 | **경계 Edge 선택** | Face Group 경계만 선택 |
-| **Edge 자동 마킹** | Sharp / Seam 자동 마킹 |
 | **UV Seam 병합** | 불필요한 seam 축소 |
 | **Face 페인팅** | Face Group별 랜덤 색상 |
 
@@ -261,7 +260,7 @@ Edit your model in Fusion, hit **Sync** in Blender. The geometry updates. Your M
 > | | What it does | |
 > |---|---|:---:|
 > | **Bridge** (this repo) | Fusion ↔ Blender sync and preservation | **Free** |
-> | **Bridge Pro** | **Keeps your UVs alive through CAD edits.** Seams and UVs are re-derived from the CAD face structure every sync | In progress |
+> | **Bridge Pro** | **Everything Fusion knows, carried over** — colour, motion, edges, precision, topology | In progress |
 > | **ID Studio for Blender** | Render studio — product cameras, studio lighting, CMF variants, matrix batch render | Beta |
 >
 > ⭐ **Star** the repo to hear about Pro and Studio first.
@@ -357,7 +356,6 @@ Step 5    Edit model in Fusion → Sync again
 |------|-------------|
 | **Expand Face Selection** | Select entire BRep Face group |
 | **Select Boundary Edges** | Select face group boundary edges |
-| **Auto Mark Edges** | Mark Sharp / Seam on boundaries |
 | **Merge UV Seams** | Reduce UV seams to boundary-only |
 | **Paint Faces** | Random colors per face group |
 
@@ -422,7 +420,7 @@ Switch to **High** or **Ultra** preset. Slower, but smoother curves.
 - 원클릭 동기화 — Blender에 세팅해 둔 Material · Modifier · Light Link 보존
 - **엣지 표시 보존** — 손으로 찍은 Sharp · Seam · Crease · Bevel Weight가 재동기화에도 유지
 - 컬렉션 자동 구성 · 메시 품질 4단계 · 숨김 Body 토글 · 한/영 자동 전환
-- Edit Mode 유틸리티 — Face 선택 확장, 경계 Edge 선택, Edge 자동 마킹, UV Seam 병합, Face 페인팅
+- Edit Mode 유틸리티 — Face 선택 확장, 경계 Edge 선택, UV Seam 병합, Face 페인팅
 - STEP 직접 임포트
 
 **라이선스: GPL-3.0-or-later** — 자유롭게 쓰고, 고치고, 상업적으로도 사용할 수 있습니다.

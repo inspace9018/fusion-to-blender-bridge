@@ -389,71 +389,6 @@ def _get_boundary_edges_for_groups(groups, bm, selected_ids):
     return boundary
 
 
-def _filter_boundary_by_normals(mesh, bm, edges, threshold_deg=5.0):
-    """Keep only boundary edges whose custom split normals actually differ."""
-    if not mesh.has_custom_normals:
-        return edges
-    loop_normals = _loop_split_normals(mesh)
-    filtered = set()
-    for edge in edges:
-        is_split = False
-        for vert in edge.verts:
-            normals_at_vert = []
-            for loop in vert.link_loops:
-                if loop.edge == edge or loop.link_loop_prev.edge == edge:
-                    normals_at_vert.append(loop_normals[loop.index])
-            if len(normals_at_vert) >= 2:
-                if _are_normals_different(normals_at_vert[0], normals_at_vert[1],
-                                          threshold_deg=threshold_deg):
-                    is_split = True
-                    break
-        if is_split:
-            filtered.add(edge)
-    return filtered
-
-
-def apply_auto_mark_edges(obj, mark_sharp=True, mark_seam=False, smart_mode=False):
-    """Mark sharp/seam on one object's BRep face-boundary edges.
-
-    Module-level so the sync handler can re-apply marks after it rebuilds geometry,
-    not just the operator. Returns the number of edges marked, or -1 when the mesh
-    has no face groups.
-    """
-    mesh = obj.data
-    groups, _face_ids = _get_face_groups(mesh)
-    if not groups or not len(mesh.edges):
-        return -1
-
-    bm = bmesh.new()
-    bm.from_mesh(mesh)
-    bm.faces.ensure_lookup_table()
-    bm.edges.ensure_lookup_table()
-
-    boundary = _face_boundary_edges(groups, mesh, bm)
-    if smart_mode:
-        boundary = _filter_boundary_by_normals(mesh, bm, boundary)
-
-    count = 0
-    for edge in boundary:
-        if mark_sharp:
-            edge.smooth = False
-        if mark_seam:
-            edge.seam = True
-        count += 1
-
-    bm.to_mesh(mesh)
-    bm.free()
-    mesh.update()
-    return count
-
-
-def _are_normals_different(a, b, threshold_deg=5.0):
-    """Check if the angle between two normal vectors exceeds the threshold."""
-    cos_t = math.cos(math.radians(threshold_deg))
-    dot = a[0]*b[0] + a[1]*b[1] + a[2]*b[2]
-    return dot < cos_t
-
-
 class FTB_OT_SelectByFaceID(bpy.types.Operator):
     bl_idname = "mesh.ftb_select_by_face_id"
     bl_label = "Select Fusion Face"
@@ -538,118 +473,6 @@ class FTB_OT_SelectByFaceIDEdge(bpy.types.Operator):
         bmesh.update_edit_mesh(mesh)
         self.report({"INFO"}, t("edges_selected", n=len(boundary)))
         return {"FINISHED"}
-
-
-class FTB_OT_AutoMarkEdges(bpy.types.Operator):
-    bl_idname = "mesh.ftb_auto_mark_edges"
-    bl_label = "Auto Mark Edges"
-    bl_description = "Mark sharp/seam on BRep Face boundary edges"
-    bl_options = {"REGISTER", "UNDO"}
-
-    mark_sharp: bpy.props.BoolProperty(name="Mark Sharp", default=True)
-    mark_seam: bpy.props.BoolProperty(name="Mark Seam", default=False)
-    smart_mode: bpy.props.BoolProperty(
-        name="Smart (Normal-based)",
-        description="Mark only boundary edges with different normals (5° threshold)",
-        default=False,
-    )
-
-    @classmethod
-    def poll(cls, context):
-        if context.mode == 'EDIT_MESH':
-            obj = context.active_object
-            return obj and "fusion_id" in obj and "ftb_face_groups" in obj.data
-        return any("fusion_id" in obj and obj.type == 'MESH'
-                   for obj in context.selected_objects)
-
-    def execute(self, context):
-        scene = context.scene
-        self.mark_sharp = getattr(scene, "ftb_mark_sharp", True)
-        self.mark_seam = getattr(scene, "ftb_mark_seam", False)
-        self.smart_mode = getattr(scene, "ftb_mark_smart", False)
-        if context.mode == 'EDIT_MESH':
-            self._mark_edit_mode(context)
-        else:
-            self._mark_object_mode(context)
-        return {"FINISHED"}
-
-    def _mark_edit_mode(self, context):
-        obj = context.active_object
-        mesh = obj.data
-        groups, face_ids = _get_face_groups(mesh)
-        if not groups:
-            return
-
-        bm = bmesh.from_edit_mesh(mesh)
-        bm.faces.ensure_lookup_table()
-        bm.edges.ensure_lookup_table()
-        selected_ids = _get_selected_group_ids(groups, bm)
-        if not selected_ids:
-            selected_ids = set(range(len(groups) // 2))
-
-        boundary = _get_boundary_edges_for_groups(groups, bm, selected_ids)
-        if self.smart_mode:
-            boundary = self._filter_by_normals(mesh, bm, boundary)
-
-        count = 0
-        for edge in boundary:
-            if self.mark_sharp:
-                edge.smooth = False
-            if self.mark_seam:
-                edge.seam = True
-            count += 1
-
-        bmesh.update_edit_mesh(mesh)
-        self.report({"INFO"}, t("edges_marked", n=count))
-
-    def _mark_object_mode(self, context):
-        total = 0
-        for obj in context.selected_objects:
-            if obj.type != 'MESH' or "fusion_id" not in obj:
-                continue
-            n = apply_auto_mark_edges(obj, mark_sharp=self.mark_sharp,
-                                      mark_seam=self.mark_seam, smart_mode=self.smart_mode)
-            if n < 0:
-                continue
-            # Remember that the user marked THIS object, so a later sync -- which
-            # rebuilds the mesh and wipes the marks -- can put them back.
-            obj["ftb_auto_marked"] = 1
-            total += n
-
-        self.report({"INFO"}, t("edges_marked", n=total))
-
-    def _filter_by_normals(self, mesh, bm, edges):
-        """Filter to only actually sharp edges based on custom split normals."""
-        if not mesh.has_custom_normals:
-            return edges
-        loop_normals = _loop_split_normals(mesh)
-        filtered = set()
-        for edge in edges:
-            is_split = False
-            for vert in edge.verts:
-                normals_at_vert = []
-                for loop in vert.link_loops:
-                    if loop.edge == edge or loop.link_loop_prev.edge == edge:
-                        normals_at_vert.append(loop_normals[loop.index])
-                if len(normals_at_vert) >= 2:
-                    if _are_normals_different(normals_at_vert[0], normals_at_vert[1]):
-                        is_split = True
-                        break
-            if is_split:
-                filtered.add(edge)
-        return filtered
-
-
-def _loop_split_normals(mesh):
-    """Per-loop custom split normals, across Blender versions.
-
-    Blender 4.1+ removed Mesh.calc_normals_split() and MeshLoop.normal; the
-    split normals are now auto-computed and exposed via Mesh.corner_normals.
-    """
-    if hasattr(mesh, "calc_normals_split"):
-        mesh.calc_normals_split()
-        return [l.normal.copy() for l in mesh.loops]
-    return [cn.vector.copy() for cn in mesh.corner_normals]
 
 
 class FTB_OT_MergeUVSeams(bpy.types.Operator):
@@ -940,7 +763,6 @@ OPERATOR_CLASSES = [
     FTB_OT_ResetRotation,
     FTB_OT_SelectByFaceID,
     FTB_OT_SelectByFaceIDEdge,
-    FTB_OT_AutoMarkEdges,
     FTB_OT_MergeUVSeams,
     FTB_OT_PaintFaces,
 ]

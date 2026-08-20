@@ -107,14 +107,11 @@ _STRINGS = {
                              "en": "  Current: X={rx:g}°  Y={ry:g}°  Z={rz:g}°"},
 
     # ── Sync options ────────────────────────────────────────────────────────────
-    "auto_mark_sync":       {"ko": "동기화 시 자동 Mark", "en": "Auto Mark on Sync"},
     "bridge_not_ready":     {"ko": "브리지가 아직 준비되지 않았습니다",
                              "en": "the bridge is not ready yet"},
 
     # ── Mesh Utilities ────────────────────────────────────────────────────────
     "mesh_utilities":       {"ko": "메시 유틸리티",      "en": "Mesh Utilities"},
-    "edge_marking":         {"ko": "Edge 마킹",         "en": "Edge Marking"},
-    "smart_normal":         {"ko": "Smart (노말 기반)",  "en": "Smart (Normal-based)"},
     "face_selection":       {"ko": "Face 선택",          "en": "Face Selection"},
     "select_fusion_face":   {"ko": "Fusion Face 선택",   "en": "Select Fusion Face"},
     "select_face_edge":     {"ko": "Fusion Face 경계 Edge 선택",
@@ -172,7 +169,6 @@ _STRINGS = {
                              "en": "{n} BRep Face(s) selected"},
     "edges_selected":       {"ko": "{n}개 경계 edge 선택됨",
                              "en": "{n} boundary edge(s) selected"},
-    "edges_marked":         {"ko": "{n}개 edge 마킹됨",  "en": "{n} edge(s) marked"},
     "face_groups_colored":  {"ko": "{n}개 face group 색상 적용",
                              "en": "{n} face group(s) colored"},
     "no_face_groups_obj":   {"ko": "{name}: face group 없음",

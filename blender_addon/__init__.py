@@ -252,21 +252,6 @@ def _register_properties():
         default=False,
     )
 
-    # ── Mesh utilities (Plasticity-style) ───────────────────────────────
-    bpy.types.Scene.ftb_mark_sharp = bpy.props.BoolProperty(
-        name="Mark Sharp", default=True)
-    bpy.types.Scene.ftb_mark_seam = bpy.props.BoolProperty(
-        name="Mark Seam", default=False)
-    bpy.types.Scene.ftb_mark_smart = bpy.props.BoolProperty(
-        name="Smart Mode",
-        description="Mark only boundary edges with different custom normals (5° threshold)",
-        default=False)
-    bpy.types.Scene.ftb_auto_mark_on_sync = bpy.props.BoolProperty(
-        name="Auto Mark on Sync",
-        description="Re-apply Auto Mark Edges to every body after each sync. Sync rebuilds "
-                    "the mesh, which wipes sharp/seam marks. Objects you marked by hand are "
-                    "re-marked anyway, toggle or not",
-        default=False)
 
 
 def _refresh_all_transforms():
@@ -286,6 +271,9 @@ def _unregister_properties():
                  "ftb_normal_tol_deg", "ftb_max_edge_mm", "ftb_update_transforms",
                  "ftb_update_collections", "ftb_sync_status", "ftb_sync_progress",
                  "ftb_is_syncing", "ftb_sync_error",
+                 # Edge marking moved to Bridge Pro. A .blend saved while it
+                 # lived here still carries these, so they are cleaned up on
+                 # the way out rather than left behind as stray properties.
                  "ftb_mark_sharp", "ftb_mark_seam", "ftb_mark_smart",
                  "ftb_auto_mark_on_sync"):
         try:

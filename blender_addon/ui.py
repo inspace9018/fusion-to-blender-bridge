@@ -331,23 +331,6 @@ class FTB_PT_UtilitiesPanel(bpy.types.Panel):
     def draw(self, context):
         layout = self.layout
 
-        # ── Auto Mark Edges ──────────────────────────────────────────────
-        box = layout.box()
-        box.label(text=t("edge_marking"), icon="EDGESEL")
-        col = box.column(align=True)
-        op = col.operator("mesh.ftb_auto_mark_edges", text="Auto Mark Edges",
-                          icon="MOD_EDGESPLIT")
-        scene = context.scene
-        row = box.row(align=True)
-        row.prop(scene, "ftb_mark_sharp", text="Sharp")
-        row.prop(scene, "ftb_mark_seam", text="Seam")
-        box.prop(scene, "ftb_mark_smart", text=t("smart_normal"))
-        # Sync rebuilds the mesh and wipes marks, so offer the same "keep it applied"
-        # toggle Auto Bevel already has.
-        box.prop(scene, "ftb_auto_mark_on_sync", text=t("auto_mark_sync"))
-
-        layout.separator(factor=0.3)
-
         # ── Face Selection ────────────────────────────────────────────────
         box = layout.box()
         box.label(text=t("face_selection"), icon="FACESEL")

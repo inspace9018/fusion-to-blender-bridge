@@ -1412,33 +1412,6 @@ def update_transform(obj: bpy.types.Object, transform: list):
         pass
 
 
-def _maybe_auto_mark_edges(obj):
-    """Re-apply Auto Mark Edges after a body's geometry is (re)built during sync.
-
-    Sync rebuilds the mesh from Fusion's buffers (clear_geometry), which destroys every
-    sharp/seam mark.
-    Re-mark when the user marked THIS object before (the ftb_auto_marked stamp the
-    operator leaves), or when the Scene toggle asks for every body.
-
-    Deliberately does NOT stamp ftb_auto_marked here: stamping from the toggle path
-    would make the toggle irreversible -- every body it ever touched would keep
-    re-marking itself after the user turned it back off.
-    """
-    try:
-        scene = bpy.context.scene
-        if not obj.get("ftb_auto_marked") and not getattr(scene, "ftb_auto_mark_on_sync", False):
-            return
-        from .operators import apply_auto_mark_edges
-        apply_auto_mark_edges(
-            obj,
-            mark_sharp=getattr(scene, "ftb_mark_sharp", True),
-            mark_seam=getattr(scene, "ftb_mark_seam", False),
-            smart_mode=getattr(scene, "ftb_mark_smart", False),
-        )
-    except Exception:
-        traceback.print_exc()
-
-
 # ─── Component path normalization (for comparison) ────────────────────────────
 # ── Fusion appearance -> Blender material ─────────────────────────────────────
 # Marks the materials this add-on created. Everything about applying an
@@ -2356,7 +2329,6 @@ class SceneHandler:
         try:
             update_mesh_geometry(obj, data)
             _apply_appearance(obj, data.get("appearance"))
-            _maybe_auto_mark_edges(obj)
             hooks.run_post_body_sync(obj)
 
             # Only update transform when Scene's ftb_update_transforms is true
@@ -2427,7 +2399,6 @@ class SceneHandler:
 
             update_mesh_geometry(obj, data)
             _apply_appearance(obj, data.get("appearance"))
-            _maybe_auto_mark_edges(obj)
             hooks.run_post_body_sync(obj)
 
             should_update_xform = getattr(bpy.context.scene, "ftb_update_transforms", True)
