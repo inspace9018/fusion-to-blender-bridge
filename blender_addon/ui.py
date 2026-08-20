@@ -198,7 +198,9 @@ class FTB_PT_MainPanel(bpy.types.Panel):
         # ── Coordinate System toggle ──────────────────────────────────────────
         axis_box = layout.box()
         axis_box.label(text=t("coord_system"), icon="ORIENTATION_GLOBAL")
-        axis_box.prop(scene, "ftb_up_axis", text="Fusion Up")
+        # No row label: the box header above already names this, and at sidebar
+        # width a second label just gets truncated to "Fusion ...".
+        axis_box.prop(scene, "ftb_up_axis", text="")
         axis_note = axis_box.column(align=True)
         axis_note.scale_y = 0.7
         axis_note.label(text=t("coord_hint"), icon="INFO")
@@ -315,25 +317,19 @@ class FTB_PT_UtilitiesPanel(bpy.types.Panel):
     def draw(self, context):
         layout = self.layout
 
-        # ── Face Selection ────────────────────────────────────────────────
-        box = layout.box()
-        box.label(text=t("face_selection"), icon="FACESEL")
-        col = box.column(align=True)
+        # Four buttons, no inner boxes. They used to sit in a "Face Selection"
+        # box and an "Other" box -- two headings for four items, one of which
+        # said nothing.
+        col = layout.column(align=True)
         col.operator("mesh.ftb_select_by_face_id",
                      text=t("select_fusion_face"), icon="FACE_MAPS")
         col.operator("mesh.ftb_select_by_face_id_edge",
                      text=t("select_face_edge"), icon="EDGESEL")
-
-        layout.separator(factor=0.3)
-
-        # ── Other utilities ───────────────────────────────────────────────
-        box = layout.box()
-        box.label(text=t("other"), icon="TOOL_SETTINGS")
-        box.operator("mesh.ftb_merge_uv_seams",
+        col.separator(factor=0.5)
+        col.operator("mesh.ftb_merge_uv_seams",
                      text="Merge UV Seams", icon="UV")
-        box.operator("mesh.ftb_paint_faces",
+        col.operator("mesh.ftb_paint_faces",
                      text="Paint Fusion Faces", icon="BRUSH_DATA")
-
 
 # ─── ID Studio upsell teaser (auto-hides once the paid add-on is installed) ───
 # Hidden until ID Studio is actually for sale: flip PRO_TEASER_ENABLED to True

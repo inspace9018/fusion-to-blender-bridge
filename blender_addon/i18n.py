@@ -112,11 +112,9 @@ _STRINGS = {
 
     # ── Mesh Utilities ────────────────────────────────────────────────────────
     "mesh_utilities":       {"ko": "메시 유틸리티",      "en": "Mesh Utilities"},
-    "face_selection":       {"ko": "Face 선택",          "en": "Face Selection"},
     "select_fusion_face":   {"ko": "Fusion Face 선택",   "en": "Select Fusion Face"},
     "select_face_edge":     {"ko": "Fusion Face 경계 Edge 선택",
                              "en": "Select Fusion Face Boundary Edges"},
-    "other":                {"ko": "기타",               "en": "Other"},
 
     # ── Status Messages ───────────────────────────────────────────────────────
     "syncing":              {"ko": "동기화 중...  {current} / {total}   ({pct} %)",
