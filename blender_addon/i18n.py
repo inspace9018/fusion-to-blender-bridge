@@ -293,7 +293,10 @@ def _get_locale() -> str:
     """Return 'ko' or 'en' based on addon preference, falling back to Blender system language."""
     # 1) Check addon preference (manual override)
     try:
-        prefs = bpy.context.preferences.addons.get(__package__)
+        # Top-level name: inside Bridge Pro this module is
+        # bridge_pro.core.i18n, and the preferences are the host's.
+        prefs = bpy.context.preferences.addons.get(
+            __package__.partition('.')[0])
         if prefs and hasattr(prefs, 'preferences'):
             lang = getattr(prefs.preferences, 'ftb_language', 'auto')
             if lang == 'ko':

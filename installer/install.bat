@@ -50,14 +50,22 @@ if defined MODE goto %MODE%
 cls
 echo.
 echo  ========================================================
-echo    Fusion to Blender Lite  -  Installer
+if defined HAS_PRO (
+    echo    Fusion to Blender Bridge  -  Installer
+) else (
+    echo    Fusion to Blender Lite  -  Installer
+)
 echo  ========================================================
 echo.
 echo    This sets up the bridge that brings your Fusion 360
 echo    models into Blender. It installs TWO parts:
 echo.
 echo      [1] Fusion 360 add-in
-echo      [2] Blender add-on
+if defined HAS_PRO (
+    echo      [2] Blender add-on  ^(Bridge Pro - the sync is inside it^)
+) else (
+    echo      [2] Blender add-on
+)
 echo.
 echo    BEFORE YOU START:
 echo      * Please CLOSE Fusion 360 and Blender first
@@ -88,7 +96,11 @@ REM ----------------------------------------------------------------------------
 :install
 cls
 echo.
-echo   Installing Fusion to Blender Lite...
+if defined HAS_PRO (
+    echo   Installing Fusion to Blender Bridge...
+) else (
+    echo   Installing Fusion to Blender Lite...
+)
 echo.
 
 REM --- Sanity: the two source folders must sit next to this script ----------
@@ -97,20 +109,26 @@ if not exist "%FUSION_SRC%\" (
     echo       Re-extract the downloaded ZIP and run install.bat from inside it.
     goto done
 )
-if not exist "%BLENDER_SRC%\" (
+REM  The paid bundle has no free Blender folder -- bridge_pro contains it.
+if not defined HAS_PRO if not exist "%BLENDER_SRC%\" (
     echo   [!] Missing folder next to this installer: %BLENDER_NAME%
     echo       Re-extract the downloaded ZIP and run install.bat from inside it.
     goto done
 )
 
 REM --- Part 1: Fusion 360 add-in -------------------------------------------
-if defined HAS_PRO ( echo   [1/3] Fusion 360 add-in ) else ( echo   [1/2] Fusion 360 add-in )
+echo   [1/2] Fusion 360 add-in
 if not exist "%FUSION_ADDINS%\" mkdir "%FUSION_ADDINS%"
 call :clean_replace "%FUSION_SRC%" "%FUSION_DEST%" "%FUSION_NAME%"
 if errorlevel 1 ( echo        ^-^> FAILED  & set "FAIL=1" ) else ( echo        ^-^> OK  ^(%FUSION_DEST%^) )
 
 REM --- Part 2: Blender add-on (every detected version) ----------------------
-if defined HAS_PRO ( echo   [2/3] Blender add-on ) else ( echo   [2/2] Blender add-on )
+REM  Bridge Pro CONTAINS the free add-on, so the paid path removes an older
+REM  free install rather than adding one. With both present every operator id
+REM  is claimed twice: two panels, and every body synced twice.
+if defined HAS_PRO goto blender_pro
+
+echo   [2/2] Blender add-on
 set "BL_COUNT=0"
 if exist "%BLENDER_BASE%\" (
     for /d %%V in ("%BLENDER_BASE%\*") do (
@@ -130,9 +148,22 @@ if "%BL_COUNT%"=="0" (
     echo           pointing at the %BLENDER_NAME% folder.
 )
 
-REM --- Part 3: Bridge Pro (paid bundle only) -------------------------------
+goto blender_done
+
+:blender_pro
+echo   [2/2] Blender add-on ^(Bridge Pro^)
+if exist "%BLENDER_BASE%\" (
+    for /d %%V in ("%BLENDER_BASE%\*") do (
+        set "OLD=%%~fV\scripts\addons\%BLENDER_NAME%"
+        if exist "!OLD!\" (
+            call :remove_dir "!OLD!" "%BLENDER_NAME%"
+            echo        ^-^> %%~nxV  removed the free add-on ^(Pro contains it^)
+        )
+    )
+)
+
+REM --- Bridge Pro ----------------------------------------------------------
 if defined HAS_PRO (
-    echo   [3/3] Bridge Pro
     set "PRO_COUNT=0"
     if exist "%BLENDER_BASE%\" (
         for /d %%V in ("%BLENDER_BASE%\*") do (
@@ -149,6 +180,7 @@ if defined HAS_PRO (
     )
 )
 
+:blender_done
 echo.
 if defined FAIL (
     echo   [!] Finished with some errors. If Fusion/Blender were open, close them and run Update/Repair.
@@ -159,8 +191,13 @@ echo.
 echo   NEXT STEPS:
 echo     - Fusion 360:  Utilities ^(or Tools^) ^> Add-Ins ^> "Scripts and Add-Ins"
 echo                    ^> Add-Ins tab ^> select "%FUSION_NAME%" ^> Run
-echo     - Blender:     Edit ^> Preferences ^> Add-ons ^> enable
-echo                    "Fusion to Blender Lite"  ^(then restart Blender^)
+if defined HAS_PRO (
+    echo     - Blender:     Edit ^> Preferences ^> Add-ons ^> enable
+    echo                    "Fusion to Blender Bridge"  ^(then restart Blender^)
+) else (
+    echo     - Blender:     Edit ^> Preferences ^> Add-ons ^> enable
+    echo                    "Fusion to Blender Lite"  ^(then restart Blender^)
+)
 echo     - Then in Blender just press Sync. Connection is automatic.
 echo.
 if defined MODE goto end
@@ -170,22 +207,23 @@ REM ----------------------------------------------------------------------------
 :uninstall
 cls
 echo.
-echo   Uninstall - this removes ONLY these two folders:
+echo   Uninstall - this removes ONLY these folders:
 echo     - %FUSION_DEST%
-echo     - %BLENDER_BASE%\<version>\scripts\addons\%BLENDER_NAME%
+echo     - %BLENDER_BASE%\^<version^>\scripts\addons\%BLENDER_NAME%
+if defined HAS_PRO echo     - %BLENDER_BASE%\^<version^>\scripts\addons\%PRO_NAME%
 echo.
 if not defined MODE (
     set "OK="
-    set /p "OK=   Remove Fusion to Blender Lite? (Y/N): "
+    if defined HAS_PRO ( set /p "OK=   Remove Fusion to Blender Bridge? (Y/N): " ) else ( set /p "OK=   Remove Fusion to Blender Lite? (Y/N): " )
     if /i not "!OK!"=="Y" goto menu
 )
 
 echo.
-if defined HAS_PRO ( echo   [1/3] Fusion 360 add-in ) else ( echo   [1/2] Fusion 360 add-in )
+echo   [1/2] Fusion 360 add-in
 call :remove_dir "%FUSION_DEST%" "%FUSION_NAME%"
 if errorlevel 1 ( echo        ^-^> not found / nothing to remove ) else ( echo        ^-^> removed )
 
-if defined HAS_PRO ( echo   [2/3] Blender add-on ) else ( echo   [2/2] Blender add-on )
+echo   [2/2] Blender add-ons
 set "BL_RM=0"
 if exist "%BLENDER_BASE%\" (
     for /d %%V in ("%BLENDER_BASE%\*") do (
@@ -199,7 +237,7 @@ if exist "%BLENDER_BASE%\" (
 if "%BL_RM%"=="0" echo        ^-^> none found
 
 if defined HAS_PRO (
-    echo   [3/3] Bridge Pro
+    echo        Bridge Pro
     set "PRO_RM=0"
     if exist "%BLENDER_BASE%\" (
         for /d %%V in ("%BLENDER_BASE%\*") do (

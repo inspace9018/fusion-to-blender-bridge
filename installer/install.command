@@ -61,9 +61,14 @@ remove_dir() {
 do_install() {
   clear
   echo
-  echo "  Installing Fusion to Blender Lite..."
+  if [ "$HAS_PRO" -eq 1 ]; then
+    echo "  Installing Fusion to Blender Bridge..."
+  else
+    echo "  Installing Fusion to Blender Lite..."
+  fi
   echo
-  if [ ! -d "$FUSION_SRC" ] || [ ! -d "$BLENDER_SRC" ]; then
+  # The paid bundle carries no free Blender folder -- bridge_pro contains it.
+  if [ ! -d "$FUSION_SRC" ] || { [ "$HAS_PRO" -eq 0 ] && [ ! -d "$BLENDER_SRC" ]; }; then
     echo "  [!] Missing add-on folder(s) next to this installer."
     echo "      Re-extract the downloaded ZIP and run install.command from inside it."
     pause; return
@@ -79,29 +84,45 @@ do_install() {
     echo "        -> FAILED"; fail=1
   fi
 
-  if [ "$HAS_PRO" -eq 1 ]; then echo "  [2/3] Blender add-on"; else echo "  [2/2] Blender add-on"; fi
-  local count=0
-  if [ -d "$BLENDER_BASE" ]; then
-    for vdir in "$BLENDER_BASE"/*/; do
-      [ -d "$vdir" ] || continue
-      local dest="${vdir}scripts/addons/$BLENDER_NAME"
-      mkdir -p "${vdir}scripts/addons"
-      if clean_replace "$BLENDER_SRC" "$dest" "$BLENDER_NAME"; then
-        echo "        -> $(basename "$vdir")  OK"; count=$((count+1))
-      else
-        echo "        -> $(basename "$vdir")  FAILED"; fail=1
-      fi
-    done
-  fi
-  if [ "$count" -eq 0 ]; then
-    echo "        -> No Blender user folder found automatically."
-    echo "           Open Blender once, or install via Blender:"
-    echo "           Edit > Preferences > Add-ons > Install from Disk"
-    echo "           pointing at the $BLENDER_NAME folder."
+  # Bridge Pro CONTAINS the free add-on, so the paid path REMOVES an older free
+  # install rather than adding one. With both present every operator id is
+  # claimed twice: two panels, and every body synced twice.
+  if [ "$HAS_PRO" -eq 1 ]; then
+    echo "  [2/2] Blender add-on (Bridge Pro)"
+    if [ -d "$BLENDER_BASE" ]; then
+      for vdir in "$BLENDER_BASE"/*/; do
+        [ -d "$vdir" ] || continue
+        old="${vdir}scripts/addons/$BLENDER_NAME"
+        if [ -d "$old" ] && remove_dir "$old" "$BLENDER_NAME"; then
+          echo "        -> $(basename "$vdir")  removed the free add-on (Pro contains it)"
+        fi
+      done
+    fi
+  else
+    echo "  [2/2] Blender add-on"
+    local count=0
+    if [ -d "$BLENDER_BASE" ]; then
+      for vdir in "$BLENDER_BASE"/*/; do
+        [ -d "$vdir" ] || continue
+        local dest="${vdir}scripts/addons/$BLENDER_NAME"
+        mkdir -p "${vdir}scripts/addons"
+        if clean_replace "$BLENDER_SRC" "$dest" "$BLENDER_NAME"; then
+          echo "        -> $(basename "$vdir")  OK"; count=$((count+1))
+        else
+          echo "        -> $(basename "$vdir")  FAILED"; fail=1
+        fi
+      done
+    fi
+    if [ "$count" -eq 0 ]; then
+      echo "        -> No Blender user folder found automatically."
+      echo "           Open Blender once, or install via Blender:"
+      echo "           Edit > Preferences > Add-ons > Install from Disk"
+      echo "           pointing at the $BLENDER_NAME folder."
+    fi
   fi
 
   if [ "$HAS_PRO" -eq 1 ]; then
-    echo "  [3/3] Bridge Pro"
+    echo "       Bridge Pro"
     pcount=0
     if [ -d "$BLENDER_BASE" ]; then
       for vdir in "$BLENDER_BASE"/*/; do
@@ -142,6 +163,8 @@ do_uninstall() {
   echo "  Uninstall - removes ONLY these two folders:"
   echo "    - $FUSION_DEST"
   echo "    - $BLENDER_BASE/<version>/scripts/addons/$BLENDER_NAME"
+  [ "$HAS_PRO" -eq 1 ] && echo "    - $BLENDER_BASE/<version>/scripts/addons/$PRO_NAME"
+  [ "$HAS_PRO" -eq 1 ] && echo "    - $BLENDER_BASE/<version>/scripts/addons/$PRO_NAME"
   echo
   if [ -z "$MODE" ]; then
     read -r -p "  Remove Fusion to Blender Lite? (y/N): " ok
@@ -149,10 +172,10 @@ do_uninstall() {
   fi
 
   echo
-  if [ "$HAS_PRO" -eq 1 ]; then echo "  [1/3] Fusion 360 add-in"; else echo "  [1/2] Fusion 360 add-in"; fi
+  echo "  [1/2] Fusion 360 add-in"
   if remove_dir "$FUSION_DEST" "$FUSION_NAME"; then echo "        -> removed"; else echo "        -> not found"; fi
 
-  if [ "$HAS_PRO" -eq 1 ]; then echo "  [2/3] Blender add-on"; else echo "  [2/2] Blender add-on"; fi
+  echo "  [2/2] Blender add-ons"
   local rm=0
   if [ -d "$BLENDER_BASE" ]; then
     for vdir in "$BLENDER_BASE"/*/; do
@@ -165,7 +188,7 @@ do_uninstall() {
   [ "$rm" -eq 0 ] && echo "        -> none found"
 
   if [ "$HAS_PRO" -eq 1 ]; then
-    echo "  [3/3] Bridge Pro"
+    echo "       Bridge Pro"
     prm=0
     if [ -d "$BLENDER_BASE" ]; then
       for vdir in "$BLENDER_BASE"/*/; do

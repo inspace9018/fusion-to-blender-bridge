@@ -35,14 +35,31 @@ EXEC_FILES = (".command", ".sh")
 EXCLUDE_ADDON_FILES = {"install.bat", "install.command", "install.sh", "README.txt"}
 
 
+def _line_endings_for(path, data):
+    """What .gitattributes declares, enforced at package time.
+
+    Not trusted from the working copy: the file on disk drifts, and it had --
+    install.command was carrying CRLF, so its shebang ended in a carriage
+    return and macOS answered "bad interpreter". A packager that copies bytes
+    verbatim ships that every time.
+    """
+    data = data.replace(b"\r\n", b"\n")
+    if path.endswith((".bat", "README.txt")):
+        data = data.replace(b"\n", b"\r\n")
+    return data
+
+
 def _add_file(zf, disk_path, arcname):
     if disk_path.endswith(EXEC_FILES):
         with open(disk_path, "rb") as fh:
-            data = fh.read()
+            data = _line_endings_for(disk_path, fh.read())
         zi = zipfile.ZipInfo(arcname)
         zi.compress_type = zipfile.ZIP_DEFLATED
         zi.external_attr = 0o755 << 16   # keep the executable bit on macOS
         zf.writestr(zi, data)
+    elif disk_path.endswith((".bat", "README.txt")):
+        with open(disk_path, "rb") as fh:
+            zf.writestr(arcname, _line_endings_for(disk_path, fh.read()))
     else:
         zf.write(disk_path, arcname)
 

@@ -40,18 +40,30 @@ PRESET_INFO = {
 
 
 def _panel_title() -> str:
-    """"Fusion to Blender Lite  v1.0" -- the version read, never typed.
+    """"Fusion to Blender Lite  v1.0" -- both parts read, neither typed.
 
-    It was typed, and it drifted: the panel still said v1.4 after the add-on was
-    renumbered to 1.0.0, which is the version a user reads first and the one that
-    ends up in every screenshot. Reading it from bl_info costs nothing and cannot
-    go stale.
+    The version was typed once and drifted: the panel still said v1.4 after the
+    add-on was renumbered to 1.0.0, which is the version a user reads first and
+    the one that ends up in every screenshot.
+
+    The NAME is read for the same reason. Vendored inside Bridge Pro this is not
+    Lite any more -- it is the paid product's sync half -- and a panel titled
+    "Lite" inside something someone paid for reads as the wrong thing installed.
     """
     try:
-        from . import bl_info
-        return "Fusion to Blender Lite  v{}.{}".format(*bl_info["version"][:2])
+        from . import bl_info, VENDORED
+        name = bl_info["name"]
+        version = bl_info["version"][:2]
+        if VENDORED:
+            # The host add-on's own bl_info, which is the product the user has.
+            import sys
+            host = sys.modules.get(__package__.partition(".")[0])
+            host_info = getattr(host, "bl_info", None) or {}
+            name = host_info.get("name", name)
+            version = host_info.get("version", bl_info["version"])[:2]
+        return "{}  v{}.{}".format(name, *version)
     except Exception:
-        return "Fusion to Blender Lite"
+        return "Fusion to Blender"
 
 
 class FTB_PT_MainPanel(bpy.types.Panel):

@@ -34,6 +34,16 @@ bl_info = {
 import bpy
 import traceback
 
+# This package is installed two ways. On its own it is the free add-on and
+# __package__ is "blender_addon". Inside Bridge Pro it is vendored as a
+# sub-package and __package__ becomes "bridge_pro.core" -- but Blender still
+# knows only the top-level add-on, so preferences live under that name.
+#
+# One source, both shapes: the paid build is generated from this tree at package
+# time rather than copied by hand, and a second copy always drifts.
+ADDON_KEY = __package__.partition(".")[0]
+VENDORED = "." in __package__
+
 # ── Reload submodules on reinstall-without-restart ───────────────────────────
 # Python caches already-imported submodules, so reinstalling the add-on WITHOUT
 # restarting Blender keeps running the OLD code -- only __init__ re-runs (which
@@ -66,7 +76,7 @@ from . import operators, ui, progress
 
 # ─── Addon Preferences (Edit > Preferences > Add-ons) ────────────────────────
 class FTBPreferences(bpy.types.AddonPreferences):
-    bl_idname = __package__
+    bl_idname = ADDON_KEY
 
     ftb_language: bpy.props.EnumProperty(
         name="Language",
@@ -301,7 +311,7 @@ def _try_auto_connect():
         # Already gone, already connected, or already connecting -- nothing to do.
         if client is None or client.connected or client._should_reconnect:
             return None
-        prefs = bpy.context.preferences.addons.get(__package__)
+        prefs = bpy.context.preferences.addons.get(ADDON_KEY)
         if not prefs or not getattr(prefs.preferences, "ftb_auto_connect", True):
             return None
         server = "localhost:9080"
@@ -375,7 +385,11 @@ def _fix_stale_mesh_preset_once():
 def register():
     print("[FusionBridge] v1.0.0 Registering add-on...")
 
-    bpy.utils.register_class(FTBPreferences)
+    # Vendored inside Bridge Pro, the host registers ONE preferences class
+    # carrying these same property names. Two classes claiming the same
+    # bl_idname is an error, and the second one silently wins.
+    if not VENDORED:
+        bpy.utils.register_class(FTBPreferences)
 
     state._handler = SceneHandler()
     state._client  = FusionBridgeClient(state._handler)
@@ -452,7 +466,8 @@ def unregister():
 
     _unregister_properties()
 
-    bpy.utils.unregister_class(FTBPreferences)
+    if not VENDORED:
+        bpy.utils.unregister_class(FTBPreferences)
 
     print("[FusionBridge] Add-on unregistered")
 
