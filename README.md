@@ -55,7 +55,7 @@ Fusion에서 모델을 수정하고 Blender에서 **Sync** 한 번 누르면, �
 | 📁 | **컬렉션 자동 구성** | Fusion 컴포넌트 계층 → Blender Collection |
 | 🎛️ | **메시 품질 선택** | Low / Medium / High 3단계 |
 | 👁️ | **숨김 Body 토글** | 재동기화 없이 즉시 표시/숨기기 |
-| 🌐 | **한/영 자동 전환** | Blender 시스템 언어 감지 (수동 선택도 가능) |
+| 🌐 | **한/영 자동 전환** | Blender 시스템 언어 감지 (직접 고르려면 애드온 설정에서) |
 | ✏️ | **엣지 표시 보존** | 손으로 찍은 Sharp · Seam · Crease · Bevel Weight가 재동기화에도 유지 |
 | 📐 | **STEP 임포트** | Fusion 없이 `.step` / `.stp` 파일 열기 (최초 1회 STEP 지원 설치 필요) |
 
@@ -246,7 +246,7 @@ Edit your model in Fusion, hit **Sync** in Blender. The geometry updates. Your M
 | 📁 | **Auto collections** | Fusion component hierarchy → Blender Collections |
 | 🎛️ | **Quality presets** | Low / Medium / High mesh quality |
 | 👁️ | **Hidden body toggle** | Show/hide instantly without re-syncing |
-| 🌐 | **Auto language** | Detects Blender system language (manual override available) |
+| 🌐 | **Auto language** | Detects Blender's language (override in the add-on preferences) |
 | ✏️ | **Edge marks preserved** | Hand-marked Sharp / Seam / Crease / Bevel Weight survive every re-sync |
 | 📐 | **STEP import** | Open `.step` / `.stp` files without Fusion (one-time STEP-support install) |
 
@@ -417,7 +417,7 @@ Switch to the **High** preset. Slower, but smoother curves.
 **하는 일**
 - 원클릭 동기화 — Blender에 세팅해 둔 Material · Modifier · Light Link 보존
 - **엣지 표시 보존** — 손으로 찍은 Sharp · Seam · Crease · Bevel Weight가 재동기화에도 유지
-- 컬렉션 자동 구성 · 메시 품질 4단계 · 숨김 Body 토글 · 한/영 자동 전환
+- 컬렉션 자동 구성 · 메시 품질 3단계 · 숨김 Body 토글 · 한/영 자동 전환
 - Edit Mode 유틸리티 — Face 선택 확장, 경계 Edge 선택, UV Seam 병합, Face 페인팅
 - STEP 직접 임포트
 

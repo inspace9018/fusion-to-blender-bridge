@@ -232,16 +232,11 @@ class FTB_PT_MainPanel(bpy.types.Panel):
         # __init__.has_step_support() for why. Nothing below should run then.
         self._draw_step_support(layout)
 
-        # ── Language selector ────────────────────────────────────────────────
-        layout.separator(factor=0.5)
-        try:
-            prefs = context.preferences.addons.get(__package__)
-            if prefs:
-                lang_row = layout.row(align=True)
-                lang_row.label(text="", icon="WORLD")
-                lang_row.prop(prefs.preferences, "ftb_language", text="")
-        except Exception:
-            pass
+        # No language selector here. It lives in Edit > Preferences > Add-ons,
+        # next to auto-connect, which is where Blender keeps settings that are
+        # about the add-on rather than about the scene -- and it is set once and
+        # never touched again, so it does not earn a permanent row in a panel
+        # people open on every revision.
 
 
 class FTB_PT_ManagePanel(bpy.types.Panel):
