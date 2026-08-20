@@ -169,6 +169,15 @@ class FTB_PT_MainPanel(bpy.types.Panel):
             hint.label(text=t("hint_step1"), icon="INFO")
             hint.label(text=t("hint_step2"), icon="BLANK1")
 
+        # ── Sync ─────────────────────────────────────────────────────────────
+        # Directly under the connection state, not at the bottom. It is the one
+        # button pressed on every revision, and everything below it is a setting
+        # touched once and left alone -- so the settings should not have to be
+        # scrolled past to reach it.
+        sync_row = layout.row()
+        sync_row.scale_y = 1.5
+        sync_row.operator("ftb.request_sync", text=t("sync"), icon="FILE_REFRESH")
+
         layout.separator(factor=0.5)
 
         # ── Mesh Quality ─────────────────────────────────────────────────────
@@ -216,11 +225,6 @@ class FTB_PT_MainPanel(bpy.types.Panel):
 
         layout.separator(factor=0.3)
 
-        # ── Sync button + status ─────────────────────────────────────────────
-        sync_row = layout.row()
-        sync_row.scale_y = 1.5
-        sync_row.operator("ftb.request_sync", text=t("sync"), icon="FILE_REFRESH")
-
         # ── STEP support (OCP) installer -- shown only while relevant (F033) ───
         # Absent entirely in the extensions-platform build; see
         # __init__.has_step_support() for why. Nothing below should run then.
@@ -250,8 +254,10 @@ class FTB_PT_ManagePanel(bpy.types.Panel):
         layout = self.layout
         scene  = context.scene
 
-        layout.prop(scene, "ftb_update_transforms", text=t("update_transforms_l"))
-        layout.prop(scene, "ftb_update_collections", text=t("auto_update_col_l"))
+        # The two update toggles used to be repeated here as well as in the
+        # main panel's import options. Two switches for one setting is one too
+        # many -- whichever is looked at second seems to have been ignored.
+        # Only the notice stays, because this is where the object list is.
 
         # Collection preservation notice
         if not getattr(scene, "ftb_update_collections", False):
