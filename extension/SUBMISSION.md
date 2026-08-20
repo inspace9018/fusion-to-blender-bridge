@@ -60,7 +60,7 @@ once and it survives every change to the part.
 - Materials, modifiers and light links you set up in Blender survive every re-sync
 - Hand-marked Sharp, Seam, Crease and Bevel Weight survive too
 - Fusion's component hierarchy arrives as Blender collections
-- Four mesh quality presets, from a quick layout check to a final render
+- Three mesh quality presets, from a quick layout check to a final render
 - Show or hide Fusion-hidden bodies instantly, with no re-sync
 - Custom split normals, so curved CAD surfaces read correctly
 - Interface follows Blender's language (English and Korean)
@@ -111,7 +111,7 @@ First public release.
 - One-click sync from Fusion 360, with the whole component hierarchy
 - Your Blender materials, modifiers and light links survive every re-sync
 - Hand-marked Sharp / Seam / Crease / Bevel Weight survive too
-- Four mesh quality presets
+- Three mesh quality presets
 - Instant show/hide of bodies hidden in Fusion
 - English / Korean interface
 ````
