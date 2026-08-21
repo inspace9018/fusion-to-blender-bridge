@@ -28,6 +28,13 @@ run_bundle() {      # run_bundle <label> <zip> <top> <is_pro>
   mkdir -p "$BL/4.5/scripts/addons/fusion_to_blender_addon_blender"
 
   echo; echo "=== $label ==="
+  if [ ! -f "$dir/$top/install.command" ]; then
+    # Windows-only bundle. Shipping no macOS installer is a decision (the
+    # paid one is Windows-only until the script has actually been run on a
+    # Mac), so there is nothing here to drive end to end.
+    ok "no macOS installer shipped (Windows-only bundle)"
+    return
+  fi
   bash -n "$dir/$top/install.command" && ok "syntax" || bad "syntax"
   [ -x "$dir/$top/install.command" ] && ok "executable after unzip" \
                                      || bad "executable after unzip"

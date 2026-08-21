@@ -789,12 +789,33 @@ def _appearance_cached(appearance) -> dict | None:
 # the shared time budget stops a pathological design from holding up the sync --
 # it just falls back to the body's one colour, which is what happened before
 # this existed.
-def _face_appearance(face) -> dict | None:
-    """The appearance painted on this face specifically, or None.
+def _appearance_ident(entry):
+    """What makes two appearance payloads the same thing to a person looking.
 
-    None means "nothing of its own", not "no colour": the face then shows the
-    body's appearance, and saying so lets the Blender side skip it entirely
-    rather than making a duplicate material per face.
+    Compared by value rather than by identity: the body's appearance may be
+    resolved from the occurrence while a face reports the component's, and two
+    dicts that describe the same surface must still count as equal.
+    """
+    if not entry:
+        return None
+    return (entry.get("name"),
+            tuple(entry.get("color") or ()),
+            entry.get("roughness"),
+            entry.get("metallic"))
+
+
+def _face_appearance(face) -> dict | None:
+    """The appearance this face shows, or None if it could not be read.
+
+    Note what this is NOT: Fusion resolves face.appearance through the whole
+    override chain, so a face nobody has ever touched still answers with the
+    body's appearance rather than with None. There is no "has its own" flag to
+    read. Telling a painted face from an inherited one therefore has to be done
+    by comparing values -- see _appearance_ident and the caller -- and that
+    comparison is not optional: without it every polygon on every body gets
+    repainted from the face table, which silently throws away the appearance
+    _body_appearance resolved from the OCCURRENCE. That is how a part coloured
+    per-instance in Fusion arrives in the component's colour instead.
     """
     if _appearance_spent[0] >= _APPEARANCE_BUDGET_S:
         return None
@@ -808,6 +829,43 @@ def _face_appearance(face) -> dict | None:
         return _appearance_cached(own)
     except Exception:
         return None
+
+
+def build_face_appearance_payload(face_appearances, body_appearance):
+    """A table of the faces that differ from the body, plus one index per face.
+
+    Returns None when there is nothing worth sending, which is the ordinary
+    case: most bodies are one colour, and the payload should not grow by a
+    list as long as the face count to say so.
+
+    The comparison against the body is the whole point and was missing.
+    Fusion resolves face.appearance through the override chain, so a face
+    nobody has ever painted still answers with the body's appearance instead
+    of with None -- there is no "has its own" flag to read. With nothing
+    filtered, every face landed in the table and the Blender side repainted
+    every polygon from it, throwing away the appearance _body_appearance had
+    resolved from the OCCURRENCE. A part coloured per-instance in Fusion then
+    arrived in the component's colour, and the feature that was supposed to
+    carry colour was the thing losing it.
+
+    -1 in the index means "this face just shows the body's".
+    """
+    if not face_appearances or not any(face_appearances):
+        return None
+    body_ident = _appearance_ident(body_appearance)
+    table, index, seen = [], [], {}
+    for got in face_appearances:
+        if not got or _appearance_ident(got) == body_ident:
+            index.append(-1)
+            continue
+        key = got.get("name") or repr(sorted(got.items()))
+        if key not in seen:
+            seen[key] = len(table)
+            table.append(got)
+        index.append(seen[key])
+    if not any(i >= 0 for i in index):
+        return None
+    return table, index
 
 
 def _body_appearance(body, occurrence=None) -> dict | None:
@@ -979,21 +1037,9 @@ def export_body(body, occurrence=None, quality: dict = None,
         # only when a face actually differs from the body -- the common case is
         # a body in one colour, and that payload should not grow by a list of
         # nulls as long as its face count.
-        if face_appearances and any(face_appearances):
-            table, index = [], []
-            seen = {}
-            for got in face_appearances:
-                if not got:
-                    index.append(-1)          # -1 = "use the body's"
-                    continue
-                key = got.get("name") or repr(sorted(got.items()))
-                if key not in seen:
-                    seen[key] = len(table)
-                    table.append(got)
-                index.append(seen[key])
-            if any(i >= 0 for i in index):
-                result["face_appearances"] = table
-                result["face_appearance_index"] = index
+        built = build_face_appearance_payload(face_appearances, appearance)
+        if built is not None:
+            result["face_appearances"], result["face_appearance_index"] = built
         if len(fg_arr):
             result["face_groups_b64"] = base64.b64encode(fg_arr.tobytes()).decode('ascii')
             result["face_ids_b64"]    = base64.b64encode(fi_arr.tobytes()).decode('ascii')

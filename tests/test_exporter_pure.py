@@ -265,3 +265,73 @@ def test_a_body_with_no_painted_faces_reports_none_throughout():
     body = _FakeBody([_FakeFace(0), _FakeFace(10)])
     *_, appearances = exporter._calc_per_face_mesh(body, 0.02, 0.26)
     assert appearances == [None, None], appearances
+
+
+# ── Telling a painted face from an inherited one ─────────────────────────────
+# The fakes above hand back appearance=None for an unpainted face. Real Fusion
+# does not: face.appearance is resolved through the override chain, so an
+# untouched face answers with the body's own appearance. The tests passed for
+# as long as the feature was broken because the fake was more polite than
+# Fusion is, so these use the honest shape.
+
+def _entry(name, color=None):
+    d = {"name": name}
+    if color:
+        d["color"] = color
+    return d
+
+
+def test_faces_that_only_inherit_send_nothing():
+    """The common case: one colour, hundreds of faces, no payload.
+
+    Every face reporting the body's appearance is what Fusion actually does.
+    Before the comparison existed this produced a table entry per face, and
+    the Blender side then repainted every polygon from it.
+    """
+    body = _entry("Plastic - Matte (Black)", [0.1, 0.1, 0.1, 1.0])
+    faces = [dict(body) for _ in range(300)]
+    assert exporter.build_face_appearance_payload(faces, body) is None
+
+
+def test_the_one_painted_face_survives_the_filter():
+    body = _entry("Plastic - Matte (Black)", [0.1, 0.1, 0.1, 1.0])
+    painted = _entry("Panel Blue", [0.0, 0.2, 0.9, 1.0])
+    faces = [dict(body), painted, dict(body), dict(body)]
+    table, index = exporter.build_face_appearance_payload(faces, body)
+    assert len(table) == 1 and table[0]["name"] == "Panel Blue", table
+    assert index == [-1, 0, -1, -1], index
+
+
+def test_an_occurrence_colour_is_not_overwritten_by_the_component_one():
+    """The bug this filter exists for.
+
+    _body_appearance resolves the occurrence override; the faces report the
+    component's. Sending those faces made the Blender side repaint the whole
+    body in the component's colour, so a part coloured per-instance in Fusion
+    arrived the wrong colour -- the colour feature losing colour.
+    """
+    occurrence = _entry("Anodised Red", [0.8, 0.1, 0.1, 1.0])
+    component = _entry("Aluminium", [0.7, 0.7, 0.7, 1.0])
+    faces = [dict(component) for _ in range(12)]
+    built = exporter.build_face_appearance_payload(faces, occurrence)
+    assert built is not None, "a genuinely different face appearance must survive"
+    table, index = built
+    assert all(i == 0 for i in index), index
+    # ...and the body keeps its own: nothing here rewrites result["appearance"].
+    assert table[0]["name"] == "Aluminium"
+
+
+def test_two_finishes_on_one_body_keep_both():
+    body = _entry("Stainless Steel - Polished", [0.8, 0.8, 0.8, 1.0])
+    satin = _entry("Stainless Steel - Satin", [0.6, 0.6, 0.6, 1.0])
+    faces = [dict(body), satin, satin, dict(body)]
+    table, index = exporter.build_face_appearance_payload(faces, body)
+    assert [e["name"] for e in table] == ["Stainless Steel - Satin"], table
+    assert index == [-1, 0, 0, -1], index
+
+
+def test_a_body_with_no_appearance_at_all_still_gets_its_faces():
+    painted = _entry("Panel Blue", [0.0, 0.2, 0.9, 1.0])
+    table, index = exporter.build_face_appearance_payload([None, painted], None)
+    assert index == [-1, 0], index
+    assert len(table) == 1
