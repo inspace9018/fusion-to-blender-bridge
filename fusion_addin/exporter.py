@@ -641,7 +641,7 @@ def reset_appearance_budget():
         _instance_faces[k] = 0
 
 
-def log_body_face_appearances(body, appearance, face_appearances):
+def log_body_face_appearances(body, appearance, face_appearances, occurrence=None):
     """One line per body: what Fusion answered for its faces.
 
     Deliberately printed even when every face agrees, because that is the
@@ -657,9 +657,19 @@ def log_body_face_appearances(body, appearance, face_appearances):
         counts[key] = counts.get(key, 0) + 1
     shown = sorted(counts.items(), key=lambda kv: -kv[1])[:4]
     body_name = (appearance or {}).get("name") or "(none)"
+    # Whether the part comes from another document. Worth having on the same
+    # line: a linked part is the first thing suspected when a colour does not
+    # come through, and the answer here is measured rather than assumed.
+    linked = ""
+    if occurrence is not None:
+        try:
+            linked = " linked" if occurrence.isReferencedComponent else " local"
+        except Exception:
+            linked = ""
     try:
-        _log(f"[APPEARANCE] '{getattr(body, 'name', '?')}' body={body_name!r} "
-             f"faces={len(face_appearances)} distinct={len(counts)} "
+        _log(f"[APPEARANCE] '{getattr(body, 'name', '?')}'{linked} "
+             f"body={body_name!r} faces={len(face_appearances)} "
+             f"distinct={len(counts)} "
              + ", ".join(f"{n!r}x{c}" for n, c in shown))
     except Exception:
         pass
@@ -1146,7 +1156,7 @@ def export_body(body, occurrence=None, quality: dict = None,
         # only when a face actually differs from the body -- the common case is
         # a body in one colour, and that payload should not grow by a list of
         # nulls as long as its face count.
-        log_body_face_appearances(body, appearance, face_appearances)
+        log_body_face_appearances(body, appearance, face_appearances, occurrence)
         built = build_face_appearance_payload(face_appearances, appearance)
         if built is not None:
             result["face_appearances"], result["face_appearance_index"] = built

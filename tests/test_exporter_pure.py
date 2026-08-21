@@ -535,3 +535,41 @@ def test_a_painted_face_shows_up_by_name_in_the_line():
         exporter._log = original
     line = " ".join(said)
     assert "distinct=2" in line and "'Button Red'x1" in line, said
+
+
+class _FakeOccurrence:
+    def __init__(self, referenced):
+        self.isReferencedComponent = referenced
+
+
+def test_the_line_says_whether_the_part_came_from_another_document():
+    """A linked part is the first thing suspected when a colour goes missing.
+
+    Measured here rather than assumed: the only body in the test design whose
+    face appearances DO come through is a linked one, so "linked" is not the
+    blocker -- and the line has to be able to say so.
+    """
+    for referenced, word in ((True, "linked"), (False, "local")):
+        said = []
+        original = exporter._log
+        exporter._log = said.append
+        try:
+            exporter.log_body_face_appearances(
+                _FakeBody([]), {"name": "Black"}, [{"name": "Black"}],
+                _FakeOccurrence(referenced))
+        finally:
+            exporter._log = original
+        assert word in " ".join(said), (referenced, said)
+
+
+def test_a_root_body_has_no_occurrence_and_says_nothing_either_way():
+    said = []
+    original = exporter._log
+    exporter._log = said.append
+    try:
+        exporter.log_body_face_appearances(_FakeBody([]), {"name": "Black"},
+                                           [{"name": "Black"}])
+    finally:
+        exporter._log = original
+    line = " ".join(said)
+    assert "linked" not in line and "local" not in line, said
