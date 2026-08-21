@@ -40,6 +40,27 @@ _STRINGS = {
     "settings":             {"ko": "서버 설정",            "en": "Server Settings"},
     "settings_desc":        {"ko": "포트 및 옵션 설정",     "en": "Port and option settings"},
 
+    # ── Blender 애드온 꺼내기 ────────────────────────────────────────────────
+    # 이 항목들은 Blender 애드온 zip 이 애드인 옆에 같이 설치된 배포판에서만
+    # 화면에 나타난다. 무료 설치기는 Blender 쪽을 직접 깔아 주므로 zip 이 없고,
+    # 버튼도 만들어지지 않는다.
+    "get_blender":          {"ko": "Blender 애드온 꺼내기",
+                             "en": "Get Blender Add-on"},
+    "get_blender_desc":     {"ko": "Blender 에 설치할 애드온 파일을 원하는 위치에 저장합니다",
+                             "en": "Save the Blender add-on file somewhere you can find it"},
+    "get_blender_missing":  {"ko": "Blender 애드온 파일을 찾지 못했습니다.\n"
+                                   "구매하신 다운로드에서 직접 꺼내 주세요.",
+                             "en": "Could not find the Blender add-on file.\n"
+                                   "Please take it from your original download."},
+    "get_blender_saved":    {"ko": "저장했습니다:\n{path}\n\n"
+                                   "Blender 에서:\n"
+                                   "Edit > Preferences > Add-ons > Install from Disk\n"
+                                   "→ 이 파일을 고르고 체크박스를 켜세요.",
+                             "en": "Saved to:\n{path}\n\n"
+                                   "In Blender:\n"
+                                   "Edit > Preferences > Add-ons > Install from Disk\n"
+                                   "→ choose this file, then tick it to enable."},
+
     # ── Nav Toolbar ──────────────────────────────────────────────────────────
     "nav_srv_on":           {"ko": "● 서버 실행 중",       "en": "● Server Running"},
     "nav_srv_on_desc":      {"ko": "서버 실행 중 — 클릭하면 중지",

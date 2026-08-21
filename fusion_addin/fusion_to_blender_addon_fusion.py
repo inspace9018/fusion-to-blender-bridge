@@ -24,6 +24,7 @@ Mesh quality settings are managed on the Blender side. Fusion 360 only acts as a
 # with this program. If not, see <https://www.gnu.org/licenses/>.
 
 import os
+import shutil
 import struct
 import sys
 import threading
@@ -448,6 +449,38 @@ def _find_nav_toolbar():
     return None
 
 
+# ─── Blender add-on, when it travels with this add-in ────────────────────────
+# The Autodesk App Store repackages a submission with its own installer, and
+# that installer only writes into Fusion's AddIns folder. The Blender half
+# rides along as a zip in the same package, which means it lands somewhere
+# inside that folder tree -- and "somewhere inside AppData" is not an
+# instruction a buyer can follow. So the add-in finds it and hands it over.
+#
+# Not present in the free installer's layout, which installs the Blender side
+# directly. Nothing is found, so no button is built. Same code, both builds.
+_BLENDER_ADDON_NAMES = ("bridge_pro.zip", "fusion_to_blender_addon_blender.zip")
+
+
+def _find_blender_addon_zip():
+    """Path to the bundled Blender add-on zip, or None.
+
+    Searches this folder and up to two levels above it. How the App Store
+    installer lays a bundle out is not something we get to know in advance, so
+    the search is deliberately wider than any one expected layout.
+    """
+    here = _dir
+    for _ in range(3):
+        for name in _BLENDER_ADDON_NAMES:
+            candidate = os.path.join(here, name)
+            if os.path.isfile(candidate):
+                return candidate
+        parent = os.path.dirname(here)
+        if parent == here:
+            break
+        here = parent
+    return None
+
+
 def _build_tab_ui():
     """FUSION TO BLENDER ribbon tab + panel."""
     ws = (_ui.workspaces.itemById("FusionSolidEnvironment")
@@ -474,6 +507,12 @@ def _build_tab_ui():
     _add_cmd(ctrl, "FTB_Settings", ft("settings"),
              ft("settings_desc"),
              SettingsHandler)
+    # Only in builds that carry the Blender half alongside them. A button that
+    # cannot do anything is worse than no button.
+    if _find_blender_addon_zip():
+        _add_cmd(ctrl, "FTB_GetBlenderAddon", ft("get_blender"),
+                 ft("get_blender_desc"),
+                 GetBlenderAddonHandler, promoted=True)
 
 
 _KNOWN_UNDO_REDO_IDS = [
@@ -633,6 +672,31 @@ def _make_action_handler(action_fn):
         def run(self):
             action_fn(self.manager)
     return H
+
+
+class GetBlenderAddonHandler(_SimpleCreatedHandler):
+    """Copy the bundled Blender add-on somewhere the buyer can reach it."""
+
+    def _make_execute_handler(self):
+        def act(_m):
+            src = _find_blender_addon_zip()
+            if not src:
+                # The button is only built when the file exists, so this means
+                # it went missing after startup. Say so rather than failing
+                # silently on a button the user can still see.
+                _ui.messageBox(ft("get_blender_missing"), "Fusion to Blender")
+                return
+            dlg = _ui.createFileDialog()
+            dlg.title = ft("get_blender")
+            dlg.filter = "Blender add-on (*.zip)"
+            dlg.initialFilename = os.path.basename(src)
+            if dlg.showSave() != adsk.core.DialogResults.DialogOK:
+                return                      # user cancelled; nothing to report
+            dest = dlg.filename
+            shutil.copyfile(src, dest)
+            _ui.messageBox(ft("get_blender_saved", path=dest),
+                           "Fusion to Blender")
+        return _make_action_handler(act)(self.manager)
 
 
 class StartServerHandler(_SimpleCreatedHandler):
