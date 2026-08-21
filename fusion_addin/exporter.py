@@ -641,6 +641,30 @@ def reset_appearance_budget():
         _instance_faces[k] = 0
 
 
+def log_body_face_appearances(body, appearance, face_appearances):
+    """One line per body: what Fusion answered for its faces.
+
+    Deliberately printed even when every face agrees, because that is the
+    interesting case -- "this body has no painted face" is a finding, and
+    without it written down it is indistinguishable from not having looked.
+    """
+    if not face_appearances:
+        return
+    counts = {}
+    for got in face_appearances:
+        name = (got or {}).get("name") if isinstance(got, dict) else None
+        key = name or "(none)"
+        counts[key] = counts.get(key, 0) + 1
+    shown = sorted(counts.items(), key=lambda kv: -kv[1])[:4]
+    body_name = (appearance or {}).get("name") or "(none)"
+    try:
+        _log(f"[APPEARANCE] '{getattr(body, 'name', '?')}' body={body_name!r} "
+             f"faces={len(face_appearances)} distinct={len(counts)} "
+             + ", ".join(f"{n!r}x{c}" for n, c in shown))
+    except Exception:
+        pass
+
+
 def log_instance_face_report():
     """One line per sync about where face colours were read from."""
     if not any(_instance_faces.values()):
@@ -1122,6 +1146,7 @@ def export_body(body, occurrence=None, quality: dict = None,
         # only when a face actually differs from the body -- the common case is
         # a body in one colour, and that payload should not grow by a list of
         # nulls as long as its face count.
+        log_body_face_appearances(body, appearance, face_appearances)
         built = build_face_appearance_payload(face_appearances, appearance)
         if built is not None:
             result["face_appearances"], result["face_appearance_index"] = built

@@ -31,6 +31,7 @@ os.environ.setdefault(
 #
 # Keep this list in step with the README's Tests section.
 collect_ignore = [
+    "check_placement_live.py",
     "test_preservation_blender.py",
     "test_joint_sides_blender.py",
     "test_appearance_blender.py",

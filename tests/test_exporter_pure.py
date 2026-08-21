@@ -496,3 +496,42 @@ def test_the_report_stays_quiet_when_nothing_happened():
     finally:
         exporter._log = original
     assert said == [], said
+
+
+def test_each_body_says_what_fusion_answered_for_its_faces():
+    """Printed even when every face agrees -- that is the interesting case.
+
+    "This body has no painted face" is a finding. Without it written down it
+    reads exactly like not having looked, and telling those apart is the whole
+    job when someone reports a colour that did not come through.
+    """
+    said = []
+    original = exporter._log
+    exporter._log = said.append
+    try:
+        exporter.log_body_face_appearances(
+            _FakeBody([]),
+            {"name": "Plastic - Matte (Black)"},
+            [{"name": "Plastic - Matte (Black)"}] * 103,
+        )
+    finally:
+        exporter._log = original
+    line = " ".join(said)
+    assert "faces=103" in line and "distinct=1" in line, said
+    assert "'Plastic - Matte (Black)'x103" in line, said
+
+
+def test_a_painted_face_shows_up_by_name_in_the_line():
+    said = []
+    original = exporter._log
+    exporter._log = said.append
+    try:
+        exporter.log_body_face_appearances(
+            _FakeBody([]),
+            {"name": "Plastic - Matte (Black)"},
+            [{"name": "Plastic - Matte (Black)"}] * 12 + [{"name": "Button Red"}],
+        )
+    finally:
+        exporter._log = original
+    line = " ".join(said)
+    assert "distinct=2" in line and "'Button Red'x1" in line, said
