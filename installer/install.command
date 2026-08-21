@@ -1,6 +1,7 @@
 #!/bin/bash
 # =============================================================================
-#  Fusion to Blender Lite - macOS Installer
+#  Fusion to Blender Bridge - macOS Installer (serves the free and paid
+#  bundles; the paid one carries a bridge_pro folder and HAS_PRO branches on it)
 # -----------------------------------------------------------------------------
 #  WHAT THIS SCRIPT DOES (plain language):
 #    It sets up the bridge that syncs Fusion 360 models into Blender by copying
@@ -152,7 +153,11 @@ do_install() {
   echo "    - Fusion 360: Utilities (or Tools) > Add-Ins > \"Scripts and Add-Ins\""
   echo "                  > Add-Ins tab > select \"$FUSION_NAME\" > Run"
   echo "    - Blender:    Edit > Preferences > Add-ons > enable"
-  echo "                  \"Fusion to Blender Lite\" (then restart Blender)"
+  if [ "$HAS_PRO" -eq 1 ]; then
+    echo "                  \"Fusion to Blender Bridge\" (then restart Blender)"
+  else
+    echo "                  \"Fusion to Blender Lite\" (then restart Blender)"
+  fi
   echo "    - Then in Blender just press Sync. Connection is automatic."
   pause
 }
@@ -160,14 +165,21 @@ do_install() {
 do_uninstall() {
   clear
   echo
-  echo "  Uninstall - removes ONLY these two folders:"
+  if [ "$HAS_PRO" -eq 1 ]; then
+    echo "  Uninstall - removes ONLY these folders:"
+  else
+    echo "  Uninstall - removes ONLY these two folders:"
+  fi
   echo "    - $FUSION_DEST"
   echo "    - $BLENDER_BASE/<version>/scripts/addons/$BLENDER_NAME"
   [ "$HAS_PRO" -eq 1 ] && echo "    - $BLENDER_BASE/<version>/scripts/addons/$PRO_NAME"
-  [ "$HAS_PRO" -eq 1 ] && echo "    - $BLENDER_BASE/<version>/scripts/addons/$PRO_NAME"
   echo
   if [ -z "$MODE" ]; then
-    read -r -p "  Remove Fusion to Blender Lite? (y/N): " ok
+    if [ "$HAS_PRO" -eq 1 ]; then
+      read -r -p "  Remove Fusion to Blender Bridge? (y/N): " ok
+    else
+      read -r -p "  Remove Fusion to Blender Lite? (y/N): " ok
+    fi
     case "$ok" in [yY]) ;; *) return;; esac
   fi
 
@@ -214,7 +226,11 @@ while true; do
   clear
   echo
   echo "  ========================================================"
-  echo "    Fusion to Blender Lite  -  Installer"
+  if [ "$HAS_PRO" -eq 1 ]; then
+    echo "    Fusion to Blender Bridge  -  Installer"
+  else
+    echo "    Fusion to Blender Lite  -  Installer"
+  fi
   echo "  ========================================================"
   echo
   echo "    This sets up the bridge that brings your Fusion 360"

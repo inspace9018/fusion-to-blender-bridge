@@ -10,7 +10,9 @@ SRC_DIR = "fusion_addin"
 ZIP_ADDON_NAME = "fusion_to_blender_addon_fusion"
 OUTPUT_ZIP = "fusion_to_blender_addon_fusion.zip"
 
-EXCLUDE = {"__pycache__", ".DS_Store", "Thumbs.db"}
+# .vscode/.idea are the author's editor config. They were riding along into
+# the buyer's Fusion AddIns folder, which nothing on this machine shows.
+EXCLUDE = {"__pycache__", ".DS_Store", "Thumbs.db", ".vscode", ".idea", ".git"}
 
 
 def build():
@@ -39,6 +41,8 @@ def build():
                         data = fh.read()
                     zi = zipfile.ZipInfo(arcname)
                     zi.compress_type = zipfile.ZIP_DEFLATED
+                    zi.create_system = 3   # Unix; without it unzip on macOS
+                                           # drops the mode set below
                     zi.external_attr = 0o755 << 16
                     zf.writestr(zi, data)
                 else:

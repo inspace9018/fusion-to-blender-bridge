@@ -55,6 +55,8 @@ def _add_file(zf, disk_path, arcname):
             data = _line_endings_for(disk_path, fh.read())
         zi = zipfile.ZipInfo(arcname)
         zi.compress_type = zipfile.ZIP_DEFLATED
+        zi.create_system = 3   # Unix; without it unzip on macOS
+                               # drops the mode set below
         zi.external_attr = 0o755 << 16   # keep the executable bit on macOS
         zf.writestr(zi, data)
     elif disk_path.endswith((".bat", "README.txt")):
