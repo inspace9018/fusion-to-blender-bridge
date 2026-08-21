@@ -129,3 +129,139 @@ def test_a_fusion_without_them_still_exports():
 def test_the_limit_is_loose_enough_to_be_safe():
     """Too tight multiplies the triangle count on every body."""
     assert 3.0 <= exporter._MAX_ASPECT_RATIO <= 10.0
+
+
+# ── _calc_per_face_mesh's arity, and the call site that unpacks it ────────────
+# This is not a made-up worry. A seventh value (per-face appearances) was added
+# to the return without updating the unpack in export_body. Every body then
+# raised ValueError inside export_body's broad except, came back as None, and
+# the sync arrived EMPTY -- with the only evidence in Fusion's own console.
+# The arity is a contract between two places in one file; pin it.
+import ast
+import inspect
+import os
+
+
+def _exporter_source():
+    path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                        "fusion_addin", "exporter.py")
+    with open(path, encoding="utf-8") as fh:
+        return fh.read()
+
+
+def _returned_lengths(tree, func_name):
+    """How many values each `return` in `func_name` yields, tuples only."""
+    out = []
+    for node in ast.walk(tree):
+        if isinstance(node, ast.FunctionDef) and node.name == func_name:
+            for sub in ast.walk(node):
+                if isinstance(sub, ast.Return) and isinstance(sub.value, ast.Tuple):
+                    out.append(len(sub.value.elts))
+    return out
+
+
+def test_calc_per_face_mesh_returns_one_shape():
+    lengths = _returned_lengths(ast.parse(_exporter_source()), "_calc_per_face_mesh")
+    assert lengths, "no tuple returns found -- did the function get renamed?"
+    assert len(set(lengths)) == 1, f"return paths disagree: {lengths}"
+
+
+def test_export_body_unpacks_exactly_what_it_gets():
+    tree = ast.parse(_exporter_source())
+    returned = set(_returned_lengths(tree, "_calc_per_face_mesh"))
+
+    unpacked = []
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.Assign):
+            continue
+        call = node.value
+        if not (isinstance(call, ast.Call) and isinstance(call.func, ast.Name)
+                and call.func.id == "_calc_per_face_mesh"):
+            continue
+        for target in node.targets:
+            if isinstance(target, (ast.Tuple, ast.List)):
+                unpacked.append(len(target.elts))
+
+    assert unpacked, "nobody calls _calc_per_face_mesh -- did it get renamed?"
+    assert set(unpacked) == returned, (
+        f"unpacked {unpacked} but the function returns {sorted(returned)}")
+
+
+# ── _calc_per_face_mesh actually running, with stand-in Fusion objects ────────
+# The AST checks above pin the shape. This one runs the code: a face whose own
+# appearance differs from the body's has to come back in the per-face list, in
+# the same order as the face groups, or the colours land on the wrong faces.
+class _FakeMesh:
+    def __init__(self, base):
+        self.nodeCoordinatesAsDouble = [float(base), 0.0, 0.0,
+                                        float(base) + 1, 0.0, 0.0,
+                                        float(base) + 1, 1.0, 0.0]
+        self.normalVectorsAsDouble = [0.0, 0.0, 1.0] * 3
+        self.nodeIndices = [0, 1, 2]
+
+
+class _FakeCalc:
+    def __init__(self, base):
+        self._base = base
+        self.setQuality = lambda *a, **k: None
+
+    def calculate(self):
+        return _FakeMesh(self._base)
+
+
+class _FakeMeshManager:
+    def __init__(self, base):
+        self._base = base
+
+    def createMeshCalculator(self):
+        return _FakeCalc(self._base)
+
+
+class _FakeAppearance:
+    def __init__(self, name):
+        self.name = name
+        self.id = name
+        self.appearanceProperties = []
+
+
+class _FakeFace:
+    def __init__(self, base, appearance=None):
+        self.meshManager = _FakeMeshManager(base)
+        self.appearance = appearance
+        self.entityToken = f"tok{base}"
+
+
+class _FakeFaces:
+    def __init__(self, faces):
+        self._faces = faces
+        self.count = len(faces)
+
+    def item(self, i):
+        return self._faces[i]
+
+
+class _FakeBody:
+    def __init__(self, faces):
+        self.faces = _FakeFaces(faces)
+        self.name = "FakeBody"
+
+
+def test_per_face_appearances_line_up_with_face_groups():
+    exporter.reset_appearance_budget()
+    painted = _FakeAppearance("Panel Blue")
+    body = _FakeBody([_FakeFace(0), _FakeFace(10, painted), _FakeFace(20)])
+
+    result = exporter._calc_per_face_mesh(body, 0.02, 0.26)
+    coords, normals, indices, groups, ids, keys, appearances = result
+
+    assert len(groups) == 6, groups            # three faces, start+count each
+    assert len(appearances) == 3, appearances
+    assert appearances[0] is None and appearances[2] is None, appearances
+    assert appearances[1] and appearances[1].get("name") == "Panel Blue", appearances[1]
+
+
+def test_a_body_with_no_painted_faces_reports_none_throughout():
+    exporter.reset_appearance_budget()
+    body = _FakeBody([_FakeFace(0), _FakeFace(10)])
+    *_, appearances = exporter._calc_per_face_mesh(body, 0.02, 0.26)
+    assert appearances == [None, None], appearances

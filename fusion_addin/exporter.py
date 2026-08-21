@@ -904,7 +904,8 @@ def export_body(body, occurrence=None, quality: dict = None,
 
         # ── Mesh (per-face tessellation -> includes face group info) ─────
         surface_cm, normal_rad = _get_quality_params(quality)
-        node_coords, node_normals, tri_indices, face_groups, face_ids, face_keys = \
+        (node_coords, node_normals, tri_indices,
+         face_groups, face_ids, face_keys, face_appearances) = \
             _calc_per_face_mesh(body, surface_cm, normal_rad)
 
         # ── world_transform bake ──────────────────────────────────────────

@@ -1968,6 +1968,22 @@ class SceneHandler:
             self._set_error(False)
             self._set_status(t("sync_done", count=self._sync_processed, ts=ts))
             print(f"[FusionBridge] Streaming sync complete: {self._sync_processed} objects")
+
+        # Fusion announced a body count at the start. Bodies it then failed to
+        # export never arrive and nothing above notices -- the sync just reports
+        # a smaller number and looks finished. That is how a plain bug in the
+        # exporter (an unpack that stopped matching its function) presented as
+        # "no objects come across", with the real traceback sitting unseen in
+        # Fusion's own console.
+        missing = self._sync_total - self._sync_processed
+        if missing > 0:
+            self._set_error(True)
+            print(f"[FusionBridge] WARNING: Fusion said {self._sync_total} bodies "
+                  f"but only {self._sync_processed} arrived; {missing} failed to "
+                  f"export. The reason is in Fusion's own text console "
+                  f"(Utilities > Add-Ins > Scripts and Add-Ins), not here.")
+            self._set_status(t("sync_short", got=self._sync_processed,
+                               total=self._sync_total, ts=ts))
         self._set_syncing(False)
         _prog("clear_progress")
         self._tag_redraw()

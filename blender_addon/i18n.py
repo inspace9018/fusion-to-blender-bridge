@@ -123,6 +123,8 @@ _STRINGS = {
                              "en": "Sync starting... {cur}/{total}"},
     "sync_progress":        {"ko": "동기화 중... {cur}/{total}",
                              "en": "Syncing... {cur}/{total}"},
+    "sync_short":           {"ko": "{got}/{total}개만 도착 ({ts}) — Fusion 콘솔 확인",
+                             "en": "Only {got}/{total} arrived ({ts}) -- check Fusion's console"},
     "sync_done":            {"ko": "완료: {count}개  ({ts})",
                              "en": "Done: {count}  ({ts})"},
     "sync_done_with_errors": {"ko": "완료 (오류 {errors}건): {count}개  ({ts})",
