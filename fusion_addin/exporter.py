@@ -316,7 +316,8 @@ def _face_key(face, fallback_index: int) -> int:
     return key if key != FACE_KEY_NONE else 1
 
 
-def _calc_per_face_mesh(body, surface_cm: float, normal_rad: float):
+def _calc_per_face_mesh(body, surface_cm: float, normal_rad: float,
+                        appearance_faces=None):
     """Per-BRepFace tessellation -> combined mesh + face group info.
 
     Plasticity approach: tessellate each face independently and record loop ranges.
@@ -389,7 +390,15 @@ def _calc_per_face_mesh(body, surface_cm: float, normal_rad: float):
             face_groups.append(n_loops)
             face_ids.append(fi)
             face_keys.append(_face_key(face, fi))
-            face_appearances.append(_face_appearance(face))
+            # Geometry comes from the component's own face; the appearance
+            # must not. See _appearance_faces.
+            src = face
+            if appearance_faces is not None:
+                try:
+                    src = appearance_faces.item(fi) or face
+                except Exception:
+                    src = face
+            face_appearances.append(_face_appearance(src))
 
             vert_offset += n_verts
             loop_offset += n_loops
@@ -789,6 +798,41 @@ def _appearance_cached(appearance) -> dict | None:
 # the shared time budget stops a pathological design from holding up the sync --
 # it just falls back to the body's one colour, which is what happened before
 # this existed.
+def _appearance_faces(body, occurrence):
+    """The faces that carry appearances for THIS instance, or None.
+
+    Bodies are read from occ.component.bRepBodies -- the component's own,
+    because that is where the geometry to tessellate lives and the instance's
+    placement is baked in afterwards. Appearances do not follow that rule. An
+    appearance dropped on a face while working in the assembly is stored on the
+    occurrence's PROXY face, not on the component's, so reading the component
+    face answers with the component's colour and the paint someone actually
+    applied is invisible. Painting a face in the assembly is the ordinary way
+    to do it, so this was most of the feature.
+
+    _body_appearance already consults the occurrence for exactly this reason;
+    this is the same correction one level down.
+
+    Returns None whenever the two face lists cannot be trusted to line up --
+    colour on the wrong face is worse than colour on none.
+    """
+    if occurrence is None:
+        return None
+    try:
+        proxy = body.createForAssemblyContext(occurrence)
+    except Exception:
+        return None
+    if proxy is None:
+        return None
+    try:
+        faces = proxy.faces
+        if faces.count != body.faces.count:
+            return None
+        return faces
+    except Exception:
+        return None
+
+
 def _appearance_ident(entry):
     """What makes two appearance payloads the same thing to a person looking.
 
@@ -964,7 +1008,8 @@ def export_body(body, occurrence=None, quality: dict = None,
         surface_cm, normal_rad = _get_quality_params(quality)
         (node_coords, node_normals, tri_indices,
          face_groups, face_ids, face_keys, face_appearances) = \
-            _calc_per_face_mesh(body, surface_cm, normal_rad)
+            _calc_per_face_mesh(body, surface_cm, normal_rad,
+                                _appearance_faces(body, occurrence))
 
         # ── world_transform bake ──────────────────────────────────────────
         cm = CM_TO_M

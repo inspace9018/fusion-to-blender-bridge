@@ -335,3 +335,109 @@ def test_a_body_with_no_appearance_at_all_still_gets_its_faces():
     table, index = exporter.build_face_appearance_payload([None, painted], None)
     assert index == [-1, 0], index
     assert len(table) == 1
+
+
+# ── Appearances live on the instance, not on the component ───────────────────
+# Bodies are read from occ.component.bRepBodies, so face.appearance answers with
+# the COMPONENT's colour. Painting a face while working in the assembly stores
+# the appearance on the occurrence's proxy face instead, and reading the
+# component face cannot see it -- which is most of what people actually do.
+
+class _FakeFaceList:
+    def __init__(self, faces):
+        self._faces = faces
+        self.count = len(faces)
+
+    def item(self, i):
+        return self._faces[i]
+
+
+class _FakeProxyBody:
+    def __init__(self, faces):
+        self.faces = _FakeFaceList(faces)
+
+
+class _FakeBodyWithProxy(_FakeBody):
+    """A body whose proxy faces carry paint the component's faces do not."""
+
+    def __init__(self, faces, proxy_faces):
+        super().__init__(faces)
+        self._proxy = _FakeProxyBody(proxy_faces)
+        self.proxy_requested_for = None
+
+    def createForAssemblyContext(self, occurrence):
+        self.proxy_requested_for = occurrence
+        return self._proxy
+
+
+def test_no_occurrence_means_no_proxy_lookup():
+    body = _FakeBody([_FakeFace(0)])
+    assert exporter._appearance_faces(body, None) is None
+
+
+def test_the_instance_faces_are_used_when_there_is_an_occurrence():
+    painted = _FakeAppearance("Grip Orange")
+    body = _FakeBodyWithProxy(
+        [_FakeFace(0), _FakeFace(10)],                       # component: bare
+        [_FakeFace(0), _FakeFace(10, painted)],              # instance: painted
+    )
+    faces = exporter._appearance_faces(body, occurrence="Occ:1")
+    assert faces is not None and body.proxy_requested_for == "Occ:1"
+
+    exporter.reset_appearance_budget()
+    *_, appearances = exporter._calc_per_face_mesh(body, 0.02, 0.26, faces)
+    assert appearances[0] is None, appearances
+    assert appearances[1] and appearances[1]["name"] == "Grip Orange", appearances
+    # ...and reading the component's faces instead finds nothing, which is the
+    # bug this exists to stop.
+    exporter.reset_appearance_budget()
+    *_, plain = exporter._calc_per_face_mesh(body, 0.02, 0.26)
+    assert plain == [None, None], plain
+
+
+def test_a_proxy_with_a_different_face_count_is_refused():
+    """Colour on the wrong face is worse than colour on none.
+
+    The two lists are matched by position, so a proxy that does not enumerate
+    the same faces would paint by coincidence.
+    """
+    body = _FakeBodyWithProxy([_FakeFace(0), _FakeFace(10)], [_FakeFace(0)])
+    assert exporter._appearance_faces(body, occurrence="Occ:1") is None
+
+
+def test_a_body_that_cannot_make_a_proxy_falls_back_quietly():
+    class _NoProxy(_FakeBody):
+        def createForAssemblyContext(self, occurrence):
+            raise RuntimeError("not in an assembly context")
+
+    body = _NoProxy([_FakeFace(0)])
+    assert exporter._appearance_faces(body, occurrence="Occ:1") is None
+
+
+def test_export_body_actually_asks_for_the_instance_faces():
+    """The parts are tested; this pins that they are wired together.
+
+    Disconnecting the call site -- passing None where _appearance_faces(...)
+    belongs -- left every other test in this file green, because they exercise
+    _appearance_faces and _calc_per_face_mesh separately and nothing looked at
+    the one line that joins them. The feature would have been dead again with a
+    full green suite, which is how it got here the first time.
+    """
+    tree = ast.parse(_exporter_source())
+    for node in ast.walk(tree):
+        if not (isinstance(node, ast.Call)
+                and isinstance(node.func, ast.Name)
+                and node.func.id == "_calc_per_face_mesh"):
+            continue
+        args = node.args
+        assert len(args) >= 4, (
+            "_calc_per_face_mesh is called without the appearance faces, so "
+            "face colours are read from the component instead of the instance"
+        )
+        passed = args[3]
+        assert isinstance(passed, ast.Call) and getattr(
+            passed.func, "id", "") == "_appearance_faces", (
+            f"4th argument is {ast.dump(passed)[:60]}..., not _appearance_faces(...)"
+        )
+        return
+    raise AssertionError("_calc_per_face_mesh is never called -- was it renamed?")
