@@ -50,6 +50,13 @@ _IDENTITY_16 = [1.0, 0.0, 0.0, 0.0,
 
 # ── File logging (fallback for when Fusion console is not visible) ────────────
 def _log_file_path() -> str:
+    # An explicit override wins. Without it a pytest run appends its fake
+    # appearance names to the log in the user's Documents -- the same file that
+    # gets read when diagnosing a real sync, so test noise lands in the middle
+    # of the evidence.
+    override = os.environ.get("FTB_LOG_PATH")
+    if override:
+        return override
     candidates = []
     home = os.environ.get('USERPROFILE') or os.path.expanduser('~')
     if home:
@@ -618,10 +625,38 @@ _appearance_spent = [0.0]
 _last_property_names = []
 
 
+# Why each body did or did not get its appearances read from the instance.
+# Without this, "this part has no painted faces" and "we never managed to look"
+# are the same silence -- and telling those two apart is the whole diagnosis
+# when someone says the face they painted did not come through.
+_instance_faces = {"used": 0, "no_occurrence": 0, "unavailable": 0,
+                   "count_mismatch": 0}
+
+
 def reset_appearance_budget():
     """Called at the start of each export so the budget is per sync, not forever."""
     _appearance_cache.clear()
     _appearance_spent[0] = 0.0
+    for k in _instance_faces:
+        _instance_faces[k] = 0
+
+
+def log_instance_face_report():
+    """One line per sync about where face colours were read from."""
+    if not any(_instance_faces.values()):
+        return
+    used = _instance_faces["used"]
+    total = sum(_instance_faces.values())
+    parts = [f"{used}/{total} bodies read face colours from the instance"]
+    for key, text in (("no_occurrence", "not in an assembly"),
+                      ("unavailable", "no instance body available"),
+                      ("count_mismatch", "instance face count differed")):
+        if _instance_faces[key]:
+            parts.append(f"{_instance_faces[key]} {text}")
+    _log("[APPEARANCE] " + ", ".join(parts))
+    if used < total:
+        _log("[APPEARANCE] the rest fell back to the component's own faces, "
+             "where an appearance painted in the assembly is not visible")
 
 
 def _appearance_key(appearance):
@@ -817,19 +852,24 @@ def _appearance_faces(body, occurrence):
     colour on the wrong face is worse than colour on none.
     """
     if occurrence is None:
+        _instance_faces["no_occurrence"] += 1
         return None
     try:
         proxy = body.createForAssemblyContext(occurrence)
     except Exception:
-        return None
+        proxy = None
     if proxy is None:
+        _instance_faces["unavailable"] += 1
         return None
     try:
         faces = proxy.faces
         if faces.count != body.faces.count:
+            _instance_faces["count_mismatch"] += 1
             return None
+        _instance_faces["used"] += 1
         return faces
     except Exception:
+        _instance_faces["unavailable"] += 1
         return None
 
 
@@ -1616,6 +1656,11 @@ def export_design(design, quality: dict = None, include_hidden: bool = False,
             _log(f"[FusionBridge] Total design bodies: {total_design_bodies}, "
                  f"emitted: {len(seen_ids)}, missing: {diff} "
                  f"(missing = hidden_skipped + dedup + duplicate_proxy_pairs)")
+        except Exception:
+            pass
+
+        try:
+            log_instance_face_report()
         except Exception:
             pass
 

@@ -441,3 +441,58 @@ def test_export_body_actually_asks_for_the_instance_faces():
         )
         return
     raise AssertionError("_calc_per_face_mesh is never called -- was it renamed?")
+
+
+def test_the_four_ways_of_not_looking_are_counted_separately():
+    """"No painted faces" and "we never managed to look" must not be one silence.
+
+    _appearance_faces gives up for four different reasons and returns the same
+    None for all of them. Every bug found in this feature hid in exactly that
+    kind of shared silence, so each reason is counted and reported.
+    """
+    exporter.reset_appearance_budget()
+
+    class _NoProxy(_FakeBody):
+        def createForAssemblyContext(self, occurrence):
+            raise RuntimeError("nope")
+
+    exporter._appearance_faces(_FakeBody([_FakeFace(0)]), None)
+    exporter._appearance_faces(_NoProxy([_FakeFace(0)]), "Occ:1")
+    exporter._appearance_faces(
+        _FakeBodyWithProxy([_FakeFace(0), _FakeFace(10)], [_FakeFace(0)]), "Occ:1")
+    exporter._appearance_faces(
+        _FakeBodyWithProxy([_FakeFace(0)], [_FakeFace(0)]), "Occ:1")
+
+    assert exporter._instance_faces == {
+        "no_occurrence": 1, "unavailable": 1, "count_mismatch": 1, "used": 1,
+    }, exporter._instance_faces
+
+
+def test_the_report_says_when_the_instance_could_not_be_read():
+    exporter.reset_appearance_budget()
+    said = []
+    original = exporter._log
+    exporter._log = said.append
+    try:
+        exporter._appearance_faces(_FakeBodyWithProxy([_FakeFace(0)], [_FakeFace(0)]),
+                                   "Occ:1")
+        exporter._appearance_faces(_FakeBody([_FakeFace(0)]), None)
+        exporter.log_instance_face_report()
+    finally:
+        exporter._log = original
+    joined = " ".join(said)
+    assert "1/2 bodies read face colours from the instance" in joined, said
+    assert "not in an assembly" in joined, said
+    assert "fell back to the component" in joined, said
+
+
+def test_the_report_stays_quiet_when_nothing_happened():
+    exporter.reset_appearance_budget()
+    said = []
+    original = exporter._log
+    exporter._log = said.append
+    try:
+        exporter.log_instance_face_report()
+    finally:
+        exporter._log = original
+    assert said == [], said
