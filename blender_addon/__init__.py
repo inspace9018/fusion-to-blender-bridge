@@ -25,7 +25,7 @@ bl_info = {
     "name": "Fusion to Blender Lite",
     "description": "Fusion 360 ↔ Blender real-time geometry sync (preserves materials/modifiers/light links)",
     "author": "FusionToBlenderBridge",
-    "version": (1, 0, 0),
+    "version": (2, 0, 0),
     "blender": (4, 1, 0),
     "location": "View3D > Sidebar > Fusion 360",
     "category": "Import-Export",
@@ -383,7 +383,11 @@ def _fix_stale_mesh_preset_once():
 
 
 def register():
-    print("[FusionBridge] v1.0.0 Registering add-on...")
+    # Read, never typed. This line said v1.4 for a whole release after the
+    # add-on was renumbered, because a hand-written version drifts the moment
+    # anyone forgets it exists.
+    ver = ".".join(str(x) for x in bl_info["version"])
+    print(f"[FusionBridge] v{ver} Registering add-on...")
 
     # Vendored inside Bridge Pro, the host registers ONE preferences class
     # carrying these same property names. Two classes claiming the same
