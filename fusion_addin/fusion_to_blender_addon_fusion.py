@@ -510,9 +510,13 @@ def _build_tab_ui():
     # Only in builds that carry the Blender half alongside them. A button that
     # cannot do anything is worse than no button.
     if _find_blender_addon_zip():
+        # Not promoted. A promoted control renders as a large icon-over-label
+        # button, and this command has no icon of its own -- so promoting it
+        # gave a tall blank tile. Unpromoted it sits in the panel list the way
+        # Stop Server and Settings do: icon and label side by side.
         _add_cmd(ctrl, "FTB_GetBlenderAddon", ft("get_blender"),
                  ft("get_blender_desc"),
-                 GetBlenderAddonHandler, promoted=True)
+                 GetBlenderAddonHandler)
 
 
 _KNOWN_UNDO_REDO_IDS = [
