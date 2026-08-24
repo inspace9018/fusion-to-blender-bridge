@@ -632,6 +632,7 @@ class FTB_OT_InstallStepSupport(bpy.types.Operator):
     def draw(self, context):
         col = self.layout.column(align=True)
         col.label(text=t("ocp_confirm1"), icon="IMPORT")
+        col.label(text=t("ocp_confirm1b"))
         col.label(text=t("ocp_confirm2"))
         col.label(text=t("ocp_confirm3"))
 

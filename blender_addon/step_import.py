@@ -152,30 +152,26 @@ def _run_pip_install_ocp():
     except Exception:
         pass
     base = [py, "-m", "pip", "install", "--user", "cadquery-ocp"]
-    # Some setups break PyPI's TLS verification -- Blender's bundled Python can
-    # ship without a CA bundle, or an SSL-inspecting proxy / VPN / security
-    # suite re-signs the connection -- giving "CERTIFICATE_VERIFY_FAILED" and a
-    # bogus "No matching distribution found". Retry against the official PyPI
-    # hosts marked trusted so the install still goes through there.
-    trusted = ["--trusted-host", "pypi.org",
-               "--trusted-host", "files.pythonhosted.org",
-               "--trusted-host", "pypi.python.org"]
+    # No --trusted-host fallback, deliberately. There used to be one, for
+    # setups where TLS verification fails (missing CA bundle, SSL-inspecting
+    # proxy) -- but a certificate failure is exactly the situation in which a
+    # download must NOT proceed, because "the connection is being intercepted"
+    # and "the CA bundle is missing" look identical from here. The failure is
+    # reported with what to fix instead of being bypassed.
     try:
-        last = ""
-        for cmd in (base, base + trusted):
-            p = subprocess.run(cmd, capture_output=True, text=True, timeout=1800)
-            if p.returncode == 0:
-                _ocp_install.update(state="done", msg="installed")
-                return
-            last = p.stderr or p.stdout or ""
-            # Only the trusted-host retry can help a TLS-verify failure; for any
-            # other error, stop rather than retry pointlessly.
-            if "CERTIFICATE_VERIFY" not in last and "SSLError" not in last:
-                break
-            print("[FusionBridge STEP] pip TLS verify failed — "
-                  "retrying with trusted PyPI hosts")
+        p = subprocess.run(base, capture_output=True, text=True, timeout=1800)
+        if p.returncode == 0:
+            _ocp_install.update(state="done", msg="installed")
+            return
+        last = p.stderr or p.stdout or ""
         lines = last.strip().splitlines()
-        _ocp_install.update(state="error", msg=(lines[-1] if lines else "pip failed"))
+        msg = lines[-1] if lines else "pip failed"
+        if "CERTIFICATE_VERIFY" in last or "SSLError" in last:
+            # Say what actually failed. The user can fix their CA bundle or
+            # network and retry; the add-on will not skip verification for them.
+            msg = ("TLS certificate verification failed. Fix your network/CA "
+                   "setup and retry -- verification is never bypassed.")
+        _ocp_install.update(state="error", msg=msg)
         print("[FusionBridge STEP] pip install failed:\n", last)
     except Exception as e:
         _ocp_install.update(state="error", msg=str(e))

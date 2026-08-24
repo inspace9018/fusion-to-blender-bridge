@@ -360,7 +360,7 @@ class FTB_PT_UtilitiesPanel(bpy.types.Panel):
 # Hidden until ID Studio is actually for sale: flip PRO_TEASER_ENABLED to True
 # at launch (and set PRO_BUY_URL to the real store page) to show it.
 PRO_TEASER_ENABLED = False
-PRO_BUY_URL = "https://gumroad.com/"  # TODO: set to the real ID Studio store page
+PRO_BUY_URL = ""  # TODO: set to the real ID Studio store page before enabling the teaser
 
 
 def _pro_installed() -> bool:

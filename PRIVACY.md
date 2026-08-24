@@ -27,8 +27,12 @@ For transparency, here is everything the software touches:
   when Blender asks, and it never writes to your document.
 - That data travels over a local socket on `127.0.0.1` to Blender running on
   the **same computer**, where it becomes your Blender scene. It is not sent
-  anywhere else, and the software makes no outbound network connections of any
-  kind.
+  anywhere else, and the bridge itself makes no outbound network connections.
+- One optional feature reaches the internet: the STEP-support installer, which
+  -- only when you press its button -- downloads the third-party `cadquery-ocp`
+  package from PyPI (pypi.org / files.pythonhosted.org) using pip. No data
+  about you or your documents is sent; it is a package download, TLS
+  verification is never bypassed, and nothing runs without your click.
 - Settings you choose (language, port, quality) are stored locally on your own
   machine, inside Fusion's and Blender's own configuration storage.
 
@@ -37,6 +41,11 @@ For transparency, here is everything the software touches:
 No data is shared with any third party, because no data is collected. There
 are no third-party services, SDKs, analytics providers or advertising networks
 in the software.
+
+The optional STEP-support installer fetches one third-party software package,
+`cadquery-ocp`, from PyPI. That is code coming in, not data going out: PyPI
+receives the same anonymous package request any `pip install` produces, and
+nothing about you or your documents.
 
 ## Verifiability
 
