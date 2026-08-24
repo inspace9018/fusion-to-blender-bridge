@@ -36,3 +36,6 @@ Sequence*.gif
 # actual product design, and this repository is public -- the tests look for them
 # and skip when they are absent, so nothing breaks by leaving them out.
 tests/fixtures/*.blend
+# Blender's numbered auto-backups slip past *.blend -- one did, and it was a
+# real product model. The pattern has to say so explicitly.
+tests/fixtures/*.blend[0-9]
