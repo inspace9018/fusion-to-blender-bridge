@@ -36,6 +36,11 @@ PRESET_INFO = {
     "low":    ("0.5 mm", "30°"),
     "medium": ("0.2 mm", "15°"),
     "high":   ("0.05 mm", "8°"),
+    # Never selectable here -- ftb_mesh_preset has three items, always has.
+    # Bridge Pro's own five-item version of this same dropdown (see below)
+    # reuses this table for its display line, so the entry lives here rather
+    # than in two places that could drift apart.
+    "ultra":  ("0.01 mm", "4°"),
 }
 
 
@@ -193,17 +198,30 @@ class FTB_PT_MainPanel(bpy.types.Panel):
         layout.separator(factor=0.5)
 
         # ── Mesh Quality ─────────────────────────────────────────────────────
+        # Bridge Pro registers its own version of this property (five items:
+        # this build's three plus Ultra and Custom) and this widget binds to
+        # that one instead, the moment it exists. The free build never
+        # registers it, so this branch is always "ftb_mesh_preset" here and
+        # nothing about this file's own behaviour changes.
+        quality_prop = ("bpro_mesh_quality" if hasattr(scene, "bpro_mesh_quality")
+                        else "ftb_mesh_preset")
+        mode = getattr(scene, quality_prop)
+
         q_box = layout.box()
         col = q_box.column(align=True)
         col.label(text=t("mesh_quality"), icon="MESH_DATA")
         col.separator(factor=0.3)
-        col.prop(scene, "ftb_mesh_preset", text="")
+        col.prop(scene, quality_prop, text="")
 
-        info = PRESET_INFO.get(scene.ftb_mesh_preset, ("—", "—"))
-        info_col = q_box.column(align=True)
-        info_col.scale_y = 0.75
-        info_col.label(text=f"  {t('surface_tol')}:  {info[0]}", icon="DOT")
-        info_col.label(text=f"  {t('normal_angle')}:  {info[1]}", icon="DOT")
+        if mode == "custom":
+            col.prop(scene, "bpro_surface_tol_mm", text=t("surface_tol_mm"))
+            col.prop(scene, "bpro_normal_tol_deg", text=t("normal_angle_deg"))
+        else:
+            info = PRESET_INFO.get(mode, ("—", "—"))
+            info_col = q_box.column(align=True)
+            info_col.scale_y = 0.75
+            info_col.label(text=f"  {t('surface_tol')}:  {info[0]}", icon="DOT")
+            info_col.label(text=f"  {t('normal_angle')}:  {info[1]}", icon="DOT")
 
         layout.separator(factor=0.5)
 
