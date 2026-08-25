@@ -1262,8 +1262,14 @@ def _count_visible_bodies(root, include_hidden: bool) -> int:
 
 # ── Main export ──────────────────────────────────────────────────────────────
 def export_design(design, quality: dict = None, include_hidden: bool = False,
-                  progress_cb=None, body_callback=None) -> list:
+                  progress_cb=None, body_callback=None, only_ids=None) -> list:
     """Export all visible bodies via recursive traversal.
+
+    only_ids: a set of fusion_ids to export, or None for everything. The check
+    sits on dedup_key, which is built from the same normalized path and token
+    as fusion_id, and it runs BEFORE export_body -- so a filtered-out body
+    costs a string compare, not a tessellation. A one-body re-sync of a
+    500-body assembly walks the tree and tessellates once.
 
     Paths:
       1. root.bRepBodies -> root bodies (world = identity)
@@ -1386,6 +1392,8 @@ def export_design(design, quality: dict = None, include_hidden: bool = False,
                     dedup_collision_count[0] += 1
                     return
                 seen_ids.add(dedup_key)
+                if only_ids is not None and dedup_key not in only_ids:
+                    return                      # not asked for -- skip before tessellating
 
                 data = export_body(body, occurrence=occurrence, quality=quality,
                                    world_transform=world_xform,

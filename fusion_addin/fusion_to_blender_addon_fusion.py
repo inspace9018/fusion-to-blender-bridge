@@ -277,8 +277,18 @@ class FusionBlenderBridgeManager:
                 hidden_count = -1
                 hidden_sample = []
 
+            # Partial sync: Blender named the bodies it wants. The flag rides
+            # in sync_start because the RECEIVER needs it -- a partial payload
+            # must not trigger the delete-what-was-not-seen sweep at sync_end,
+            # or re-syncing one body would erase the rest of the design.
+            only_ids = msg.get("only_ids")
+            if only_ids:
+                only_ids = set(only_ids)
+                total = len(only_ids)
+
             self._server.send_to(client, {
                 "type": "sync_start",
+                "partial": bool(only_ids),
                 "object_count": total,
                 "design_root": design_root,
                 "doc": doc_id,
@@ -298,13 +308,16 @@ class FusionBlenderBridgeManager:
                 quality=self._last_quality,
                 include_hidden=req_include_hidden,
                 body_callback=on_body,
+                only_ids=only_ids,
             )
 
             self._server.send_to(client, {"type": "sync_end", "object_count": processed[0]})
 
-            # Send joint/motion link data
+            # Send joint/motion link data. Not on a partial sync: the request
+            # was one body's mesh, and re-running the whole joint rebuild for
+            # it is noise the user did not ask for.
             try:
-                joints = export_joints(design)
+                joints = [] if only_ids else export_joints(design)
                 if joints:
                     self._server.send_to(client, {"type": "joints_data", "joints": joints})
                     print(f"[FusionBridge] Sent {len(joints)} joints")

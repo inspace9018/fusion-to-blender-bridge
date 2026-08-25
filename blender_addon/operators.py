@@ -154,6 +154,42 @@ class FTB_OT_RequestSync(bpy.types.Operator):
         return {"FINISHED"}
 
 
+class FTB_OT_RequestSyncSelected(bpy.types.Operator):
+    bl_idname = "ftb.request_sync_selected"
+    bl_label = "Sync Selected"
+    bl_description = ("Re-sync just the selected Fusion objects' meshes.\n"
+                      "Everything else in the scene is left exactly as it is")
+
+    @classmethod
+    def poll(cls, context):
+        client = _get_client()
+        if client is None or not client.connected:
+            # Unlike full Sync there is no connect-then-sync path here: the
+            # selection is resolved to fusion_ids NOW, and a stale stash firing
+            # after a reconnect could sync bodies the user no longer means.
+            return False
+        return any(o.get("fusion_id") for o in context.selected_objects)
+
+    def execute(self, context):
+        client = _get_client()
+        only_ids = {o.get("fusion_id") for o in context.selected_objects
+                    if o.get("fusion_id")}
+        quality = _build_quality(context)
+
+        handler = _get_handler()
+        if handler is not None:
+            handler._set_status(t("fusion_computing"))
+            handler._set_syncing(True)
+            handler._set_progress(0.0)
+            handler._tag_redraw()
+            handler.arm_sync_watchdog()
+
+        client.request_sync(quality=quality, include_hidden=True,
+                            only_ids=only_ids)
+        self.report({"INFO"}, t("sync_selected_requested", n=len(only_ids)))
+        return {"FINISHED"}
+
+
 class FTB_OT_ClearAll(bpy.types.Operator):
     bl_idname = "ftb.clear_all"
     bl_label = "Delete All Fusion Objects"
@@ -750,6 +786,7 @@ def _step_classes():
 
 
 OPERATOR_CLASSES = [
+    FTB_OT_RequestSyncSelected,
     FTB_OT_Connect,
     FTB_OT_Disconnect,
     FTB_OT_RequestSync,

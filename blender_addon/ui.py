@@ -194,6 +194,14 @@ class FTB_PT_MainPanel(bpy.types.Panel):
         sync_row = layout.row()
         sync_row.scale_y = 1.5
         sync_row.operator("ftb.request_sync", text=t("sync"), icon="FILE_REFRESH")
+        # Selection-only mesh re-sync. Greyed rather than hidden when nothing
+        # eligible is selected -- a button that comes and goes reads as a bug;
+        # one that explains itself by being disabled does not.
+        sel_n = sum(1 for o in context.selected_objects if o.get("fusion_id"))
+        sel_row = layout.row()
+        sel_row.enabled = sel_n > 0
+        sel_row.operator("ftb.request_sync_selected",
+                         text=t("sync_selected", n=sel_n), icon="RESTRICT_SELECT_OFF")
 
         layout.separator(factor=0.5)
 

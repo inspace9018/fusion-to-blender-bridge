@@ -1743,6 +1743,10 @@ class SceneHandler:
         # Also accept explicit design_root from the server (if available)
         # as an authoritative hint.
         self._sync_design_root = msg.get("design_root", "")
+        # Partial sync (Blender asked for named bodies only). The payload will
+        # not contain the rest of the design ON PURPOSE, so the sync_end sweep
+        # that deletes what was not seen must not run.
+        self._sync_partial = bool(msg.get("partial"))
         self._sync_doc = msg.get("doc", "")           # F050 per-document scope
         self._streaming_incoming_roots: set = set()   # auto-detected from body data
 
@@ -1863,6 +1867,8 @@ class SceneHandler:
 
     def on_sync_end(self, msg: dict):
         self._streaming_sync = False
+        partial = getattr(self, "_sync_partial", False)
+        self._sync_partial = False
 
         # ── Determine which design root(s) this sync covers ──────────────
         # Priority: explicit design_root from server > auto-detected from bodies
@@ -1875,7 +1881,18 @@ class SceneHandler:
         # ── Delete previous objects NOT seen in this sync ────────────────
         # Only delete objects whose component root matches the synced design.
         # Bodies from OTHER designs are left untouched.
-        unseen = self._streaming_prev_fids - self._streaming_seen_fids
+        #
+        # Not on a PARTIAL sync: Blender asked for named bodies, so everything
+        # else is absent from the payload on purpose, not because it was
+        # deleted in Fusion. Sweeping here would erase the rest of the design
+        # -- the empty `unseen` turns the whole sweep below into a no-op while
+        # every other piece of the finish (hide state, status, hooks, undo)
+        # still runs.
+        if partial:
+            print("[FusionBridge] sync_end: partial sync -- delete sweep skipped")
+            unseen = set()
+        else:
+            unseen = self._streaming_prev_fids - self._streaming_seen_fids
         to_delete: set = set()
 
         if design_roots:

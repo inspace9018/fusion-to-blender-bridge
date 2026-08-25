@@ -265,8 +265,13 @@ class FusionBridgeClient:
             return
         run_coroutine_threadsafe(self._do_send_json(data), self._loop)
 
-    def request_sync(self, quality: dict = None, include_hidden: bool = None):
-        """Request full sync. Passes quality dict and include_hidden together.
+    def request_sync(self, quality: dict = None, include_hidden: bool = None,
+                     only_ids=None):
+        """Request a sync. Passes quality dict and include_hidden together.
+
+        only_ids: fusion_ids to re-sync just those bodies. An older Fusion
+        add-in ignores the field and answers with a full sync -- slower than
+        asked for, never wrong.
 
         If we're not connected yet (EU01), stash the request so it fires once on
         the next successful connect instead of being silently dropped.
@@ -276,6 +281,8 @@ class FusionBridgeClient:
             msg["mesh_quality"] = quality
         if include_hidden is not None:
             msg["include_hidden"] = bool(include_hidden)
+        if only_ids:
+            msg["only_ids"] = sorted(only_ids)
         if self.connected:
             self.send_json(msg)
         else:
