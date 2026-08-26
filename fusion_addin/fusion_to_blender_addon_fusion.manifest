@@ -6,7 +6,7 @@
     "description": {
         "": "Fusion 360 to Blender Live Bridge - Push geometry to Blender in real-time"
     },
-    "version": "1.0.0",
+    "version": "1.0.1",
     "runOnStartup": false,
     "supportedOS": "windows|mac",
     "editEnabled": true

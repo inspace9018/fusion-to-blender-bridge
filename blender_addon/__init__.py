@@ -25,7 +25,7 @@ bl_info = {
     "name": "Fusion to Blender Lite",
     "description": "Fusion 360 ↔ Blender real-time geometry sync (preserves materials/modifiers/light links)",
     "author": "FusionToBlenderBridge",
-    "version": (2, 0, 0),
+    "version": (1, 0, 1),
     "blender": (4, 1, 0),
     "location": "View3D > Sidebar > Fusion 360",
     "category": "Import-Export",
