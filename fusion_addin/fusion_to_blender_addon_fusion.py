@@ -29,6 +29,12 @@ import struct
 import sys
 import threading
 import traceback
+
+# Named once here, and the same string the Blender half uses. Four places quote
+# this address -- ribbon, preferences, packaged EULA, store page -- and they
+# must not drift apart.
+PRIVACY_URL = ("https://github.com/inspace9018/fusion-to-blender-bridge"
+               "/blob/main/PRIVACY.md")
 import zlib
 
 try:
@@ -520,6 +526,9 @@ def _build_tab_ui():
     _add_cmd(ctrl, "FTB_Settings", ft("settings"),
              ft("settings_desc"),
              SettingsHandler)
+    _add_cmd(ctrl, "FTB_Privacy", ft("privacy"),
+             ft("privacy_desc"),
+             PrivacyHandler)
     # Only in builds that carry the Blender half alongside them. A button that
     # cannot do anything is worse than no button.
     if _find_blender_addon_zip():
@@ -689,6 +698,27 @@ def _make_action_handler(action_fn):
         def run(self):
             action_fn(self.manager)
     return H
+
+
+class PrivacyHandler(_SimpleCreatedHandler):
+    """Open the privacy policy.
+
+    The marketplace terms require the policy to be reachable from inside the
+    app, not only from the store page. A ribbon item is the only place in
+    Fusion that qualifies -- and it is also where somebody actually wonders
+    what this add-in reads out of their document.
+    """
+
+    def _make_execute_handler(self):
+        def act(_m):
+            try:
+                import webbrowser
+                webbrowser.open(PRIVACY_URL)
+            except Exception:
+                # No browser to hand: show the address so it can still be read
+                # or copied, rather than doing nothing at all.
+                _ui.messageBox(PRIVACY_URL, "Fusion to Blender - Privacy")
+        return act
 
 
 class GetBlenderAddonHandler(_SimpleCreatedHandler):

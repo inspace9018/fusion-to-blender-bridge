@@ -39,6 +39,9 @@ _STRINGS = {
                              "en": "Stop WebSocket server"},
     "settings":             {"ko": "서버 설정",            "en": "Server Settings"},
     "settings_desc":        {"ko": "포트 및 옵션 설정",     "en": "Port and option settings"},
+    "privacy":              {"ko": "개인정보처리방침",     "en": "Privacy Policy"},
+    "privacy_desc":         {"ko": "이 애드인이 무엇을 읽고 무엇을 남기는지",
+                             "en": "What this add-in reads, and what it leaves on your machine"},
 
     # ── Blender 애드온 꺼내기 ────────────────────────────────────────────────
     # 이 항목들은 Blender 애드온 zip 이 애드인 옆에 같이 설치된 배포판에서만

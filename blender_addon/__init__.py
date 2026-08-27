@@ -44,6 +44,12 @@ import traceback
 ADDON_KEY = __package__.partition(".")[0]
 VENDORED = "." in __package__
 
+# One address, named once. It appears in the preferences panel, in the Fusion
+# ribbon, in the packaged EULA and on every store page -- four places that must
+# not be allowed to say different things.
+PRIVACY_URL = ("https://github.com/inspace9018/fusion-to-blender-bridge"
+               "/blob/main/PRIVACY.md")
+
 # ── Reload submodules on reinstall-without-restart ───────────────────────────
 # Python caches already-imported submodules, so reinstalling the add-on WITHOUT
 # restarting Blender keeps running the OLD code -- only __init__ re-runs (which
@@ -106,6 +112,15 @@ class FTBPreferences(bpy.types.AddonPreferences):
         layout = self.layout
         layout.prop(self, "ftb_language")
         layout.prop(self, "ftb_auto_connect")
+
+        # The policy has to be reachable from inside the add-on, not only from
+        # a store page -- that is the marketplace requirement, and it is also
+        # where someone actually wonders. It goes ABOVE the STEP notice on
+        # purpose: that block returns early on builds that carry the reader,
+        # and a privacy link that only appears in half the builds is worse
+        # than none.
+        layout.operator("wm.url_open", text=_t("pref_privacy_btn"),
+                        icon="URL").url = PRIVACY_URL
 
         # Only in the build without the STEP reader, i.e. the one from Blender's
         # extensions platform. Someone who came looking for "open a .step file"

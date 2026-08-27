@@ -48,6 +48,7 @@ _STRINGS = {
                                    "The GitHub download opens .step / .stp without Fusion.\n"
                                    "(Its CAD engine exceeds the platform size limit)"},
     "pref_step_btn":        {"ko": "GitHub 에서 받기",  "en": "Get it on GitHub"},
+    "pref_privacy_btn":     {"ko": "개인정보처리방침",   "en": "Privacy Policy"},
     "err_refused":          {"ko": "Fusion 애드인이 실행 중인지 확인하세요 (Run)",
                              "en": "Check the Fusion add-in is running (Run)"},
     "err_timeout":          {"ko": "Fusion 애드인이 응답하지 않습니다 — Fusion에서 Run 상태인지, 포트 9080이 막혀 있지 않은지 확인하세요",
