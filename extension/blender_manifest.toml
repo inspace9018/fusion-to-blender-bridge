@@ -12,7 +12,12 @@ tags = ["Import-Export", "Pipeline"]
 blender_version_min = "4.2.0"
 
 license = ["SPDX:GPL-3.0-or-later"]
-copyright = ["2026 inspace"]
+# Terms of Service 1.3: every copyright holder of bundled code is credited
+# here, not only in NOTICE. libs/websockets rides along in this zip.
+copyright = [
+  "2026 inspace",
+  "2013-2026 Aymeric Augustin and contributors (websockets, BSD-3-Clause)",
+]
 
 website = "https://github.com/inspace9018/fusion-to-blender-bridge"
 
