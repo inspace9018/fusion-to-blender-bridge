@@ -65,8 +65,9 @@ own machine until you delete it.
 |---|---|---|
 | Blender add-on settings (language, auto-connect) | Blender's own preferences: `%APPDATA%\Blender Foundation\Blender\<version>\config\userpref.blend` | Until you change or remove them |
 | Per-scene options (quality, toggles) | Inside the `.blend` file you save | As long as you keep that file |
-| Fusion add-in files and settings | `%APPDATA%\Autodesk\Autodesk Fusion 360\API\AddIns\fusion_to_blender_addon_fusion\` | Until uninstalled |
-| **Diagnostic log** | `%USERPROFILE%\Documents\fusion_bridge_log.txt` | **Appended to on every sync, never rotated or deleted by us** |
+| Fusion add-in files | `%APPDATA%\Autodesk\Autodesk Fusion 360\API\AddIns\fusion_to_blender_addon_fusion\` | Until uninstalled |
+| Add-in settings (the log size limit) | `%LOCALAPPDATA%\FusionToBlenderBridge\settings.json` | Until you change or delete it |
+| **Diagnostic log** | `%LOCALAPPDATA%\FusionToBlenderBridge\fusion_bridge_log.txt` | **Bounded.** It rotates at a size you choose — 2 MB by default, set in Fusion under Settings — keeping one previous file, so it never occupies more than twice that |
 | STEP support packages, if you installed them | Your Python user directory, e.g. `%APPDATA%\Python\Python311\site-packages` | Until you uninstall them |
 
 **About the diagnostic log.** It records what the add-in did during a sync:
@@ -77,6 +78,11 @@ that when a sync goes wrong you have evidence instead of a guess. You can
 delete it at any time — the add-in simply starts a new one — and you can send
 it to us voluntarily when reporting a problem, which is the only circumstance
 in which we would ever see it.
+
+Its size is yours to decide: **Fusion ▸ Fusion to Blender ▸ Settings ▸ Log size
+limit**. Past that size the file rotates and one previous copy is kept, so it
+cannot grow without end. **Fusion ▸ Fusion to Blender ▸ Open Log Folder** takes
+you straight to it.
 
 ## 5. Deleting your data, and withdrawing consent
 
@@ -92,8 +98,16 @@ unaffected.
 
 1. Run the installer again and choose Uninstall (or remove the add-on from
    Blender's Preferences, and the add-in folder from Fusion's AddIns folder).
-2. Delete the diagnostic log at `%USERPROFILE%\Documents\fusion_bridge_log.txt`.
+2. Delete the folder `%LOCALAPPDATA%\FusionToBlenderBridge\`, which holds the
+   diagnostic log and the add-in's own settings file. Nothing else of yours is
+   in there.
 3. Delete the STEP packages, if you installed them (step above).
+
+If you used a version before 2026-08-27, the log lived at
+`%USERPROFILE%\Documents\fusion_bridge_log.txt`. Newer versions no longer write
+there — a diagnostic file does not belong in your documents — but they do not
+reach into that folder to tidy up either, so delete that old file yourself if
+it is still around.
 
 Blender's own preference file and your `.blend` files belong to Blender and to
 you; removing the add-on leaves them intact.

@@ -42,6 +42,12 @@ _STRINGS = {
     "privacy":              {"ko": "개인정보처리방침",     "en": "Privacy Policy"},
     "privacy_desc":         {"ko": "이 애드인이 무엇을 읽고 무엇을 남기는지",
                              "en": "What this add-in reads, and what it leaves on your machine"},
+    "log_cap_label":        {"ko": "로그 상한 (MB)",       "en": "Log size limit (MB)"},
+    "log_cap_desc":         {"ko": "이 크기를 넘으면 이전 로그 하나만 남기고 새로 시작합니다.\n동기화 1회에 약 5 KB 쌓입니다.",
+                             "en": "Past this size the log rotates, keeping one previous file.\nOne sync writes roughly 5 KB."},
+    "open_log":             {"ko": "로그 폴더 열기",        "en": "Open Log Folder"},
+    "open_log_desc":        {"ko": "진단 로그가 있는 폴더를 엽니다",
+                             "en": "Open the folder holding the diagnostic log"},
 
     # ── Blender 애드온 꺼내기 ────────────────────────────────────────────────
     # 이 항목들은 Blender 애드온 zip 이 애드인 옆에 같이 설치된 배포판에서만

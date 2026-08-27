@@ -23,6 +23,7 @@ Mesh quality settings are managed on the Blender side. Fusion 360 only acts as a
 # You should have received a copy of the GNU General Public License along
 # with this program. If not, see <https://www.gnu.org/licenses/>.
 
+import json
 import os
 import shutil
 import struct
@@ -33,6 +34,26 @@ import traceback
 # Named once here, and the same string the Blender half uses. Four places quote
 # this address -- ribbon, preferences, packaged EULA, store page -- and they
 # must not drift apart.
+def _addin_version() -> str:
+    """The version this add-in reports, read from its own manifest.
+
+    It used to be typed here as a literal, and it drifted: the manifest said
+    1.0.1 while every sync told Blender "1.0.0". Blender logs that string and
+    uses it to tell an old add-in from a new one, so a stale literal is the
+    kind of lie that costs an afternoon of debugging later.
+    """
+    try:
+        here = os.path.dirname(os.path.abspath(__file__))
+        mf = os.path.join(here, "fusion_to_blender_addon_fusion.manifest")
+        with open(mf, encoding="utf-8-sig") as f:
+            return str(json.load(f).get("version") or "0.0.0")
+    except Exception:
+        return "0.0.0"
+
+
+ADDIN_VERSION = _addin_version()
+
+
 PRIVACY_URL = ("https://github.com/inspace9018/fusion-to-blender-bridge"
                "/blob/main/PRIVACY.md")
 import zlib
@@ -298,7 +319,7 @@ class FusionBlenderBridgeManager:
                 "object_count": total,
                 "design_root": design_root,
                 "doc": doc_id,
-                "addon_version": "1.0.0",
+                "addon_version": ADDIN_VERSION,
                 "hidden_count": hidden_count,
                 "hidden_sample": hidden_sample,
             })
@@ -526,6 +547,9 @@ def _build_tab_ui():
     _add_cmd(ctrl, "FTB_Settings", ft("settings"),
              ft("settings_desc"),
              SettingsHandler)
+    _add_cmd(ctrl, "FTB_OpenLogFolder", ft("open_log"),
+             ft("open_log_desc"),
+             OpenLogFolderHandler)
     _add_cmd(ctrl, "FTB_Privacy", ft("privacy"),
              ft("privacy_desc"),
              PrivacyHandler)
@@ -700,6 +724,26 @@ def _make_action_handler(action_fn):
     return H
 
 
+class OpenLogFolderHandler(_SimpleCreatedHandler):
+    """Show the folder the diagnostic log lives in.
+
+    The log moved out of Documents, which is the right place for it and the
+    wrong place to go looking. This button is the other half of that move: it
+    keeps "please send me the log" a one-click request instead of a path the
+    user has to be told over email.
+    """
+
+    def _make_execute_handler(self):
+        def act(_m):
+            from . import exporter as _exp
+            d = _exp.app_data_dir()
+            try:
+                os.startfile(d)          # Windows: opens Explorer at that folder
+            except Exception:
+                _ui.messageBox(d, "Fusion to Blender - Log folder")
+        return act
+
+
 class PrivacyHandler(_SimpleCreatedHandler):
     """Open the privacy policy.
 
@@ -803,6 +847,18 @@ class SettingsHandler(_SimpleCreatedHandler):
             )
             remote_input.tooltip = ft("allow_remote")
             remote_input.tooltipDescription = ft("allow_remote_desc")
+            # How large the diagnostic log may grow before it rotates. The
+            # user decides, because it is their disk: a 514-body assembly
+            # writes ~5 KB per sync, and how much history is worth keeping is
+            # not a number this add-in should pick for everyone.
+            from . import exporter as _exp
+            cap_input = inputs.addIntegerSpinnerCommandInput(
+                "log_max_mb", ft("log_cap_label"),
+                _exp._MIN_LOG_MAX_MB, _exp._MAX_LOG_MAX_MB, 1,
+                _exp.get_log_max_mb()
+            )
+            cap_input.tooltip = ft("log_cap_label")
+            cap_input.tooltipDescription = ft("log_cap_desc")
             # Language dropdown
             lang_input = inputs.addDropDownCommandInput(
                 "language", ft("language"),
@@ -838,6 +894,10 @@ class SettingsExecuteHandler(adsk.core.CommandEventHandler):
             remote_item = inputs.itemById("allow_remote")
             if remote_item is not None:
                 self.manager.allow_remote = remote_item.value
+            cap_item = inputs.itemById("log_max_mb")
+            if cap_item is not None:
+                from . import exporter as _exp
+                _exp.set_log_max_mb(cap_item.value)
             # Save language setting
             lang_input = inputs.itemById("language")
             if lang_input:
@@ -870,7 +930,7 @@ def run(context):
         _ui      = _app.userInterface
         _manager = FusionBlenderBridgeManager()
         _build_ui()
-        print("[FusionBridge] Add-in started (v1.0.0)")
+        print(f"[FusionBridge] Add-in started (v{ADDIN_VERSION})")
     except Exception:
         if _ui:
             _ui.messageBox(f"Startup error:\n{traceback.format_exc()}")

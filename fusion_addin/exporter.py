@@ -29,6 +29,7 @@ import array as _array
 import base64
 import hashlib
 import math
+import json
 import os
 import re
 import time
@@ -49,40 +50,133 @@ _IDENTITY_16 = [1.0, 0.0, 0.0, 0.0,
 
 
 # ── File logging (fallback for when Fusion console is not visible) ────────────
+#
+# Three things this has to get right, learned the hard way from a 2.7 MB file
+# that nobody asked for:
+#
+#   WHERE  Documents is the user's document space. A diagnostic file is not a
+#          document, and a marketplace reviewer looking for "what does this
+#          write to my disk" should not find it there. It lives under
+#          LOCALAPPDATA now, which is what that folder is for.
+#   HOW BIG  It grew without limit -- 498 syncs and still counting up. Now it
+#          rotates at a size the user chooses, keeping one previous file, so
+#          the worst case is twice the cap and never more.
+#   READABLE  498 runs were concatenated with nothing between them. Each sync
+#          now opens with a banner, so "what happened this time" is findable.
+_APP_DIR_NAME = "FusionToBlenderBridge"
+_LOG_NAME = "fusion_bridge_log.txt"
+_SETTINGS_NAME = "settings.json"
+
+DEFAULT_LOG_MAX_MB = 2
+_MIN_LOG_MAX_MB = 1
+_MAX_LOG_MAX_MB = 200
+
+
+def app_data_dir() -> str:
+    """Where this add-in keeps things that are its own, not the user's."""
+    base = (os.environ.get("LOCALAPPDATA")
+            or os.environ.get("APPDATA")
+            or os.environ.get("TEMP")
+            or os.environ.get("TMP")
+            or os.path.expanduser("~"))
+    d = os.path.join(base, _APP_DIR_NAME)
+    try:
+        os.makedirs(d, exist_ok=True)
+        return d
+    except Exception:
+        return base
+
+
 def _log_file_path() -> str:
     # An explicit override wins. Without it a pytest run appends its fake
-    # appearance names to the log in the user's Documents -- the same file that
-    # gets read when diagnosing a real sync, so test noise lands in the middle
-    # of the evidence.
+    # appearance names to the real log -- the same file that gets read when
+    # diagnosing a real sync, so test noise lands in the middle of the evidence.
     override = os.environ.get("FTB_LOG_PATH")
     if override:
         return override
-    candidates = []
-    home = os.environ.get('USERPROFILE') or os.path.expanduser('~')
-    if home:
-        candidates.append(os.path.join(home, 'Documents', 'fusion_bridge_log.txt'))
-        candidates.append(os.path.join(home, 'fusion_bridge_log.txt'))
-    tmp = os.environ.get('TEMP') or os.environ.get('TMP')
-    if tmp:
-        candidates.append(os.path.join(tmp, 'fusion_bridge_log.txt'))
-    candidates.append(os.path.abspath('fusion_bridge_log.txt'))
-    for p in candidates:
-        try:
-            d = os.path.dirname(p)
-            if not d or os.path.isdir(d):
-                return p
-        except Exception:
-            continue
-    return 'fusion_bridge_log.txt'
+    return os.path.join(app_data_dir(), _LOG_NAME)
+
+
+# ── The one setting that survives a Fusion restart ───────────────────────────
+# Port, language and the hidden-bodies toggle have always been session-only,
+# and that is left alone here. A log cap is different: it is a promise about
+# the user's disk, and a promise that forgets itself every restart is not one.
+def _settings_path() -> str:
+    return os.path.join(app_data_dir(), _SETTINGS_NAME)
+
+
+def _read_settings() -> dict:
+    try:
+        with open(_settings_path(), encoding="utf-8") as f:
+            d = json.load(f)
+            return d if isinstance(d, dict) else {}
+    except Exception:
+        return {}
+
+
+def _write_settings(d: dict):
+    try:
+        with open(_settings_path(), "w", encoding="utf-8") as f:
+            json.dump(d, f, indent=2)
+    except Exception:
+        pass
+
+
+def get_log_max_mb() -> int:
+    v = _read_settings().get("log_max_mb", DEFAULT_LOG_MAX_MB)
+    try:
+        v = int(v)
+    except Exception:
+        return DEFAULT_LOG_MAX_MB
+    return max(_MIN_LOG_MAX_MB, min(_MAX_LOG_MAX_MB, v))
+
+
+def set_log_max_mb(mb: int):
+    d = _read_settings()
+    d["log_max_mb"] = max(_MIN_LOG_MAX_MB, min(_MAX_LOG_MAX_MB, int(mb)))
+    _write_settings(d)
 
 
 _LOG_PATH = _log_file_path()
+
+
+def _rotate_if_needed():
+    """Keep at most two files: the live one and the one before it."""
+    try:
+        cap = get_log_max_mb() * 1024 * 1024
+        if os.path.getsize(_LOG_PATH) < cap:
+            return
+    except Exception:
+        return                       # no file yet, or unreadable -- nothing to do
+    prev = _LOG_PATH[:-4] + ".1.txt" if _LOG_PATH.endswith(".txt") else _LOG_PATH + ".1"
+    try:
+        if os.path.exists(prev):
+            os.remove(prev)
+        os.replace(_LOG_PATH, prev)
+    except Exception:
+        # Could not rotate (file locked, permissions). Better to keep appending
+        # than to lose the diagnostics entirely; the cap is a courtesy, not a
+        # correctness requirement.
+        pass
+
+
+def log_session_start(title: str = "sync"):
+    """Put a findable banner between one run and the next."""
+    try:
+        stamp = time.strftime("%Y-%m-%d %H:%M:%S")
+        _log("")
+        _log("=" * 72)
+        _log(f"  {title}  --  {stamp}")
+        _log("=" * 72)
+    except Exception:
+        pass
 
 
 def _log(msg: str):
     """Log to both Fusion console and file."""
     print(msg)
     try:
+        _rotate_if_needed()
         with open(_LOG_PATH, 'a', encoding='utf-8') as f:
             f.write(f"[{time.strftime('%H:%M:%S')}] {msg}\n")
     except Exception:
@@ -1290,6 +1384,7 @@ def export_design(design, quality: dict = None, include_hidden: bool = False,
     seen_ids = set()
     reset_appearance_budget()
 
+    log_session_start("sync")
     _log(f"[FusionBridge] === Export start === (quality={quality}, "
          f"include_hidden={include_hidden})")
 
