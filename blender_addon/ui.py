@@ -56,16 +56,19 @@ def _panel_title() -> str:
     "Lite" inside something someone paid for reads as the wrong thing installed.
     """
     try:
-        from . import bl_info, VENDORED
-        name = bl_info["name"]
-        version = bl_info["version"][:2]
+        from . import ADDON_NAME, ADDON_VERSION, VENDORED
+        name = ADDON_NAME
+        version = ADDON_VERSION[:2]
         if VENDORED:
-            # The host add-on's own bl_info, which is the product the user has.
+            # The host add-on's own name and version, which is the product the
+            # user actually has. Extensions have no bl_info (see __init__), so
+            # the copy the host took at import time is asked for first.
             import sys
             host = sys.modules.get(__package__.partition(".")[0])
             host_info = getattr(host, "bl_info", None) or {}
-            name = host_info.get("name", name)
-            version = host_info.get("version", bl_info["version"])[:2]
+            name = getattr(host, "ADDON_NAME", None) or host_info.get("name", name)
+            version = (getattr(host, "ADDON_VERSION", None)
+                       or host_info.get("version", ADDON_VERSION))[:2]
         return "{}  v{}.{}".format(name, *version)
     except Exception:
         return "Fusion to Blender"

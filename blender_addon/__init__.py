@@ -31,18 +31,40 @@ bl_info = {
     "category": "Import-Export",
 }
 
+# Installed as an extension, Blender takes the manifest as the source of truth
+# and deletes `bl_info` off the module -- so a later read of it raises
+# "name 'bl_info' is not defined" and the add-on refuses to enable. It has to
+# be copied here, at import time, while it still exists. Nothing below this
+# line may read `bl_info` again.
+ADDON_NAME = bl_info["name"]
+ADDON_VERSION = bl_info["version"]
+
 import bpy
 import traceback
 
-# This package is installed two ways. On its own it is the free add-on and
-# __package__ is "blender_addon". Inside Bridge Pro it is vendored as a
-# sub-package and __package__ becomes "bridge_pro.core" -- but Blender still
-# knows only the top-level add-on, so preferences live under that name.
+# This package is installed three ways, and Blender calls the add-on something
+# different in each:
 #
-# One source, both shapes: the paid build is generated from this tree at package
-# time rather than copied by hand, and a second copy always drifts.
-ADDON_KEY = __package__.partition(".")[0]
-VENDORED = "." in __package__
+#   blender_addon                                    the free add-on, on its own
+#   bridge_pro.core                                  vendored inside Bridge Pro
+#   bl_ext.user_default.fusion_to_blender_bridge     from the extensions platform
+#
+# ADDON_KEY has to be whatever Blender filed the add-on under, because that is
+# the key its preferences live at and the bl_idname AddonPreferences must carry.
+# VENDORED has to mean "someone else's add-on owns those preferences".
+#
+# Splitting on the first dot got both wrong for an extension: the key became
+# "bl_ext", and the dots in the name read as "vendored", so the preferences
+# class was never registered. The Preferences page came up empty -- no language,
+# no auto-connect, and no privacy link, which the marketplaces require.
+_parts = __package__.split(".")
+if _parts[0] == "bl_ext":
+    # bl_ext.<repository>.<extension id> is the add-on; anything deeper is ours.
+    ADDON_KEY = ".".join(_parts[:3])
+    VENDORED = len(_parts) > 3
+else:
+    ADDON_KEY = _parts[0]
+    VENDORED = len(_parts) > 1
 
 # One address, named once. It appears in the preferences panel, in the Fusion
 # ribbon, in the packaged EULA and on every store page -- four places that must
@@ -401,7 +423,7 @@ def register():
     # Read, never typed. This line said v1.4 for a whole release after the
     # add-on was renumbered, because a hand-written version drifts the moment
     # anyone forgets it exists.
-    ver = ".".join(str(x) for x in bl_info["version"])
+    ver = ".".join(str(x) for x in ADDON_VERSION)
     print(f"[FusionBridge] v{ver} Registering add-on...")
 
     # Vendored inside Bridge Pro, the host registers ONE preferences class
