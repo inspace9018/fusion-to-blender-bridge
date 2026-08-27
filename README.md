@@ -68,13 +68,12 @@ Fusion에서 모델을 수정하고 Blender에서 **Sync** 한 번 누르면, �
 > | | 하는 일 | |
 > |---|---|:---:|
 > | **Bridge** (이 저장소) | Fusion ↔ Blender 동기화와 보존 | **무료** |
-> | **Bridge Pro** | **이 브리지 + Fusion이 아는 것** — 색 · 움직임 · 모서리 · 정밀도 · 토폴로지 | 준비 중 |
+> | **[Bridge Pro](https://nexuslabmain.gumroad.com/l/fusion-to-blender-bridge)** | **이 브리지 + Fusion이 아는 것** — 색 · 움직임 · 모서리 · 정밀도 · 토폴로지 | $39 |
 >
 > Bridge Pro는 이 애드온을 **품고 있는 별도 애드온**입니다. 사면 이걸 지우고 그것 하나만
 > 씁니다(설치 프로그램이 알아서 합니다). 둘 다 켜면 모델이 두 번씩 들어옵니다.
-> | **ID Studio for Blender** | 렌더 스튜디오 — 제품 카메라 · 스튜디오 조명 · CMF 배리에이션 · 매트릭스 배치 렌더 | 베타 |
 >
-> ⭐ **Star**를 눌러두시면 Pro · Studio 출시 소식을 가장 먼저 받아보실 수 있어요.
+> ⭐ **Star**를 눌러두시면 새 소식을 가장 먼저 받아보실 수 있어요.
 
 ## 설치 (5분)
 
@@ -257,19 +256,18 @@ Edit your model in Fusion, hit **Sync** in Blender. The geometry updates. Your M
 
 > **The bridge does one job: Fusion ↔ Blender sync.** Everything in the table above is free and stays free.
 >
-> Two paid add-ons cover what sits either side of it. The bridge is complete without them.
+> A paid add-on covers what sits either side of it. The bridge is complete without it.
 >
 > | | What it does | |
 > |---|---|:---:|
 > | **Bridge** (this repo) | Fusion ↔ Blender sync and preservation | **Free** |
-> | **Bridge Pro** | **This bridge plus everything Fusion knows** — colour, motion, edges, precision, topology | In progress |
+> | **[Bridge Pro](https://nexuslabmain.gumroad.com/l/fusion-to-blender-bridge)** | **This bridge plus everything Fusion knows** — colour, motion, edges, precision, topology | $39 |
 >
 > Bridge Pro is a separate add-on that *contains* this one. Buying it replaces
 > this: the installer removes it for you. Do not enable both -- the model would
 > come in twice.
-> | **ID Studio for Blender** | Render studio — product cameras, studio lighting, CMF variants, matrix batch render | Beta |
 >
-> ⭐ **Star** the repo to hear about Pro and Studio first.
+> ⭐ **Star** the repo to hear about what comes next.
 
 ## Installation (5 min)
 
