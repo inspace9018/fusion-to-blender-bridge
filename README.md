@@ -7,7 +7,7 @@
 <p align="center">
   <a href="../../releases/latest"><img src="https://img.shields.io/github/v/release/inspace9018/fusion-to-blender-bridge?label=release&color=success&logo=github" alt="Release"></a>
   <img src="https://img.shields.io/github/last-commit/inspace9018/fusion-to-blender-bridge?label=updated&color=informational&logo=github" alt="Last updated">
-  <img src="https://img.shields.io/badge/Blender-4.1%20%E2%80%93%205.0-orange?logo=blender&logoColor=white" alt="Blender 4.1 – 5.0">
+  <img src="https://img.shields.io/badge/Blender-4.2%20%E2%80%93%205.0-orange?logo=blender&logoColor=white" alt="Blender 4.2 – 5.0">
   <img src="https://img.shields.io/badge/Fusion_360-supported-blue?logo=autodesk&logoColor=white" alt="Fusion 360">
   <img src="https://img.shields.io/badge/license-GPL--3.0--or--later-lightgrey" alt="GPL-3.0-or-later">
   <a href="https://ko-fi.com/inspace9018gmailcom"><img src="https://img.shields.io/badge/Support-Ko--fi-FF5E5B?logo=ko-fi&logoColor=white" alt="Ko-fi"></a>
@@ -80,7 +80,7 @@ Fusion에서 모델을 수정하고 Blender에서 **Sync** 한 번 누르면, �
 ### 준비물
 
 - **Fusion 360** (최신 버전)
-- **Blender 4.1+** (5.0 권장)
+- **Blender 4.2+** (5.0 권장)
 
 ### ⭐ 가장 쉬운 방법 — 통합 설치 프로그램 (권장)
 
@@ -274,7 +274,7 @@ Edit your model in Fusion, hit **Sync** in Blender. The geometry updates. Your M
 ### Requirements
 
 - **Fusion 360** (latest version)
-- **Blender 4.1+** (5.0 recommended)
+- **Blender 4.2+** (5.0 recommended)
 
 ### ⭐ Easiest — unified installer (recommended)
 
