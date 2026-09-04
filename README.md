@@ -68,10 +68,17 @@ Fusion에서 모델을 수정하고 Blender에서 **Sync** 한 번 누르면, �
 > | | 하는 일 | |
 > |---|---|:---:|
 > | **Bridge** (이 저장소) | Fusion ↔ Blender 동기화와 보존 | **무료** |
-> | **[Bridge Pro](https://nexuslabmain.gumroad.com/l/fusion-to-blender-bridge)** | **이 브리지 + Fusion이 아는 것** — 색 · 움직임 · 모서리 · 정밀도 · 토폴로지 | $39 |
+> | **[Bridge Pro](https://nexuslabmain.gumroad.com/l/fusion-to-blender-bridge)** | **이 브리지 + Fusion이 아는 것** — 색 · 움직임 · 모서리 · 정밀도 · 토폴로지 | 원하는 만큼 ($15~) |
 >
 > Bridge Pro는 이 애드온을 **품고 있는 별도 애드온**입니다. 사면 이걸 지우고 그것 하나만
 > 씁니다(설치 프로그램이 알아서 합니다). 둘 다 켜면 모델이 두 번씩 들어옵니다.
+>
+> **Bridge Pro가 추가로 하는 일 (무료 Bridge에는 없음):**
+> - Fusion의 **Appearance(색)**를 그대로 가져옵니다 — 무료판은 형상만, Pro는 색까지
+> - **Joint(조인트)**가 Blender의 컨트롤 오브젝트로 그대로 살아납니다 — 회전시키면 연결된 부품이 따라 움직입니다
+> - BRep 면 경계 기준으로 정밀한 Sharp/Seam 배치, 삼각형을 사각형으로 재구성해 토폴로지가 25% 더 가벼워집니다
+>
+> 무료판을 써보고 이 세 가지가 필요해지면 그때 넘어오시면 됩니다.
 >
 > ⭐ **Star**를 눌러두시면 새 소식을 가장 먼저 받아보실 수 있어요.
 
@@ -261,11 +268,18 @@ Edit your model in Fusion, hit **Sync** in Blender. The geometry updates. Your M
 > | | What it does | |
 > |---|---|:---:|
 > | **Bridge** (this repo) | Fusion ↔ Blender sync and preservation | **Free** |
-> | **[Bridge Pro](https://nexuslabmain.gumroad.com/l/fusion-to-blender-bridge)** | **This bridge plus everything Fusion knows** — colour, motion, edges, precision, topology | $39 |
+> | **[Bridge Pro](https://nexuslabmain.gumroad.com/l/fusion-to-blender-bridge)** | **This bridge plus everything Fusion knows** — colour, motion, edges, precision, topology | Pay what you want ($15+) |
 >
 > Bridge Pro is a separate add-on that *contains* this one. Buying it replaces
 > this: the installer removes it for you. Do not enable both -- the model would
 > come in twice.
+>
+> **What Bridge Pro adds on top of the free Bridge:**
+> - Imports Fusion's **Appearance (colour)** directly, not just geometry
+> - **Joints** arrive as Blender control objects. Rotate one and the child body follows
+> - Sharp/Seam placement follows real BRep face boundaries, and triangles are merged into quads for roughly 25% fewer faces
+>
+> Try the free version first. If you need those three, Pro is there.
 >
 > ⭐ **Star** the repo to hear about what comes next.
 
