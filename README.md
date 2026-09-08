@@ -518,6 +518,10 @@ sync performs. Needs Blender because that logic is `bpy` all the way down.
   <a href="https://ko-fi.com/inspace9018gmailcom"><img src="https://img.shields.io/badge/☕_Buy_me_a_coffee-Ko--fi-FF5E5B?style=for-the-badge&logo=ko-fi&logoColor=white" alt="Ko-fi"></a>
 </p>
 
+Using it on a real project? A short [issue about your workflow](https://github.com/inspace9018/fusion-to-blender-bridge/issues/new?template=feedback.md) — what you're syncing, what you use Blender for afterward — is worth more than a star. If it's been solid for you, a rating on [Superhive](https://superhivemarket.com/products/fusion-to-blender-bridge) or [Gumroad](https://starlit7553.gumroad.com/l/fusion-to-blender-bridge) helps the next person trust it enough to try it.
+
+실제 프로젝트에 쓰고 계신가요? [워크플로우에 대한 짧은 이슈](https://github.com/inspace9018/fusion-to-blender-bridge/issues/new?template=feedback.md) 하나가 (뭘 동기화하시는지, Blender에서 뭘 하시는지) 스타보다 더 도움이 됩니다. 한동안 잘 쓰셨다면 [Superhive](https://superhivemarket.com/products/fusion-to-blender-bridge)나 [Gumroad](https://starlit7553.gumroad.com/l/fusion-to-blender-bridge)에 평점을 남겨주시면 다음 분이 써볼 만하다고 믿는 데 도움이 됩니다.
+
 ## License
 
 **GPL-3.0-or-later** — 자유롭게 쓰고, 고치고, 상업적으로도 사용할 수 있습니다.
