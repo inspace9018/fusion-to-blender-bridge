@@ -45,7 +45,10 @@ INSTALLER_NAMES = {"install.bat", "install.command", "install.sh"}
 def _bundles():
     found = [b for b in BUNDLES if os.path.exists(b)]
     if not found:
-        pytest.skip("no bundles built yet -- run build_installer.py")
+        # Called from a parametrize() decorator, so this runs at collection
+        # time (module import), not inside a test -- pytest 8+ requires the
+        # module-level flag or it errors the whole file instead of skipping.
+        pytest.skip("no bundles built yet -- run build_installer.py", allow_module_level=True)
     return found
 
 
