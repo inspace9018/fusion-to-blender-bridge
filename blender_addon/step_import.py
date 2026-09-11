@@ -57,6 +57,25 @@ def _get_occ():
         from OCP.BRep import BRep_Tool
         from OCP.TopLoc import TopLoc_Location
         from OCP.TopoDS import TopoDS   # OCP 7.9: class with static methods
+
+        class _TopoDSCompat:
+            """Shim over TopoDS so callers can use one name across OCP versions.
+
+            OCP <= 7.9.x exposes static methods as `Solid_s`/`Face_s` (SWIG
+            overload suffix). OCP >= 8.0 renamed them to plain `Solid`/`Face`.
+            This wrapper picks whichever the installed OCP actually has, so
+            the rest of the code never needs a version check.
+            """
+            def __init__(self, real):
+                self._real = real
+
+            def __getattr__(self, name):
+                for candidate in (name, f"{name}_s", name.rstrip("_s")):
+                    fn = getattr(self._real, candidate, None)
+                    if fn is not None:
+                        return fn
+                raise AttributeError(name)
+
         mods = {
             "STEPControl_Reader": STEPControl_Reader,
             "IFSelect_RetDone": IFSelect_RetDone,
@@ -66,14 +85,17 @@ def _get_occ():
             "TopAbs_FACE": TopAbs_FACE,
             "BRep_Tool": BRep_Tool,
             "TopLoc_Location": TopLoc_Location,
-            "TopoDS": TopoDS,
+            "TopoDS": _TopoDSCompat(TopoDS),
         }
         # XDE (Extended Data Exchange) for reading shape names -- optional
         try:
             from OCP.STEPCAFControl import STEPCAFControl_Reader
             from OCP.TDocStd import TDocStd_Document
             from OCP.XCAFDoc import XCAFDoc_DocumentTool
-            from OCP.TDF import TDF_LabelSequence
+            try:
+                from OCP.TDF import TDF_LabelSequence  # OCP <= 7.9.x
+            except ImportError:
+                from OCP.collections import Sequence_TDF_Label as TDF_LabelSequence  # OCP >= 8.0
             from OCP.TCollection import TCollection_ExtendedString
             from OCP.XCAFApp import XCAFApp_Application
             from OCP.TDataStd import TDataStd_Name
@@ -221,13 +243,19 @@ def _read_step_xde(filepath: str, occ):
         from OCP.TDocStd import TDocStd_Document
         from OCP.XCAFApp import XCAFApp_Application
         from OCP.XCAFDoc import XCAFDoc_DocumentTool
-        from OCP.TDF import TDF_LabelSequence, TDF_Label
+        try:
+            from OCP.TDF import TDF_LabelSequence, TDF_Label  # OCP <= 7.9.x
+        except ImportError:
+            # OCP >= 8.0 moved the sequence type to OCP.collections and
+            # renamed it Sequence_TDF_Label; TDF_Label itself stayed put.
+            from OCP.TDF import TDF_Label
+            from OCP.collections import Sequence_TDF_Label as TDF_LabelSequence
         from OCP.TDataStd import TDataStd_Name
         from OCP.TCollection import TCollection_ExtendedString
         from OCP.STEPCAFControl import STEPCAFControl_Reader
         from OCP.TopExp import TopExp_Explorer
         from OCP.TopAbs import TopAbs_SOLID
-        from OCP.TopoDS import TopoDS
+        TopoDS = occ["TopoDS"]  # version-compat shim from _get_occ()
     except ImportError:
         return None
 
@@ -250,6 +278,11 @@ def _read_step_xde(filepath: str, occ):
         labels = TDF_LabelSequence()
         shape_tool.GetFreeShapes(labels)
         print(f"[FusionBridge STEP] {labels.Size()} top-level free shape(s) in file")
+    except Exception:
+        traceback.print_exc()
+        return None
+
+    try:
 
         solids = []
         seen_names = {}  # track duplicates
@@ -944,3 +977,4 @@ def get_deflection_for_preset(preset: str) -> tuple:
         "ultra":  (0.01, 0.07),   # ~4°
     }
     return presets.get(preset, presets["medium"])
+
