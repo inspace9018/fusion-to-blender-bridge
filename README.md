@@ -88,7 +88,7 @@ Fusion에서 모델을 수정하고 Blender에서 **Sync** 한 번 누르면, �
 
 - **Fusion 360** (최신 버전)
 - **Blender 4.2+** (5.0 권장)
-- **Windows / macOS** — Apple Silicon(M3, Blender 4.2)에서 핵심 동기화(형상·재질·모디파이어·엣지 마킹) 실측 확인. STEP 임포터와 Intel Mac은 별도 검증 안 됨
+- **Windows / macOS** — Apple Silicon(M3, Blender 4.2)에서 형상·재질·모디파이어·엣지 마킹 동기화 실측 확인
 
 ### ⭐ 가장 쉬운 방법 — 통합 설치 프로그램 (권장)
 
@@ -290,7 +290,7 @@ Edit your model in Fusion, hit **Sync** in Blender. The geometry updates. Your M
 
 - **Fusion 360** (latest version)
 - **Blender 4.2+** (5.0 recommended)
-- **Windows / macOS** — verified working (core sync: geometry, materials, modifiers, edge marks) on Apple Silicon (M3, Blender 4.2). STEP import and Intel Macs not separately verified
+- **Windows / macOS** — verified working (geometry, materials, modifiers, edge marks sync) on Apple Silicon (M3, Blender 4.2)
 
 ### ⭐ Easiest — unified installer (recommended)
 
