@@ -269,7 +269,7 @@ Edit your model in Fusion, hit **Sync** in Blender. The geometry updates. Your M
 > | | What it does | |
 > |---|---|:---:|
 > | **Bridge** (this repo) | Fusion ↔ Blender sync and preservation | **Free** |
-> | **[Bridge Pro](https://nexuslabmain.gumroad.com/l/fusion-to-blender-bridge)** | **This bridge plus everything Fusion knows** — colour, motion, edges, precision, topology | Pay what you want ($15+) |
+> | **[Bridge Pro](https://nexuslabmain.gumroad.com/l/fusion-to-blender-bridge)** | **This bridge plus everything Fusion knows** — colour, motion, edges, precision, topology | Pay what you want, $15 minimum |
 >
 > Bridge Pro is a separate add-on that *contains* this one. Buying it replaces
 > this: the installer removes it for you. Do not enable both -- the model would
