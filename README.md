@@ -68,7 +68,7 @@ Fusion에서 모델을 수정하고 Blender에서 **Sync** 한 번 누르면, �
 > | | 하는 일 | |
 > |---|---|:---:|
 > | **Bridge** (이 저장소) | Fusion ↔ Blender 동기화와 보존 | **무료** |
-> | **[Bridge Pro](https://nexuslabmain.gumroad.com/l/fusion-to-blender-bridge)** | **이 브리지 + Fusion이 아는 것** — 색 · 움직임 · 모서리 · 정밀도 · 토폴로지 | 원하는 만큼 ($15~) |
+> | **[Bridge Pro](https://nexuslabmain.gumroad.com/l/fusion-to-blender-bridge)** | **이 브리지 + Fusion이 아는 것** — 색 · 움직임 · 모서리 · 정밀도 · 토폴로지 | 원하는 만큼 결제, 최소 $15 |
 >
 > Bridge Pro는 이 애드온을 **품고 있는 별도 애드온**입니다. 사면 이걸 지우고 그것 하나만
 > 씁니다(설치 프로그램이 알아서 합니다). 둘 다 켜면 모델이 두 번씩 들어옵니다.
