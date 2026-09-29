@@ -35,6 +35,8 @@ _STRINGS = {
     # ── First-use hint (EU04) ─────────────────────────────────────────────────
     "hint_step1":           {"ko": "1) Fusion 360에서 애드인 Run",
                              "en": "1) Run the add-in in Fusion 360"},
+    "hint_setup_btn":       {"ko": "Fusion 애드인 설치 안내 (브라우저 열림)",
+                             "en": "Fusion add-in setup (opens browser)"},
     "hint_step2":           {"ko": "2) Sync 누르기 · 연결은 자동",
                              "en": "2) Press Sync -- it connects"},
     # ── Connection failure hints (EU05) ───────────────────────────────────────
@@ -42,12 +44,13 @@ _STRINGS = {
     "pref_step_title":      {"ko": "STEP 파일을 직접 열고 싶으신가요?",
                              "en": "Want to open .step files directly?"},
     "pref_step_body":       {"ko": "이 버전에는 STEP 리더가 들어 있지 않습니다.\n"
-                                   "GitHub 배포판을 받으시면 Fusion 없이도 .step / .stp 를 바로 엽니다.\n"
+                                   "STEP 을 여는 배포판은 설치 가이드에 안내되어 있습니다.\n"
                                    "(CAD 엔진이 커서 확장 저장소의 용량 제한을 넘습니다)",
                              "en": "This build does not include the STEP reader.\n"
-                                   "The GitHub download opens .step / .stp without Fusion.\n"
+                                   "The setup guide explains where the STEP-capable build is.\n"
                                    "(Its CAD engine exceeds the platform size limit)"},
-    "pref_step_btn":        {"ko": "GitHub 에서 받기",  "en": "Get it on GitHub"},
+    "setup_guide_btn":      {"ko": "설치 가이드 · 문서 (브라우저 열림)",
+                             "en": "Setup guide & docs (opens browser)"},
     "pref_privacy_btn":     {"ko": "개인정보처리방침",   "en": "Privacy Policy"},
     "err_refused":          {"ko": "Fusion 애드인이 실행 중인지 확인하세요 (Run)",
                              "en": "Check the Fusion add-in is running (Run)"},
@@ -280,21 +283,6 @@ _STRINGS = {
     "template_hint":        {"ko": "  변수: {project} {shot} {date} {time} {index}",
                              "en": "  Variables: {project} {shot} {date} {time} {index}"},
 
-    # ── ID Studio teaser (paid companion add-on) ─────────────────────────────
-    "ids_teaser_audience":  {"ko": "제품 디자이너를 위한 렌더 스튜디오",
-                             "en": "A render studio for product designers"},
-    "ids_feat_cameras":     {"ko": "제품 카메라 세트 · 샷 프레이밍",
-                             "en": "Product camera sets & shot framing"},
-    "ids_feat_lights":      {"ko": "스튜디오 조명 + 섀도 캐처·백드롭",
-                             "en": "Studio lights + shadow catcher & backdrop"},
-    "ids_feat_cmf":         {"ko": "CMF 베리에이션 (컬러·소재·마감)",
-                             "en": "CMF variants (colour · material · finish)"},
-    "ids_feat_matrix":      {"ko": "Matrix 배치 렌더 — 컬렉션×카메라×CMF",
-                             "en": "Matrix batch render — collection × camera × CMF"},
-    "ids_get_button":       {"ko": "ID Studio 보러 가기  →",
-                             "en": "Get ID Studio  →"},
-    "ids_tagline":          {"ko": "싱크한 모델을 완성된 제품샷으로.",
-                             "en": "From synced model to finished product shots."},
 }
 
 

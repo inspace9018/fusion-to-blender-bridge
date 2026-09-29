@@ -22,7 +22,7 @@ All settings, including mesh quality, are managed on the Blender side.
 # with this program. If not, see <https://www.gnu.org/licenses/>.
 
 bl_info = {
-    "name": "Fusion to Blender Lite",
+    "name": "Fusion Bridge Lite",
     "description": "Fusion 360 ↔ Blender real-time geometry sync (preserves materials/modifiers/light links)",
     "author": "FusionToBlenderBridge",
     "version": (1, 0, 1),
@@ -72,6 +72,13 @@ else:
 PRIVACY_URL = ("https://github.com/inspace9018/fusion-to-blender-bridge"
                "/blob/main/PRIVACY.md")
 
+# The setup guide: where the Fusion add-in is downloaded and the three setup
+# steps are explained. Every user coming from the extensions platform has to
+# get the Fusion half from here, so it is linked from the preferences and from
+# the "not connected" hint. Buttons that open it say so in their label -- the
+# platform allows browser-opening buttons (ToS 4.4) as long as that is clear.
+DOCS_URL = "https://inspace9018.github.io/fusion-to-blender-bridge/"
+
 # ── Reload submodules on reinstall-without-restart ───────────────────────────
 # Python caches already-imported submodules, so reinstalling the add-on WITHOUT
 # restarting Blender keeps running the OLD code -- only __init__ re-runs (which
@@ -108,7 +115,7 @@ class FTBPreferences(bpy.types.AddonPreferences):
 
     ftb_language: bpy.props.EnumProperty(
         name="Language",
-        description="UI language for Fusion to Blender Lite",
+        description="UI language for Fusion Bridge Lite",
         items=[
             ("auto", "Auto (System)", "Auto-detect from Blender system language"),
             ("en",   "English",       "English"),
@@ -141,8 +148,11 @@ class FTBPreferences(bpy.types.AddonPreferences):
         # purpose: that block returns early on builds that carry the reader,
         # and a privacy link that only appears in half the builds is worse
         # than none.
-        layout.operator("wm.url_open", text=_t("pref_privacy_btn"),
-                        icon="URL").url = PRIVACY_URL
+        row = layout.row(align=True)
+        row.operator("wm.url_open", text=_t("setup_guide_btn"),
+                     icon="HELP").url = DOCS_URL
+        row.operator("wm.url_open", text=_t("pref_privacy_btn"),
+                     icon="URL").url = PRIVACY_URL
 
         # Only in the build without the STEP reader, i.e. the one from Blender's
         # extensions platform. Someone who came looking for "open a .step file"
@@ -157,11 +167,11 @@ class FTBPreferences(bpy.types.AddonPreferences):
         col.label(text=_t("pref_step_title"), icon="INFO")
         note = box.column(align=True)
         note.scale_y = 0.8
+        # Text only. The setup guide above says where the STEP-capable build
+        # is; a second button here pointing at another build reads as
+        # promoting a different version inside Blender's UI (ToS 6.3).
         for line in _t("pref_step_body").split("\n"):
             note.label(text=line)
-        box.operator("wm.url_open", text=_t("pref_step_btn"), icon="URL").url = (
-            "https://github.com/inspace9018/fusion-to-blender-bridge/releases/latest"
-        )
 
 
 # Fusion runs on this machine, so the bridge only ever talks to this machine.
@@ -403,9 +413,8 @@ def _fix_stale_mesh_preset(_dummy):
             continue
         try:
             scene.ftb_mesh_preset = "medium"
-            print(f"[FusionBridge] '{scene.name}' had a quality preset that no "
-                  f"longer exists (Ultra and Custom are in Bridge Pro now); "
-                  f"reset to Medium.")
+            print(f"[FusionBridge] '{scene.name}' had a quality preset that is "
+                  f"no longer available in this add-on; reset to Medium.")
         except Exception:
             traceback.print_exc()
 

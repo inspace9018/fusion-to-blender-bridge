@@ -30,10 +30,14 @@ STAGE = os.path.join(HERE, "build", "extension_stage")
 OUT = os.path.join(HERE, "build")
 
 # Files that exist in the add-on but must not reach the extensions platform.
-EXCLUDE_FILES = {"step_import.py"}
+# promo.py is the paid-companion teaser panel; the platform forbids promoting
+# commercial versions from Blender's UI (ToS 6.1 / 6.3).
+EXCLUDE_FILES = {"step_import.py", "promo.py"}
 EXCLUDE_DIRS = {"__pycache__"}
 
-DEFAULT_BLENDER = r"C:\Program Files\Blender Foundation\Blender 5.0\blender.exe"
+DEFAULT_BLENDER = (r"C:\Program Files\Blender Foundation\Blender 5.0\blender.exe"
+                   if sys.platform == "win32"
+                   else "/Applications/Blender.app/Contents/MacOS/Blender")
 
 
 def addon_version() -> str:
@@ -92,7 +96,7 @@ def main():
     args = ap.parse_args()
 
     version = addon_version()
-    print(f"Fusion to Blender Lite {version} -- extension build")
+    print(f"Fusion Bridge Lite {version} -- extension build")
     sync_manifest_version(os.path.join(EXT, "blender_manifest.toml"), version)
     stage()
 

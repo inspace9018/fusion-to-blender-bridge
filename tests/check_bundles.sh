@@ -53,12 +53,12 @@ run_bundle() {      # run_bundle <label> <zip> <top> <is_pro>
     echo "$out" | grep -q 'enable$' ; :
     if echo "$out" | grep -q '"Fusion to Blender Bridge"'; then ok "tells buyer the right add-on name"
     else bad "tells buyer the right add-on name"; fi
-    if echo "$out" | grep -q '"Fusion to Blender Lite"'; then bad "still says Lite"; else ok "no stray 'Lite'"; fi
+    if echo "$out" | grep -q '"Fusion Bridge Lite"'; then bad "still says Lite"; else ok "no stray 'Lite'"; fi
   else
     check "free add-on in 4.2" "$BL/4.2/scripts/addons/fusion_to_blender_addon_blender/__init__.py" 1
     check "free add-on in 4.5" "$BL/4.5/scripts/addons/fusion_to_blender_addon_blender/__init__.py" 1
     check "no bridge_pro"      "$BL/4.5/scripts/addons/bridge_pro" 0
-    if echo "$out" | grep -q '"Fusion to Blender Lite"'; then ok "names the free add-on"
+    if echo "$out" | grep -q '"Fusion Bridge Lite"'; then ok "names the free add-on"
     else bad "names the free add-on"; fi
   fi
 

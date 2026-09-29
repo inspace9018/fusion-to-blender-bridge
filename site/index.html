@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fusion Bridge — Setup Guide</title>
+<meta name="description" content="One-click Fusion 360 to Blender sync. Your Blender materials, modifiers and edge marks survive every CAD revision. Setup guide and Fusion add-in download.">
+<meta property="og:title" content="Fusion Bridge — Fusion 360 to Blender sync">
+<meta property="og:description" content="Model in Fusion, press Sync in Blender. Everything you built in Blender stays put.">
+<meta property="og:image" content="https://inspace9018.github.io/fusion-to-blender-bridge/demo.gif">
+<style>
+  :root {
+    --bg: #fbfbfa; --fg: #1d1d1f; --muted: #5f6368; --line: #e3e3e0;
+    --card: #ffffff; --accent: #e8710a; --accent-fg: #ffffff; --soft: #f3f1ed;
+    --ok: #1e8e3e; --code: #f1f0ec;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #151516; --fg: #ececec; --muted: #a0a0a6; --line: #2d2d30;
+      --card: #1d1d1f; --accent: #ff8a2a; --accent-fg: #151516; --soft: #232326;
+      --ok: #5bc97a; --code: #26262a;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #151516; --fg: #ececec; --muted: #a0a0a6; --line: #2d2d30;
+    --card: #1d1d1f; --accent: #ff8a2a; --accent-fg: #151516; --soft: #232326;
+    --ok: #5bc97a; --code: #26262a;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--fg);
+    font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+  }
+  .wrap { max-width: 880px; margin: 0 auto; padding: 0 16px; }
+  header { padding: 48px 0 24px; }
+  h1 { font-size: clamp(28px, 5vw, 40px); line-height: 1.15; margin: 0 0 12px; letter-spacing: -0.02em; }
+  h2 { font-size: 24px; margin: 48px 0 16px; letter-spacing: -0.01em; }
+  h3 { font-size: 17px; margin: 0 0 6px; }
+  p { margin: 0 0 12px; }
+  .lede { font-size: 18px; color: var(--muted); max-width: 640px; }
+  a { color: var(--accent); }
+  .demo { width: 100%; border-radius: 12px; border: 1px solid var(--line); margin-top: 24px; display: block; }
+  .btn {
+    display: inline-block; padding: 12px 20px; border-radius: 10px; font-weight: 600;
+    text-decoration: none; border: 1px solid var(--line); color: var(--fg); background: var(--card);
+  }
+  .btn.primary { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); }
+  .btns { display: flex; flex-wrap: wrap; gap: 10px; margin: 16px 0 8px; }
+  .steps { list-style: none; padding: 0; margin: 0; display: grid; gap: 12px; }
+  .step { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 18px 20px; display: grid; grid-template-columns: 36px 1fr; gap: 12px; }
+  .num { width: 32px; height: 32px; border-radius: 50%; background: var(--soft); display: grid; place-items: center; font-weight: 700; }
+  code { background: var(--code); padding: 1px 6px; border-radius: 5px; font-size: 0.92em; overflow-wrap: anywhere; }
+  .note { font-size: 14px; color: var(--muted); }
+  .tablewrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 12px; background: var(--card); }
+  table { width: 100%; border-collapse: collapse; min-width: 480px; }
+  th, td { padding: 11px 14px; text-align: left; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { font-size: 14px; color: var(--muted); font-weight: 600; }
+  tr:last-child td { border-bottom: 0; }
+  td.c, th.c { text-align: center; width: 90px; }
+  .yes { color: var(--ok); font-weight: 700; }
+  .no { color: var(--muted); }
+  .pro { background: var(--soft); border-radius: 12px; padding: 22px 22px 14px; margin-top: 16px; }
+  details { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 12px 16px; margin-bottom: 8px; }
+  summary { cursor: pointer; font-weight: 600; }
+  footer { margin: 64px 0 40px; padding-top: 20px; border-top: 1px solid var(--line); font-size: 14px; color: var(--muted); }
+  footer a { color: var(--muted); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>Model in Fusion.<br>Press Sync in Blender.</h1>
+  <p class="lede">Fusion Bridge sends your Fusion 360 model to Blender in one click. Your materials, modifiers, light links and hand-marked edges survive every CAD revision.</p>
+  <div class="btns">
+    <a class="btn primary" href="https://github.com/inspace9018/fusion-to-blender-bridge/releases/latest/download/fusion_to_blender_addon_fusion.zip">Download the Fusion add-in</a>
+    <a class="btn" href="#pro">Compare Lite and Pro</a>
+  </div>
+  <p class="note">Free · Windows and macOS · Blender 4.2 or newer · talks only to Fusion on this computer (127.0.0.1)</p>
+  <img class="demo" src="demo.gif" alt="A Fusion 360 model synced into Blender with its Blender materials kept after a CAD change" loading="lazy">
+</header>
+
+<main>
+
+<h2 id="setup">Set up in three steps</h2>
+<p>The bridge has two halves. The Blender half comes from Blender's extensions platform. The Fusion half comes from here.</p>
+<ol class="steps">
+  <li class="step">
+    <div class="num">1</div>
+    <div>
+      <h3>Install the Fusion add-in</h3>
+      <p><a href="https://github.com/inspace9018/fusion-to-blender-bridge/releases/latest/download/fusion_to_blender_addon_fusion.zip">Download the Fusion add-in</a> and extract the zip. Close Fusion, then double-click the installer inside: <code>install.bat</code> on Windows, <code>install.command</code> on macOS.</p>
+      <p class="note">macOS blocked it? Right-click the file and choose Open.</p>
+    </div>
+  </li>
+  <li class="step">
+    <div class="num">2</div>
+    <div>
+      <h3>Run it in Fusion</h3>
+      <p>In Fusion 360: <strong>Utilities → Add-Ins → Scripts and Add-Ins</strong>, open the Add-Ins tab, select <code>fusion_to_blender_addon_fusion</code> and press <strong>Run</strong>. Tick <em>Run on Startup</em> so you only do this once.</p>
+    </div>
+  </li>
+  <li class="step">
+    <div class="num">3</div>
+    <div>
+      <h3>Sync from Blender</h3>
+      <p>In Blender: <strong>Edit → Preferences → Get Extensions</strong>, search <em>Fusion Bridge</em> and install <strong>Fusion Bridge Lite</strong>. Then press <code>N</code> in the 3D Viewport, open the <strong>Fusion 360</strong> tab and press <strong>Sync</strong>.</p>
+    </div>
+  </li>
+</ol>
+
+<h2>If something does not connect</h2>
+<details>
+  <summary>Blender says "Not Connected"</summary>
+  <p>The Fusion add-in is not running. Open Scripts and Add-Ins in Fusion and press Run on <code>fusion_to_blender_addon_fusion</code>. Blender connects by itself within a few seconds.</p>
+</details>
+<details>
+  <summary>I want to open .step files without Fusion</summary>
+  <p>The extensions-platform build leaves out the STEP reader because its CAD engine is larger than the platform allows. The free full build includes it: download <a href="https://github.com/inspace9018/fusion-to-blender-bridge/releases/latest/download/fusion_to_blender_bridge_installer.zip">the unified installer</a>, which installs both halves at once.</p>
+</details>
+<details>
+  <summary>Anything else</summary>
+  <p><a href="https://github.com/inspace9018/fusion-to-blender-bridge/issues">Open an issue on GitHub.</a> It gets read.</p>
+</details>
+
+<h2 id="pro">Lite and Pro</h2>
+<p>Lite moves geometry and keeps everything you build in Blender. Pro also brings across what Fusion knows about the model: its colours, its joints and its real face boundaries.</p>
+<div class="tablewrap">
+<table>
+  <thead><tr><th>Feature</th><th class="c">Lite</th><th class="c">Pro</th></tr></thead>
+  <tbody>
+    <tr><td>One-click sync and <strong>Sync Selected</strong></td><td class="c yes">✓</td><td class="c yes">✓</td></tr>
+    <tr><td>Blender materials, modifiers and light links survive every re-sync</td><td class="c yes">✓</td><td class="c yes">✓</td></tr>
+    <tr><td>Hand-marked Sharp, Seam, Crease and Bevel Weight survive</td><td class="c yes">✓</td><td class="c yes">✓</td></tr>
+    <tr><td>Fusion components arrive as Blender collections</td><td class="c yes">✓</td><td class="c yes">✓</td></tr>
+    <tr><td>Instant show and hide of Fusion-hidden bodies</td><td class="c yes">✓</td><td class="c yes">✓</td></tr>
+    <tr><td>Mesh quality presets</td><td class="c">Low · Medium · High</td><td class="c">+ Ultra · Custom</td></tr>
+    <tr><td><strong>Fusion Appearance colours</strong> imported as Blender materials</td><td class="c no">—</td><td class="c yes">✓</td></tr>
+    <tr><td><strong>Joints</strong> arrive as control objects. Rotate one and the child body follows</td><td class="c no">—</td><td class="c yes">✓</td></tr>
+    <tr><td>Sharp and Seam placed on real CAD face boundaries</td><td class="c no">—</td><td class="c yes">✓</td></tr>
+    <tr><td>Triangles merged into quads, roughly 25% fewer faces</td><td class="c no">—</td><td class="c yes">✓</td></tr>
+    <tr><td>Price</td><td class="c">Free</td><td class="c">from $15</td></tr>
+  </tbody>
+</table>
+</div>
+
+<!-- TODO: add two short Pro demo GIFs here: (1) Fusion appearances arriving as materials, (2) a joint rotated in Blender with its child body following. -->
+
+<div class="pro">
+  <h3>Get Bridge Pro</h3>
+  <p>One purchase, full GPL source, a year of updates, 7-day refund.</p>
+  <div class="btns">
+    <a class="btn primary" href="https://superhivemarket.com/products/fusion-to-blender-bridge">Buy on Superhive</a>
+    <a class="btn" href="https://nexuslabmain.gumroad.com/l/fusion-to-blender-bridge">Pay what you want on Gumroad</a>
+  </div>
+  <p class="note">Bridge Pro contains Lite. After installing Pro, turn off or remove Fusion Bridge Lite in Blender's preferences, or the model comes in twice.</p>
+</div>
+
+</main>
+
+<footer>
+  <p><a href="https://github.com/inspace9018/fusion-to-blender-bridge">Source on GitHub</a> · <a href="https://github.com/inspace9018/fusion-to-blender-bridge/issues">Issues</a> · <a href="https://github.com/inspace9018/fusion-to-blender-bridge/blob/main/PRIVACY.md">Privacy</a> · GPL-3.0-or-later</p>
+  <p>Fusion 360 is a trademark of Autodesk, Inc. Blender is a trademark of the Blender Foundation. This project is not affiliated with either.</p>
+</footer>
+
+</div>
+</body>
+</html>

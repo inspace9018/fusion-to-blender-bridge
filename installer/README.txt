@@ -1,5 +1,5 @@
 ============================================================
- Fusion to Blender Lite  -  Installer
+ Fusion Bridge Lite  -  Installer
 ============================================================
 
 WHAT IS THIS?
@@ -40,7 +40,7 @@ AFTER INSTALLING
      "Scripts and Add-Ins" > Add-Ins tab > select
      "fusion_to_blender_addon_fusion" > Run
   2) Blender: Edit > Preferences > Add-ons > enable
-     "Fusion to Blender Lite", then restart Blender
+     "Fusion Bridge Lite", then restart Blender
   3) In Blender, just press Sync. The connection is automatic.
 
 OPTIONAL: DIRECT STEP IMPORT

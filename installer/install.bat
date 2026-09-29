@@ -1,6 +1,6 @@
 @echo off
 REM ============================================================================
-REM  Fusion to Blender Lite - Windows Installer
+REM  Fusion Bridge Lite - Windows Installer
 REM ----------------------------------------------------------------------------
 REM  WHAT THIS SCRIPT DOES (plain language):
 REM    It sets up the bridge that syncs Fusion 360 models into Blender by
@@ -15,7 +15,7 @@ REM  It reads the two add-on folders that sit next to this script:
 REM      fusion_to_blender_addon_fusion\   and   fusion_to_blender_addon_blender\
 REM ============================================================================
 setlocal enableextensions enabledelayedexpansion
-title Fusion to Blender Lite - Installer
+title Fusion Bridge Lite - Installer
 color 0F
 
 set "ROOT=%~dp0"
@@ -53,7 +53,7 @@ echo  ========================================================
 if defined HAS_PRO (
     echo    Fusion to Blender Bridge  -  Installer
 ) else (
-    echo    Fusion to Blender Lite  -  Installer
+    echo    Fusion Bridge Lite  -  Installer
 )
 echo  ========================================================
 echo.
@@ -99,7 +99,7 @@ echo.
 if defined HAS_PRO (
     echo   Installing Fusion to Blender Bridge...
 ) else (
-    echo   Installing Fusion to Blender Lite...
+    echo   Installing Fusion Bridge Lite...
 )
 echo.
 
@@ -196,7 +196,7 @@ if defined HAS_PRO (
     echo                    "Fusion to Blender Bridge"  ^(then restart Blender^)
 ) else (
     echo     - Blender:     Edit ^> Preferences ^> Add-ons ^> enable
-    echo                    "Fusion to Blender Lite"  ^(then restart Blender^)
+    echo                    "Fusion Bridge Lite"  ^(then restart Blender^)
 )
 echo     - Then in Blender just press Sync. Connection is automatic.
 echo.
@@ -214,7 +214,7 @@ if defined HAS_PRO echo     - %BLENDER_BASE%\^<version^>\scripts\addons\%PRO_NAM
 echo.
 if not defined MODE (
     set "OK="
-    if defined HAS_PRO ( set /p "OK=   Remove Fusion to Blender Bridge? (Y/N): " ) else ( set /p "OK=   Remove Fusion to Blender Lite? (Y/N): " )
+    if defined HAS_PRO ( set /p "OK=   Remove Fusion to Blender Bridge? (Y/N): " ) else ( set /p "OK=   Remove Fusion Bridge Lite? (Y/N): " )
     if /i not "!OK!"=="Y" goto menu
 )
 

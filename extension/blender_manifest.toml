@@ -2,7 +2,7 @@ schema_version = "1.0.0"
 
 id = "fusion_to_blender_bridge"
 version = "1.0.1"
-name = "Fusion to Blender Lite"
+name = "Fusion Bridge Lite"
 tagline = "Keep your Blender materials when the CAD model changes"
 maintainer = "inspace <inspace9018@gmail.com>"
 
@@ -19,7 +19,9 @@ copyright = [
   "2013-2026 Aymeric Augustin and contributors (websockets, BSD-3-Clause)",
 ]
 
-website = "https://github.com/inspace9018/fusion-to-blender-bridge"
+# The setup guide: it is where the Fusion add-in is downloaded, so every user
+# of this extension passes through it. Source and issues are linked from it.
+website = "https://inspace9018.github.io/fusion-to-blender-bridge/"
 
 # No permissions are declared, and that is deliberate.
 #

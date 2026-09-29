@@ -35,23 +35,27 @@
 | 6.3 | Blender UI 안에서 업데이트·상용판·다른 확장을 홍보하면 안 된다 | ⚠️ 설정 화면의 "STEP 되는 빌드 받으러 가기" 안내와, 꺼져 있는 유료판 티저 패널이 걸린다 |
 | 1.3 | 동봉한 남의 코드의 저작권자를 매니페스트에 적어야 한다 | ✅ 고침 — websockets 저작권자를 `copyright` 에 추가했다 |
 
-**전례는 있다.** `Darkly` 라는 확장이 2026-07 에 승인됐고, 하는 일이 우리와
-거의 같다 — 뷰포트를 localhost 로 외부 프로그램에 흘려보낸다. 다만 두 가지가
-다르다: **Darkly 는 무료 오픈소스**라 3.10 에 걸리지 않고, **Blender 쪽만 깔면
-끝**이라 5.2 에도 걸리지 않는다(상대 프로그램이 알아서 붙는다). 우리는 둘 다
-반대다.
+**전례 (2026-09-29 확인, 플랫폼 API 전체 목록 기준):**
 
-**그래서 권하는 순서:** 바로 올리지 말고 `#extension-moderators` 에 먼저 묻는다.
-승인 대기열이 공개라서, 거절당하면 그 기록도 공개로 남는다. 질문 한 줄이 훨씬 싸다.
+| 확장 | 우리와 같은 점 | 승인 |
+|---|---|---|
+| Darkly | 외부 앱을 GitHub 에서 따로 받아 localhost 로 통신 (5.2) | 2026-07-14 |
+| NodeFlow Importer | 유료 외부 서비스·계정이 있어야 쓸모가 있음 (3.10) — **개정 약관 이후** | 2026-08-29 |
+| Retro Console Lite | 상세 페이지에 "More features in the full version" + Superhive 링크, 이름에 Lite | 2025-07 |
+| AutoCam Free | 상세 페이지에 Gumroad 링크, 변경 로그에 Pro edition 언급 | 2025-06 |
 
-> 물어볼 내용: "Fusion 360 애드인과 127.0.0.1 로 통신하는 Blender 애드온입니다.
-> Fusion 쪽 애드인은 같은 GPL 프로젝트의 일부지만 Blender 확장 zip 에 넣을 수는
-> 없습니다(Fusion 폴더에 설치되어야 하고, 3.9 에 걸립니다). 5.2 와 3.10 에 비추어
-> 이 형태가 허용되는지요?"
+**그래서:** 3.10 은 NodeFlow 로 방어된다. 5.2 는 Darkly 로 방어되지만 우리 애드인이
+"같은 프로젝트의 구성요소" 로 읽힐 여지는 남는다. Fusion 애드인을 zip 에 동봉하면 5.2 는
+풀리지만, 무료 사용자가 설치 가이드 페이지(= 전환 페이지)를 반드시 거치는 흐름이 사라지므로
+**동봉하지 않는다.** 심사에서 요구할 때만 동봉으로 후퇴한다.
 
-**만약 심사에 올린다면 먼저 지울 것:** 꺼져 있는 유료판 티저 패널
-(`ui.FTB_PT_ProPanel`) — 6.3 에 정면으로 걸리고, 이름도 팔지 않는 옛 제품
-이름("ID Studio for Blender")으로 남아 있다.
+**반영한 것 (2026-09-29):**
+- 이름 `Fusion to Blender Lite` → `Fusion Bridge Lite` — 2.1 "Blender" 는 이름에 쓸 수 없다
+- 유료판 티저 패널을 `promo.py` 로 분리, 확장 zip 에서 제외 (6.1 / 6.3)
+- 콘솔 메시지의 "Bridge Pro" 언급 제거
+- 설정 화면의 "GitHub 에서 받기" 버튼 제거 → "Setup guide & docs (opens browser)" 버튼 (4.4)
+- 연결 안 됨 상태에 "Fusion add-in setup (opens browser)" 버튼 추가 — 새 사용자가 막히는 바로 그 자리
+- `website` → 설치 가이드 페이지 `https://inspace9018.github.io/fusion-to-blender-bridge/`
 
 ---
 
@@ -80,6 +84,12 @@
 등록 폼의 각 칸에 아래를 그대로 넣습니다. 마크다운이 렌더링되며,
 탭(About / What's New / Permissions / Reviews / Version History)은 자동으로 생깁니다.
 Permissions 탭은 매니페스트에서 만들어지고, 우리는 선언한 권한이 없어 비어 있게 됩니다.
+
+### Name
+
+```
+Fusion Bridge Lite
+```
 
 ### Tagline — 64자 제한
 
@@ -123,7 +133,7 @@ once and it survives every change to the part.
 
 ## Setup
 
-1. Download the Fusion add-in from the [project page](https://github.com/inspace9018/fusion-to-blender-bridge/releases/latest) and run the installer
+1. Download the Fusion add-in from the [setup guide](https://inspace9018.github.io/fusion-to-blender-bridge/) and run the installer inside the zip
 2. In Fusion: **Utilities → Add-Ins → fusion_to_blender_addon_fusion → Run**
 3. In Blender: **N-panel → Fusion 360 tab → Sync**
 
@@ -132,14 +142,14 @@ That is the whole setup. The add-on connects to Fusion on this computer
 
 ## What it does not do
 
-**Fusion Appearances are not imported.** This moves geometry. The look is yours
-to author in Blender. That is deliberate rather than a limitation: a look you
-build in Blender survives the next twenty CAD revisions, which is not true of
-anything that re-imports materials each time.
+**Fusion Appearances are not imported.** This version moves geometry, and the
+look is yours to author in Blender. Whatever you build there survives every
+re-sync.
 
 **Opening .step and .stp files without Fusion** is not part of this package. It
-needs a CAD kernel far larger than this platform allows, so it lives in the build
-on the project page. The add-on's preferences tell you where to find it.
+needs a CAD kernel far larger than this platform allows. The
+[setup guide](https://inspace9018.github.io/fusion-to-blender-bridge/) says
+where the build that has it lives.
 
 ## Privacy
 
@@ -150,12 +160,16 @@ the add-on's preferences and published at
 
 ## Docs & Support
 
-Full documentation, the Fusion add-in, and the STEP-capable build are all on the
-[project page](https://github.com/inspace9018/fusion-to-blender-bridge).
+The [setup guide](https://inspace9018.github.io/fusion-to-blender-bridge/) has
+the Fusion add-in download and the three setup steps. Source code is on
+[GitHub](https://github.com/inspace9018/fusion-to-blender-bridge).
 
 Found a bug or want a feature? Open an
 [issue](https://github.com/inspace9018/fusion-to-blender-bridge/issues). It gets
 read.
+
+More features in the full version:
+[Fusion to Blender Bridge Pro](https://superhivemarket.com/products/fusion-to-blender-bridge)
 ````
 
 ---
@@ -184,7 +198,7 @@ GitHub 쪽 버전 이력과 번호를 맞추기 위해 1.0.0 이 아니라 1.0.1
 
 | 칸 | 값 |
 |---|---|
-| Website | `https://github.com/inspace9018/fusion-to-blender-bridge` |
+| Website | `https://inspace9018.github.io/fusion-to-blender-bridge/` (매니페스트와 동일) |
 | Tags | `Import-Export`, `Pipeline` (매니페스트와 동일) |
 | License | `GPL-3.0-or-later` (매니페스트와 동일) |
 
@@ -205,5 +219,9 @@ GitHub 쪽 버전 이력과 번호를 맞추기 위해 1.0.0 이 아니라 1.0.1
 **첫 문단에 기능 나열을 하지 않았다.** 첫 두 문장은 사용자가 겪는 반복 작업과
 그것이 사라진다는 약속이고, 목록은 그 뒤다.
 
-**유료판 이야기는 한 줄도 없다.** 이 페이지는 무료 애드온의 페이지다. 광고를
-얹으면 심사에서도 후기에서도 손해다.
+**유료판은 맨 끝 한 줄, 기능 나열 없이.** 6.2 는 상세 페이지에서 플랫폼 버전에 없는
+기능을 보여주는 것을 막는다. 유료판이 있다는 사실과 링크는 Retro Console Lite·AutoCam Free
+전례대로 허용된다. Pro 기능 비교는 설치 가이드 페이지가 맡는다.
+
+**"재질을 안 가져오는 게 의도" 라는 문장은 뺐다.** 무료 사용자에게 Pro 의 핵심 기능이
+필요 없다고 설득하는 문장이었다.

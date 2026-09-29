@@ -188,6 +188,12 @@ class FTB_PT_MainPanel(bpy.types.Panel):
             hint.scale_y = 0.7
             hint.label(text=t("hint_step1"), icon="INFO")
             hint.label(text=t("hint_step2"), icon="BLANK1")
+            # Installed from the extensions platform, the Fusion half is not
+            # here yet. This is the one place a new user is looking when
+            # nothing connects, so the way to it goes here.
+            from . import DOCS_URL
+            conn_box.operator("wm.url_open", text=t("hint_setup_btn"),
+                              icon="HELP").url = DOCS_URL
 
         # ── Sync ─────────────────────────────────────────────────────────────
         # Directly under the connection state, not at the bottom. It is the one
@@ -367,57 +373,17 @@ class FTB_PT_UtilitiesPanel(bpy.types.Panel):
         col.operator("mesh.ftb_paint_faces",
                      text="Paint Fusion Faces", icon="BRUSH_DATA")
 
-# ─── ID Studio upsell teaser (auto-hides once the paid add-on is installed) ───
-# Hidden until ID Studio is actually for sale: flip PRO_TEASER_ENABLED to True
-# at launch (and set PRO_BUY_URL to the real store page) to show it.
-PRO_TEASER_ENABLED = False
-PRO_BUY_URL = ""  # TODO: set to the real ID Studio store page before enabling the teaser
-
-
-def _pro_installed() -> bool:
-    """True if ID Studio for Blender is installed, so we don't nag buyers."""
-    if hasattr(bpy.types, "FTB_PT_IDStudioTools"):
-        return True
-    try:
-        for name in bpy.context.preferences.addons.keys():
-            if "id_studio_for_blender" in name:
-                return True
-    except Exception:
-        pass
-    return False
-
-
-class FTB_PT_ProPanel(bpy.types.Panel):
-    bl_idname   = "FTB_PT_pro_panel"
-    bl_label    = "ID Studio for Blender"
-    bl_space_type  = "VIEW_3D"
-    bl_region_type = "UI"
-    bl_category    = "Fusion 360"
-    bl_options     = {"DEFAULT_CLOSED"}
-
-    @classmethod
-    def poll(cls, context):
-        return PRO_TEASER_ENABLED and not _pro_installed()
-
-    def draw(self, context):
-        layout = self.layout
-        box = layout.box()
-        box.label(text=t("ids_teaser_audience"), icon="FUND")
-        col = box.column(align=True)
-        col.label(text=t("ids_feat_cameras"), icon="OUTLINER_OB_CAMERA")
-        col.label(text=t("ids_feat_lights"), icon="LIGHT_AREA")
-        col.label(text=t("ids_feat_cmf"), icon="MATERIAL")
-        col.label(text=t("ids_feat_matrix"), icon="RENDER_ANIMATION")
-        row = layout.row()
-        row.scale_y = 1.3
-        row.operator("wm.url_open", text=t("ids_get_button"),
-                     icon="FUND").url = PRO_BUY_URL
-        layout.label(text=t("ids_tagline"))
-
-
 PANEL_CLASSES = [
     FTB_PT_MainPanel,
     FTB_PT_ManagePanel,
     FTB_PT_UtilitiesPanel,
-    FTB_PT_ProPanel,
 ]
+
+# The paid-companion teaser lives in promo.py, which build_extension.py leaves
+# out of the extensions-platform zip: that platform forbids promoting commercial
+# versions from inside Blender's UI (ToS 6.1 / 6.3). The GitHub build keeps it.
+try:
+    from .promo import PROMO_PANEL_CLASSES
+    PANEL_CLASSES.extend(PROMO_PANEL_CLASSES)
+except ImportError:
+    pass

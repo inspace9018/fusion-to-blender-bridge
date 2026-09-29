@@ -65,7 +65,7 @@ do_install() {
   if [ "$HAS_PRO" -eq 1 ]; then
     echo "  Installing Fusion to Blender Bridge..."
   else
-    echo "  Installing Fusion to Blender Lite..."
+    echo "  Installing Fusion Bridge Lite..."
   fi
   echo
   # The paid bundle carries no free Blender folder -- bridge_pro contains it.
@@ -156,7 +156,7 @@ do_install() {
   if [ "$HAS_PRO" -eq 1 ]; then
     echo "                  \"Fusion to Blender Bridge\" (then restart Blender)"
   else
-    echo "                  \"Fusion to Blender Lite\" (then restart Blender)"
+    echo "                  \"Fusion Bridge Lite\" (then restart Blender)"
   fi
   echo "    - Then in Blender just press Sync. Connection is automatic."
   pause
@@ -178,7 +178,7 @@ do_uninstall() {
     if [ "$HAS_PRO" -eq 1 ]; then
       read -r -p "  Remove Fusion to Blender Bridge? (y/N): " ok
     else
-      read -r -p "  Remove Fusion to Blender Lite? (y/N): " ok
+      read -r -p "  Remove Fusion Bridge Lite? (y/N): " ok
     fi
     case "$ok" in [yY]) ;; *) return;; esac
   fi
@@ -229,7 +229,7 @@ while true; do
   if [ "$HAS_PRO" -eq 1 ]; then
     echo "    Fusion to Blender Bridge  -  Installer"
   else
-    echo "    Fusion to Blender Lite  -  Installer"
+    echo "    Fusion Bridge Lite  -  Installer"
   fi
   echo "  ========================================================"
   echo
