@@ -11,6 +11,7 @@ on:
     paths:
       - "site/**"
       - "docs/demo.gif"
+      - "demo.gif"
       - ".github/workflows/pages.yml"
   workflow_dispatch:
 
@@ -36,6 +37,7 @@ jobs:
           mkdir -p _site
           cp -R site/. _site/
           cp docs/demo.gif _site/demo.gif
+          cp demo.gif _site/pro-demo.gif
           touch _site/.nojekyll
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
