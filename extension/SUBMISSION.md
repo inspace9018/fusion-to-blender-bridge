@@ -194,6 +194,19 @@ GitHub 쪽 버전 이력과 번호를 맞추기 위해 1.0.0 이 아니라 1.0.1
 
 ---
 
+### 이미지 (extension/listing/)
+
+| 칸 | 파일 | 규격 |
+|---|---|---|
+| Icon | `icon.png` | 256×256, 투명 배경 |
+| Featured image | `featured.png` | 1920×1080 |
+| Preview 1 | `featured.png` | 1920×1080 |
+| Preview 2 | `howto.png` | 1920×1080 |
+
+규격은 승인된 확장(Darkly, Retro Console Lite, AutoCam Free)의 실제 이미지에서 확인했다
+(아이콘 128·256 정사각, 미리보기 16:9 → 1920×1080 썸네일 생성). Pro 화면이 보이는
+루트 `demo.gif` 는 6.2 때문에 쓰지 않는다. Blender·Autodesk 로고 없음 (2.2 / 2.4).
+
 ### 나머지 칸
 
 | 칸 | 값 |
