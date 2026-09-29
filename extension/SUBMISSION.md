@@ -4,6 +4,9 @@
 > Blender 자체 검증(`--command extension validate`) 통과.
 > 실제 설치 검증: 격리 Blender 에 깔아 켜고 24항목 확인 (2026-08-28).
 
+> **제출 기록 (2026-09-29):** 심사 대기열에 제출함. 상태 Awaiting Review.
+> 관리 페이지: https://extensions.blender.org/add-ons/fusion-to-blender-bridge/manage/
+
 ---
 
 ## 1. 제출 전 확인
@@ -128,7 +131,7 @@ once and it survives every change to the part.
 ## Requirements
 
 - **Fusion 360.** This is a bridge. It needs Fusion running on the same computer
-- **The free Fusion add-in**, installed once from the project page below
+- **The free Fusion add-in**, installed once from the setup guide linked below
 - Blender 4.2 or newer
 
 ## Setup
