@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fusion 360 to Blender workflow: keep your materials when the CAD changes</title>
+<meta name="description" content="Revising a product in Fusion 360 and rendering in Blender? Why re-importing wipes your materials, two manual workarounds, and how to re-sync so only the geometry changes.">
+<link rel="canonical" href="https://inspace9018.github.io/fusion-to-blender-bridge/guides/fusion-360-to-blender-workflow.html">
+<meta property="og:title" content="Fusion 360 to Blender workflow: keep your materials when the CAD changes">
+<meta property="og:description" content="Stop re-applying materials after every revision.">
+<meta property="og:image" content="https://inspace9018.github.io/fusion-to-blender-bridge/demo.gif">
+<link rel="stylesheet" href="guide.css">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"HowTo","name":"Keep Blender materials when a Fusion 360 model changes",
+"step":[
+{"@type":"HowToStep","name":"Sync the model","text":"Send the Fusion model to Blender with a sync add-on instead of exporting a file."},
+{"@type":"HowToStep","name":"Build the look in Blender","text":"Assign materials, modifiers, light links and edge marks in Blender as usual."},
+{"@type":"HowToStep","name":"Revise in Fusion","text":"Change the design in Fusion and save."},
+{"@type":"HowToStep","name":"Sync again","text":"Press Sync in Blender. Only the geometry is replaced; the Blender setup stays."}]}
+</script>
+</head>
+<body>
+<div class="wrap">
+<nav class="top"><a href="../">Fusion Bridge</a><a href="fusion-360-to-blender.html">All routes</a><a href="fusion-360-to-blender-file-types.html">File types compared</a></nav>
+
+<header>
+  <h1>Fusion 360 to Blender workflow: keep your materials when the CAD changes</h1>
+  <p class="meta">Updated September 2026 · for product designers who model in Fusion and render in Blender</p>
+</header>
+
+<div class="answer">
+  <p><strong>The problem:</strong> every time you re-export from Fusion and re-import into Blender, the model arrives as new objects. The materials, modifiers, light links and edge marks you set up were on the old objects, so you set them up again.</p>
+  <p><strong>The fix:</strong> replace only the geometry and leave the Blender objects alone. You can do it by hand (two workarounds below) or with a sync add-on that does it on every revision.</p>
+</div>
+
+<h2>Why re-importing loses your setup</h2>
+<p>An import creates new objects with new mesh data. Blender has no way to know that <code>Body3</code> in today's FBX is the same part as <code>Body3</code> from last week. Your shader assignments, a Bevel modifier, a light that only lights the logo, the Sharp edges you marked for clean shading: all of it lives on the old objects.</p>
+<p>On a product that goes through ten revisions before launch, that is ten rounds of the same setup.</p>
+
+<h2>Workaround 1: link materials across</h2>
+<ol>
+  <li>Import the new version next to the old one.</li>
+  <li>Select the new part, then Shift-select the old part so it is active.</li>
+  <li>Press <code>Ctrl L</code> → <strong>Link Materials</strong>. The material slots copy across.</li>
+  <li>Repeat per part, then <code>Ctrl L</code> → <strong>Copy Modifiers</strong> if you use them, and delete the old objects.</li>
+</ol>
+<p class="note">Works, but it is per part, and edge marks and light links still need redoing.</p>
+
+<h2>Workaround 2: swap the mesh data</h2>
+<ol>
+  <li>On your original objects, set each material slot's link to <strong>Object</strong> instead of Data (the dropdown next to the material name). The material now belongs to the object, not the mesh.</li>
+  <li>Import the new version.</li>
+  <li>Select an original object, open <strong>Object Data Properties</strong>, and pick the new mesh from the mesh dropdown.</li>
+  <li>The object keeps its materials and modifiers with the new shape. Delete the imported objects.</li>
+</ol>
+<p class="note">Better, but still one part at a time, and hand-marked edges on the old mesh do not carry to the new one.</p>
+
+<h2>The sync workflow</h2>
+<ol>
+  <li><strong>Sync once.</strong> Fusion Bridge sends the model at real-world size, components as collections.</li>
+  <li><strong>Build the look in Blender.</strong> Materials, modifiers, light links, Sharp and Seam marks, as you normally would.</li>
+  <li><strong>Revise in Fusion.</strong> Move a hole, change a fillet, add a part.</li>
+  <li><strong>Press Sync again.</strong> Each body's geometry is replaced in place. Everything you set up in Blender stays on it, including hand-marked Sharp, Seam, Crease and Bevel Weight. New bodies arrive as new objects; bodies you hid in Fusion can be shown or hidden instantly.</li>
+</ol>
+<img class="shot" src="../demo.gif" alt="Changing a model in Fusion and pressing Sync in Blender: the geometry updates and the Blender materials stay" loading="lazy">
+<p>Use <strong>Sync Selected</strong> when you only changed one part and do not want to wait for the whole assembly.</p>
+
+<h2>Tips for a clean revision loop</h2>
+<ul>
+  <li><strong>Edit bodies, don't recreate them.</strong> The bridge follows each body by Fusion's own identity, so renaming is fine. A body you delete and model again is a new body and arrives as a new object.</li>
+  <li><strong>Build the look in Blender, not Fusion.</strong> Fusion appearances are placeholders for a render. (Bridge Pro can bring Fusion colours across as a starting point.)</li>
+</ul>
+
+<div class="cta">
+  <h3>Try it on your next revision</h3>
+  <p>Fusion Bridge Lite is free and open source. Windows and macOS, Blender 4.2 or newer.</p>
+  <div class="btns">
+    <a class="btn primary" href="https://github.com/inspace9018/fusion-to-blender-bridge/releases/latest/download/fusion_to_blender_bridge_installer.zip">Download the free installer</a>
+    <a class="btn" href="../#pro">What Pro adds</a>
+  </div>
+  <p class="note">Pro adds Fusion appearance colours as materials, joints you can rotate in Blender, Sharp and Seam on real CAD face boundaries, and about 25% fewer faces. From $15, one purchase.</p>
+</div>
+
+<footer>
+  <p><a href="../">Fusion Bridge setup guide</a> · <a href="https://github.com/inspace9018/fusion-to-blender-bridge">Source on GitHub</a> · GPL-3.0-or-later</p>
+  <p>Fusion and Fusion 360 are trademarks of Autodesk, Inc. Blender is a trademark of the Blender Foundation. This project is not affiliated with either.</p>
+</footer>
+</div>
+</body>
+</html>

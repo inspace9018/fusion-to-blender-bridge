@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fusion 360 to Blender: every way to move a model (2026 guide)</title>
+<meta name="description" content="How to get a Fusion 360 model into Blender: STL, OBJ, FBX, USDZ, STEP or a live sync. What each keeps, the 1000x scale trap, and how to keep your Blender materials when the CAD changes.">
+<link rel="canonical" href="https://inspace9018.github.io/fusion-to-blender-bridge/guides/fusion-360-to-blender.html">
+<meta property="og:title" content="Fusion 360 to Blender: every way to move a model">
+<meta property="og:description" content="Five export routes compared, plus the one that keeps your Blender materials after every CAD revision.">
+<meta property="og:image" content="https://inspace9018.github.io/fusion-to-blender-bridge/demo.gif">
+<link rel="stylesheet" href="guide.css">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[
+{"@type":"Question","name":"Can Blender open Fusion 360 files directly?","acceptedAnswer":{"@type":"Answer","text":"No. Blender cannot read .f3d files. Export from Fusion to a mesh format (STL, OBJ, FBX or USDZ) or to STEP, or use a sync add-on that talks to Fusion directly."}},
+{"@type":"Question","name":"Why is my Fusion 360 model 1000 times too big in Blender?","acceptedAnswer":{"@type":"Answer","text":"STL and OBJ files carry no units. Fusion writes millimetres, Blender reads the numbers as metres. Scale the import by 0.001, or use a format or tool that carries units."}},
+{"@type":"Question","name":"Do Fusion 360 appearances transfer to Blender?","acceptedAnswer":{"@type":"Answer","text":"Not in a usable way through STL or OBJ. Plan to build the look in Blender. Fusion Bridge Pro imports Fusion appearance colours as Blender materials."}},
+{"@type":"Question","name":"How do I keep my Blender materials when I change the model in Fusion?","acceptedAnswer":{"@type":"Answer","text":"A re-exported file arrives as new objects, so materials must be reassigned. A sync add-on such as Fusion Bridge replaces only the geometry and keeps the materials, modifiers and edge marks you set in Blender."}}
+]}
+</script>
+</head>
+<body>
+<div class="wrap">
+<nav class="top"><a href="../">Fusion Bridge</a><a href="fusion-360-to-blender-workflow.html">Workflow guide</a><a href="fusion-360-to-blender-file-types.html">File types compared</a></nav>
+
+<header>
+  <h1>Fusion 360 to Blender: every way to move a model</h1>
+  <p class="meta">Updated September 2026 · for Fusion (formerly Fusion 360) and Blender 4.2 or newer</p>
+</header>
+
+<div class="answer">
+  <p><strong>Short answer:</strong> Blender cannot open <code>.f3d</code> files. You either export a file from Fusion and import it in Blender, or you use a bridge add-on that sends the model directly.</p>
+  <p>For a one-off render, export <strong>FBX</strong> (keeps separate parts) or <strong>STL</strong> (simplest) and fix the scale. If you will change the design and render it again, a direct sync saves the most time, because a re-imported file wipes the materials you set up in Blender.</p>
+</div>
+
+<h2>The five routes</h2>
+<div class="tablewrap">
+<table>
+  <thead><tr><th>Route</th><th>Good for</th><th>Watch out for</th></tr></thead>
+  <tbody>
+    <tr><td><strong>STL</strong></td><td>Quick look, 3D-print checks</td><td>No units (often 1000× too big), no parts hierarchy, no colours, triangles only</td></tr>
+    <tr><td><strong>OBJ</strong></td><td>Simple meshes other apps can read</td><td>No units either; parts hierarchy is lost</td></tr>
+    <tr><td><strong>FBX</strong></td><td>Assemblies with several bodies</td><td>Check scale on import; materials need rebuilding</td></tr>
+    <tr><td><strong>USDZ</strong></td><td>Recent Fusion builds; Blender imports USD natively</td><td>Meant for AR viewing; results vary by model</td></tr>
+    <tr><td><strong>STEP</strong></td><td>Exact CAD data, your own tessellation</td><td>Blender needs a STEP importer add-on</td></tr>
+    <tr><td><strong>Live sync (bridge)</strong></td><td>Designs you keep revising</td><td>Fusion must be running on the same computer</td></tr>
+  </tbody>
+</table>
+</div>
+<p>Details on what each format keeps are in <a href="fusion-360-to-blender-file-types.html">Fusion 360 to Blender file types compared</a>.</p>
+
+<h2>Route 1: export a file (STL, OBJ or FBX)</h2>
+<ol>
+  <li>In Fusion: <strong>File → Export</strong>, choose the format and save. For STL you can also right-click a body and choose <strong>Save as Mesh</strong> to set the refinement.</li>
+  <li>In Blender: <strong>File → Import</strong> and pick the same format. STL, OBJ, FBX and USD importers are built in.</li>
+  <li>Fix the scale. Fusion works in millimetres; STL and OBJ carry no units, so Blender reads 50 mm as 50 m. In the import dialog set <strong>Scale</strong> to <code>0.001</code>, or select everything and press <code>S 0.001 Enter</code>.</li>
+  <li>Smooth the shading. CAD meshes are triangulated; use <strong>Shade Auto Smooth</strong> so flat faces stay flat and curved faces look curved.</li>
+</ol>
+
+<h2>Route 2: STEP with an importer add-on</h2>
+<p>STEP keeps the exact CAD surfaces, so the importer can mesh them at the density you choose. Blender has no built-in STEP reader; several add-ons exist, free and paid. Use this route when you receive STEP files from other CAD tools too. Fusion Bridge's free full installer also includes a STEP reader.</p>
+
+<h2>Route 3: sync directly from Fusion</h2>
+<p>A bridge add-on skips the file. Fusion Bridge runs a small add-in inside Fusion and a panel inside Blender. Press <strong>Sync</strong> and the model arrives at real-world size, with Fusion components as Blender collections.</p>
+<img class="shot" src="../demo.gif" alt="A Fusion 360 model synced into Blender; after a CAD change the Blender materials stay on the model" loading="lazy">
+<p>The part that matters most shows up on the second sync. When you change the design in Fusion and sync again, only the geometry is replaced. The materials, modifiers, light links and the Sharp, Seam, Crease and Bevel Weight marks you set in Blender stay where they were. With exported files, every revision arrives as new objects and you set all of that up again.</p>
+
+<h2>Which one should you use?</h2>
+<ul>
+  <li><strong>One render, never changing:</strong> FBX, scale checked. Done in five minutes.</li>
+  <li><strong>Files from other CAD tools as well:</strong> STEP with an importer.</li>
+  <li><strong>A product you will revise and re-render:</strong> a live sync. The time saved grows with every revision.</li>
+</ul>
+
+<div class="cta">
+  <h3>Try Fusion Bridge free</h3>
+  <p>Lite is free and open source: one-click sync, Blender materials and edge marks kept across revisions, components as collections. Windows and macOS, Blender 4.2 or newer.</p>
+  <div class="btns">
+    <a class="btn primary" href="https://github.com/inspace9018/fusion-to-blender-bridge/releases/latest/download/fusion_to_blender_bridge_installer.zip">Download the free installer</a>
+    <a class="btn" href="../#pro">What Pro adds</a>
+  </div>
+  <p class="note">The installer sets up both halves: the Fusion add-in and the Blender add-on. Pro adds Fusion appearance colours, working joints and cleaner topology, from $15.</p>
+</div>
+
+<h2>Common questions</h2>
+<h3>Can Blender open Fusion 360 files directly?</h3>
+<p>No. Blender cannot read <code>.f3d</code>. Export to a mesh format or STEP, or use a sync add-on.</p>
+<h3>Why is my model 1000 times too big?</h3>
+<p>STL and OBJ carry no units. Fusion writes millimetres and Blender reads metres. Scale by 0.001, or use a route that carries units.</p>
+<h3>Do Fusion appearances come across?</h3>
+<p>Not usefully through STL or OBJ; plan to build the look in Blender. <a href="../#pro">Bridge Pro</a> imports Fusion appearance colours as Blender materials.</p>
+<h3>How do I keep my Blender materials when the CAD changes?</h3>
+<p>See the <a href="fusion-360-to-blender-workflow.html">revision workflow guide</a>.</p>
+
+<footer>
+  <p><a href="../">Fusion Bridge setup guide</a> · <a href="https://github.com/inspace9018/fusion-to-blender-bridge">Source on GitHub</a> · GPL-3.0-or-later</p>
+  <p>Fusion and Fusion 360 are trademarks of Autodesk, Inc. Blender is a trademark of the Blender Foundation. This project is not affiliated with either.</p>
+</footer>
+</div>
+</body>
+</html>

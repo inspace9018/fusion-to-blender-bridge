@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fusion 360 to Blender file types compared: STL vs OBJ vs FBX vs STEP</title>
+<meta name="description" content="Which file type should you export from Fusion 360 for Blender? STL, OBJ, FBX, USDZ and STEP compared on units, parts, colours and editing, plus the no-file option.">
+<link rel="canonical" href="https://inspace9018.github.io/fusion-to-blender-bridge/guides/fusion-360-to-blender-file-types.html">
+<meta property="og:title" content="Fusion 360 to Blender file types compared">
+<meta property="og:description" content="STL, OBJ, FBX, USDZ, STEP and live sync on one table.">
+<meta property="og:image" content="https://inspace9018.github.io/fusion-to-blender-bridge/demo.gif">
+<link rel="stylesheet" href="guide.css">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[
+{"@type":"Question","name":"What is the best file type to export from Fusion 360 to Blender?","acceptedAnswer":{"@type":"Answer","text":"FBX for assemblies you render once, STL for a single quick part, STEP when you want exact CAD surfaces and have a STEP importer. For designs you keep revising, a live sync avoids files entirely."}},
+{"@type":"Question","name":"Can Blender import STEP files from Fusion 360?","acceptedAnswer":{"@type":"Answer","text":"Not out of the box. Blender needs a STEP importer add-on; several free and paid ones exist."}},
+{"@type":"Question","name":"Which Fusion export keeps the component hierarchy in Blender?","acceptedAnswer":{"@type":"Answer","text":"FBX keeps separate parts better than STL or OBJ. A sync add-on such as Fusion Bridge turns Fusion components into Blender collections."}}
+]}
+</script>
+</head>
+<body>
+<div class="wrap">
+<nav class="top"><a href="../">Fusion Bridge</a><a href="fusion-360-to-blender.html">All routes</a><a href="fusion-360-to-blender-workflow.html">Workflow guide</a></nav>
+
+<header>
+  <h1>Fusion 360 to Blender file types compared</h1>
+  <p class="meta">Updated September 2026 · STL vs OBJ vs FBX vs USDZ vs STEP</p>
+</header>
+
+<div class="answer">
+  <p><strong>Short answer:</strong> export <strong>FBX</strong> for an assembly you render once, <strong>STL</strong> for one quick part, <strong>STEP</strong> when you want exact CAD surfaces and have a STEP importer. If you will revise the design and render again, skip files and sync directly.</p>
+</div>
+
+<h2>What each format keeps</h2>
+<p>Fusion exports solids (STEP, IGES, SAT, SMT) and meshes (FBX, OBJ, STL, 3MF, USDZ) from <strong>File → Export</strong>. For Blender, these are the ones that matter.</p>
+<div class="tablewrap">
+<table>
+  <thead><tr><th></th><th>STL</th><th>OBJ</th><th>FBX</th><th>USDZ</th><th>STEP</th><th>Live sync</th></tr></thead>
+  <tbody>
+    <tr><td>Blender imports it natively</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">Add-on</td><td class="no">Add-on</td></tr>
+    <tr><td>Real-world size without fixing</td><td class="no">No, unitless</td><td class="no">No, unitless</td><td>Usually; check</td><td>Usually; check</td><td>Depends on importer</td><td class="yes">Yes</td></tr>
+    <tr><td>Separate parts</td><td>Merged or per body</td><td>Flat</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes, as collections</td></tr>
+    <tr><td>Fusion colours</td><td class="no">No</td><td class="no">Not usefully</td><td class="no">Not usefully</td><td>Varies</td><td>Depends on importer</td><td>Pro only</td></tr>
+    <tr><td>Mesh density control</td><td>At export</td><td>At export</td><td>At export</td><td>At export</td><td class="yes">At import</td><td class="yes">Presets</td></tr>
+    <tr><td>Keeps your Blender setup on re-import</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="yes">Yes</td></tr>
+  </tbody>
+</table>
+</div>
+<p class="note">"Keeps your Blender setup" means materials, modifiers, light links and edge marks you added in Blender survive when the Fusion design changes and you bring it in again.</p>
+
+<h2>STL</h2>
+<p>The simplest route. Right-click a body → <strong>Save as Mesh</strong>, or <strong>File → Export</strong>. STL has no units: Fusion writes millimetres, Blender reads metres, so the model arrives 1000× too big. Set the import scale to <code>0.001</code>. Everything arrives as triangles with no colour.</p>
+
+<h2>OBJ</h2>
+<p>Similar to STL for Blender purposes: no units, no hierarchy. Use it when another app in your pipeline prefers OBJ.</p>
+
+<h2>FBX</h2>
+<p>The usual pick for assemblies. Parts come in as separate objects, which makes assigning materials per part practical. Check the scale once on import and keep the same settings afterwards.</p>
+
+<h2>USDZ</h2>
+<p>Recent Fusion versions export USDZ, which Blender imports through its built-in USD importer. It is designed for AR viewing, so results vary; worth a try if you need a quick look with materials.</p>
+
+<h2>STEP</h2>
+<p>STEP carries the exact CAD surfaces instead of a mesh, so you choose the mesh density when importing. Blender needs an add-on for it. STEP is the best route when files also come from SolidWorks, Onshape or other CAD tools.</p>
+
+<h2>No file: live sync</h2>
+<p>Fusion Bridge sends the model from Fusion to Blender directly: real-world size, components as collections, mesh quality presets. When the design changes, it replaces only the geometry, so the setup you built in Blender stays. The free full installer also includes a STEP reader for files from other CAD tools.</p>
+<img class="shot" src="../demo.gif" alt="Fusion Bridge syncing a Fusion model into Blender and keeping the Blender materials after a change" loading="lazy">
+
+<div class="cta">
+  <h3>Skip the export step</h3>
+  <p>Fusion Bridge Lite is free and open source. Windows and macOS, Blender 4.2 or newer.</p>
+  <div class="btns">
+    <a class="btn primary" href="https://github.com/inspace9018/fusion-to-blender-bridge/releases/latest/download/fusion_to_blender_bridge_installer.zip">Download the free installer</a>
+    <a class="btn" href="../#pro">What Pro adds</a>
+  </div>
+  <p class="note">Pro brings Fusion appearance colours across as Blender materials, plus working joints and cleaner topology. From $15.</p>
+</div>
+
+<footer>
+  <p><a href="../">Fusion Bridge setup guide</a> · <a href="https://github.com/inspace9018/fusion-to-blender-bridge">Source on GitHub</a> · GPL-3.0-or-later</p>
+  <p>Fusion and Fusion 360 are trademarks of Autodesk, Inc. Blender is a trademark of the Blender Foundation. This project is not affiliated with either.</p>
+</footer>
+</div>
+</body>
+</html>

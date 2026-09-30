@@ -14,6 +14,15 @@
 </p>
 
 <p align="center">
+  <b>Fusion 360 → Blender in one click. Change the CAD, press Sync, and your Blender materials, modifiers and edge marks stay.</b><br>
+  Free and open source · Windows and macOS · Blender 4.2+
+</p>
+
+<p align="center">
+  <a href="https://github.com/inspace9018/fusion-to-blender-bridge/releases/latest/download/fusion_to_blender_bridge_installer.zip"><b>⬇️ Download free</b></a>&ensp;·&ensp;<a href="https://inspace9018.github.io/fusion-to-blender-bridge/"><b>📘 Setup guide</b></a>&ensp;·&ensp;<a href="https://inspace9018.github.io/fusion-to-blender-bridge/#pro"><b>✨ Bridge Pro</b></a>&ensp;·&ensp;<a href="https://inspace9018.github.io/fusion-to-blender-bridge/guides/fusion-360-to-blender.html">Fusion 360 to Blender guide</a>
+</p>
+
+<p align="center">
   <b>Blender에서 입힌 재질을, 모델을 고쳐도 다시 입히지 마세요.</b><br>
   제품 디자이너를 위한 원클릭 동기화 — Fusion에서 형상만 새로 오고,<br>
   Blender에 세팅해 둔 Material · Modifier · Light Link · 손으로 찍은 엣지 표시는 그 자리에 남습니다.<br>
