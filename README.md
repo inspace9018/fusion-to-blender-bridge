@@ -1,7 +1,8 @@
 # Fusion 360 → Blender Bridge
 
 <p align="center">
-  <img src="docs/demo.gif" alt="Fusion 360 to Blender Bridge Demo" width="720">
+  <a href="https://inspace9018.github.io/fusion-to-blender-bridge/"><img src="site/media/fusion-bridge-loop.gif" alt="Press Sync in Blender and the Fusion 360 model appears; make it 20 mm taller in Fusion, sync again, and the Blender materials stay" width="300"></a><br>
+  <sub><a href="https://inspace9018.github.io/fusion-to-blender-bridge/">Watch the 30-second demo with sound</a></sub>
 </p>
 
 <p align="center">

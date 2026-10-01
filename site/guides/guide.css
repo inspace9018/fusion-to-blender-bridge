@@ -46,6 +46,7 @@ tr:last-child td { border-bottom: 0; }
 .btn { display: inline-block; padding: 11px 18px; border-radius: 10px; font-weight: 600; text-decoration: none; border: 1px solid var(--line); color: var(--fg); background: var(--card); }
 .btn.primary { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); }
 .note { font-size: 14px; color: var(--muted); }
+video.shot { display: block; width: 100%; max-width: 300px; aspect-ratio: 9 / 16; margin: 16px auto; border-radius: 12px; border: 1px solid var(--line); background: #101418; }
 img.shot { max-width: 100%; height: auto; border-radius: 12px; border: 1px solid var(--line); display: block; margin: 16px 0; }
 footer { margin: 56px 0 40px; padding-top: 18px; border-top: 1px solid var(--line); font-size: 14px; color: var(--muted); }
 footer a { color: var(--muted); }

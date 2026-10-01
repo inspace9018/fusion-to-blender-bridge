@@ -9,6 +9,13 @@
 <meta property="og:description" content="Model in Fusion, press Sync in Blender. Everything you built in Blender stays put.">
 <link rel="canonical" href="https://inspace9018.github.io/fusion-to-blender-bridge/">
 <meta property="og:image" content="https://inspace9018.github.io/fusion-to-blender-bridge/demo.gif">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"VideoObject","name":"Fusion 360 to Blender without exporting",
+ "description":"Fusion Bridge in 30 seconds: turn on the server in Fusion, press Sync in Blender, change the CAD and sync again. Materials, seams and modifiers stay.",
+ "thumbnailUrl":"https://inspace9018.github.io/fusion-to-blender-bridge/media/fusion-bridge-demo.jpg",
+ "contentUrl":"https://inspace9018.github.io/fusion-to-blender-bridge/media/fusion-bridge-demo.mp4",
+ "uploadDate":"2026-10-02","duration":"PT30S"}
+</script>
 <style>
   :root {
     --bg: #fbfbfa; --fg: #1d1d1f; --muted: #5f6368; --line: #e3e3e0;
@@ -40,6 +47,11 @@
   p { margin: 0 0 12px; }
   .lede { font-size: 18px; color: var(--muted); max-width: 640px; }
   a { color: var(--accent); }
+  .hero { display: grid; gap: 28px; align-items: center; }
+  @media (min-width: 760px) { .hero { grid-template-columns: minmax(0, 1fr) 300px; } }
+  .hero-video { margin: 0; }
+  .hero-video video { display: block; width: 100%; max-width: 300px; aspect-ratio: 9 / 16; margin: 0 auto; border-radius: 12px; border: 1px solid var(--line); background: #101418; }
+  .hero-video figcaption { font-size: 13px; color: var(--muted); text-align: center; margin-top: 8px; }
   .demo { max-width: 100%; height: auto; border-radius: 12px; border: 1px solid var(--line); margin: 24px auto 0; display: block; }
   .btn {
     display: inline-block; padding: 12px 20px; border-radius: 10px; font-weight: 600;
@@ -70,7 +82,8 @@
 <body>
 <div class="wrap">
 
-<header>
+<header class="hero">
+<div>
   <h1>Model in Fusion.<br>Press Sync in Blender.</h1>
   <p class="lede">Fusion Bridge sends your Fusion 360 model to Blender in one click. Your materials, modifiers, light links and hand-marked edges survive every CAD revision.</p>
   <div class="btns">
@@ -78,7 +91,12 @@
     <a class="btn" href="#pro">Compare Lite and Pro</a>
   </div>
   <p class="note">Free · Windows and macOS · Blender 4.2 or newer · talks only to Fusion on this computer (127.0.0.1)</p>
-  <img class="demo" src="demo.gif" alt="A Fusion 360 model synced into Blender with its Blender materials kept after a CAD change" loading="lazy">
+</div>
+<figure class="hero-video">
+  <video src="media/fusion-bridge-demo.mp4" poster="media/fusion-bridge-demo.jpg" autoplay muted loop playsinline controls preload="metadata" width="300" height="533"
+         aria-label="30-second demo: Fusion server on, Sync in Blender, the model appears at real size; after a CAD change the materials and seams stay"></video>
+  <figcaption>30 seconds · turn the sound on for the voiceover</figcaption>
+</figure>
 </header>
 
 <main>

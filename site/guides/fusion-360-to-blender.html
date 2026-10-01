@@ -18,6 +18,13 @@
 {"@type":"Question","name":"How do I keep my Blender materials when I change the model in Fusion?","acceptedAnswer":{"@type":"Answer","text":"A re-exported file arrives as new objects, so materials must be reassigned. A sync add-on such as Fusion Bridge replaces only the geometry and keeps the materials, modifiers and edge marks you set in Blender."}}
 ]}
 </script>
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"VideoObject","name":"Fusion 360 to Blender without exporting",
+ "description":"Fusion Bridge in 30 seconds: turn on the server in Fusion, press Sync in Blender, change the CAD and sync again. Materials, seams and modifiers stay.",
+ "thumbnailUrl":"https://inspace9018.github.io/fusion-to-blender-bridge/media/fusion-bridge-demo.jpg",
+ "contentUrl":"https://inspace9018.github.io/fusion-to-blender-bridge/media/fusion-bridge-demo.mp4",
+ "embedUrl":"https://inspace9018.github.io/fusion-to-blender-bridge/guides/fusion-360-to-blender.html","uploadDate":"2026-10-02","duration":"PT30S"}
+</script>
 </head>
 <body>
 <div class="wrap">
@@ -62,7 +69,8 @@
 
 <h2>Route 3: sync directly from Fusion</h2>
 <p>A bridge add-on skips the file. Fusion Bridge runs a small add-in inside Fusion and a panel inside Blender. Press <strong>Sync</strong> and the model arrives at real-world size, with Fusion components as Blender collections.</p>
-<img class="shot" src="../demo.gif" alt="A Fusion 360 model synced into Blender; after a CAD change the Blender materials stay on the model" loading="lazy">
+<video class="shot" src="../media/fusion-bridge-demo.mp4" poster="../media/fusion-bridge-demo.jpg" controls muted playsinline preload="metadata" width="300" height="533"
+  aria-label="30-second demo: Sync in Blender, the model appears; after a CAD change the Blender materials and seams stay"></video>
 <p>The part that matters most shows up on the second sync. When you change the design in Fusion and sync again, only the geometry is replaced. The materials, modifiers, light links and the Sharp, Seam, Crease and Bevel Weight marks you set in Blender stay where they were. With exported files, every revision arrives as new objects and you set all of that up again.</p>
 
 <h2>Which one should you use?</h2>
